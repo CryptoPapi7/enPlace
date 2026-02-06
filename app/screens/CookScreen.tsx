@@ -26,3 +26,13 @@ export default function CookScreen() {
     </View>
   );
 }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
+  controls: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 16
+  }
+});
