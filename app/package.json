@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "main": "app/app/(tabs)/index.js",
+  "main": "app/index.js",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
