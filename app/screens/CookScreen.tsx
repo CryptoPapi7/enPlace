@@ -1,4 +1,4 @@
-import { View, Button, StyleSheet } from "react-native";
+import { View, Button, StyleSheet, SafeAreaView } from "react-native";
 import { useState } from "react";
 import { recipe } from "../data/recipe";
 import StepView from "../components/StepView";
@@ -9,8 +9,10 @@ export default function CookScreen() {
   const step = recipe.steps[stepIndex];
 
   return (
-    <View style={styles.container}>
-      <StepView text={step} />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <StepView text={step} />
+      </View>
       <View style={styles.controls}>
         <Button
           title="Back"
@@ -23,12 +25,18 @@ export default function CookScreen() {
           onPress={() => setStepIndex(stepIndex + 1)}
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
   container: {
     flex: 1
+  },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24
   },
   controls: {
     flexDirection: "row",
