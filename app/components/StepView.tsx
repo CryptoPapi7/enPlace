@@ -7,3 +7,12 @@ export default function StepView({ text }: { text: string }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+  },
+  text: {
+    fontSize: 16,
+  },
+});
