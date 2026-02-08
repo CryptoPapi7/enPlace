@@ -9,6 +9,11 @@
 3. Add these items:
 
 ### Backlog
+- [ ] Pre-cook process overview — show all steps/timeline before cooking starts
+  - User feedback: "likes to see all the steps ahead of cooking to get a sense for the process"
+  - Could be: preview mode, timeline view, or summary screen before cook mode
+  - Consider: total time per section, active vs passive time breakdown
+
 - [ ] Build standalone iOS preview (via EAS or TestFlight)
   - Currently requires laptop + Expo Go + same WiFi
   - Options: `expo start --tunnel`, or EAS build with Apple Developer account ($99/year)

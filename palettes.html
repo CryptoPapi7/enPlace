@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnPlace French Bistro Color Palettes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            padding: 20px;
+            color: #fff;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .palette {
+            background: #2a2a2a;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .palette-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .palette-desc {
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        .colors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+        }
+        .color-swatch {
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .color-name {
+            font-size: 12px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .color-hex {
+            font-size: 11px;
+            opacity: 0.8;
+            font-family: monospace;
+        }
+        .mockup {
+            margin-top: 20px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .mockup-header {
+            padding: 16px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .mockup-content {
+            padding: 20px;
+            min-height: 200px;
+        }
+        .mockup-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .rating {
+            text-align: center;
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        @media (max-width: 480px) {
+            .colors {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🍷 EnPlace French Bistro Themes</h1>
+    <p class="subtitle">Cartoonish, warm, and inviting palettes</p>
+
+    <!-- Palette 1: Classic Parisian -->
+    <div class="palette">
+        <div class="palette-name">Option 1: Café de Paris</div>
+        <p class="palette-desc">Classic bistro with deep reds, crisp creams, and warm woods. Bold and welcoming.</p>
+        <div class="colors">
+            <div class="color-swatch" style="background: #8B2635; color: white;">
+                <div class="color-name">Burgundy</div>
+                <div class="color-hex">#8B2635</div>
+            </div>
+            <div class="color-swatch" style="background: #F5F1E8; color: #333;">
+                <div class="color-name">Crème</div>
+                <div class="color-hex">#F5F1E8</div>
+            </div>
+            <div class="color-swatch" style="background: #4A3728; color: white;">
+                <div class="color-name">Wood</div>
+                <div class="color-hex">#4A3728</div>
+            </div>
+            <div class="color-swatch" style="background: #D4A574; color: #333;">
+                <div class="color-name">Brass</div>
+                <div class="color-hex">#D4A574</div>
+            </div>
+            <div class="color-swatch" style="background: #2C3E50; color: white;">
+                <div class="color-name">Chalkboard</div>
+                <div class="color-hex">#2C3E50</div>
+            </div>
+            <div class="color-swatch" style="background: #27AE60; color: white;">
+                <div class="color-name">Herb</div>
+                <div class="color-hex">#27AE60</div>
+            </div>
+        </div>
+        <div class="mockup" style="background: #F5F1E8;">
+            <div class="mockup-header" style="background: #8B2635; color: white;">
+                🍴 enPlace
+            </div>
+            <div class="mockup-content">
+                <div class="mockup-card" style="background: white; border: 2px solid #D4A574;">
+                    <strong style="color: #4A3728;">&quot;Curry Chicken&quot;</strong>
+                    <p style="color: #666; font-size: 14px; margin-top: 8px;">A classic Caribbean dish with...</p>
+                </div>
+                <div class="mockup-card" style="background: #2C3E50; color: white; text-align: center;">
+                    Start Cooking
+                </div>
+            </div>
+        </div>
+        <div class="rating">⭐⭐⭐ Classic bistro feel</div>
+    </div>
+
+    <!-- Palette 2: Sunny Provence -->
+    <div class="palette">
+        <div class="palette-name">Option 2: Provence Morning</div>
+        <p class="palette-desc">Bright, airy, Mediterranean-inspired. Think sun-drenched terraces and fresh herbs.</p>
+        <div class="colors">
+            <div class="color-swatch" style="background: #FF8C42; color: white;">
+                <div class="color-name">Terracotta</div>
+                <div class="color-hex">#FF8C42</div>
+            </div>
+            <div class="color-swatch" style="background: #FFF8E7; color: #333;">
+                <div class="color-name">Vanilla</div>
+                <div class="color-hex">#FFF8E7</div>
+            </div>
+            <div class="color-swatch" style="background: #5D4E37; color: white;">
+                <div class="color-name">Olive Wood</div>
+                <div class="color-hex">#5D4E37</div>
+            </div>
+            <div class="color-swatch" style="background: #87CEEB; color: #333;">
+                <div class="color-name">Sky</div>
+                <div class="color-hex">#87CEEB</div>
+            </div>
+            <div class="color-swatch" style="background: #9DC183; color: white;">
+                <div class="color-name">Sage</div>
+                <div class="color-hex">#9DC183</div>
+            </div>
+            <div class="color-swatch" style="background: #FFB347; color: #333;">
+                <div class="color-name">Apricot</div>
+                <div class="color-hex">#FFB347</div>
+            </div>
+        </div>
+        <div class="mockup" style="background: #FFF8E7;">
+            <div class="mockup-header" style="background: #FF8C42; color: white;">
+                🍴 enPlace
+            </div>
+            <div class="mockup-content">
+                <div class="mockup-card" style="background: white; border: 2px solid #87CEEB;">
+                    <strong style="color: #5D4E37;">&quot;Curry Chicken&quot;</strong>
+                    <p style="color: #666; font-size: 14px; margin-top: 8px;">A classic Caribbean dish with...</p>
+                </div>
+                <div class="mockup-card" style="background: #9DC183; color: white; text-align: center;">
+                    Start Cooking
+                </div>
+            </div>
+        </div>
+        <div class="rating">☀️ Bright and cheerful</div>
+    </div>
+
+    <!-- Palette 3: Midnight Bistro -->
+    <div class="palette">
+        <div class="palette-name">Option 3: Midnight Bistro</div>
+        <p class="palette-desc">Moody, romantic evening atmosphere. Deep navy, gold accents, candlelight vibes.</p>
+        <div class="colors">
+            <div class="color-swatch" style="background: #1a1a2e; color: white;">
+                <div class="color-name">Midnight</div>
+                <div class="color-hex">#1a1a2e</div>
+            </div>
+            <div class="color-swatch" style="background: #16213e; color: white;">
+                <div class="color-name">Navy</div>
+                <div class="color-hex">#16213e</div>
+            </div>
+            <div class="color-swatch" style="background: #C9B037; color: #333;">
+                <div class="color-name">Gold</div>
+                <div class="color-hex">#C9B037</div>
+            </div>
+            <div class="color-swatch" style="background: #E8DCC4; color: #333;">
+                <div class="color-name">Candlelight</div>
+                <div class="color-hex">#E8DCC4</div>
+            </div>
+            <div class="color-swatch" style="background: #7B2D3B; color: white;">
+                <div class="color-name">Wine</div>
+                <div class="color-hex">#7B2D3B</div>
+            </div>
+            <div class="color-swatch" style="background: #2E8B57; color: white;">
+                <div class="color-name">Forest</div>
+                <div class="color-hex">#2E8B57</div>
+            </div>
+        </div>
+        <div class="mockup" style="background: #1a1a2e;">
+            <div class="mockup-header" style="background: #16213e; color: #C9B037; border-bottom: 2px solid #C9B037;">
+                🍴 enPlace
+            </div>
+            <div class="mockup-content">
+                <div class="mockup-card" style="background: #16213e; border: 1px solid #C9B037;">
+                    <strong style="color: #E8DCC4;">&quot;Curry Chicken&quot;</strong>
+                    <p style="color: #aaa; font-size: 14px; margin-top: 8px;">A classic Caribbean dish with...</p>
+                </div>
+                <div class="mockup-card" style="background: #7B2D3B; color: white; text-align: center; border: 1px solid #C9B037;">
+                    Start Cooking
+                </div>
+            </div>
+        </div>
+        <div class="rating">🌙 Romantic evening vibes</div>
+    </div>
+
+    <!-- Palette 4: Cartoon Bistrot -->
+    <div class="palette">
+        <div class="palette-name">Option 4: Cartoon Bistrot 🎨</div>
+        <p class="palette-desc">Bold playful colors with heavy cartoon influence. Thick outlines, high contrast, super fun.</p>
+        <div class="colors">
+            <div class="color-swatch" style="background: #E63946; color: white;">
+                <div class="color-name">Tomato</div>
+                <div class="color-hex">#E63946</div>
+            </div>
+            <div class="color-swatch" style="background: #F1FAEE; color: #333;">
+                <div class="color-name">Cream</div>
+                <div class="color-hex">#F1FAEE</div>
+            </div>
+            <div class="color-swatch" style="background: #1D3557; color: white;">
+                <div class="color-name">Ink</div>
+                <div class="color-hex">#1D3557</div>
+            </div>
+            <div class="color-swatch" style="background: #A8DADC; color: #333;">
+                <div class="color-name">Baby Blue</div>
+                <div class="color-hex">#A8DADC</div>
+            </div>
+            <div class="color-swatch" style="background: #457B9D; color: white;">
+                <div class="color-name">Jeans</div>
+                <div class="color-hex">#457B9D</div>
+            </div>
+            <div class="color-swatch" style="background: #F4A261; color: #333;">
+                <div class="color-name">Saffron</div>
+                <div class="color-hex">#F4A261</div>
+            </div>
+        </div>
+        <div class="mockup" style="background: #F1FAEE; border: 4px solid #1D3557;">
+            <div class="mockup-header" style="background: #E63946; color: white; border-bottom: 4px solid #1D3557;">
+                🍴 enPlace
+            </div>
+            <div class="mockup-content">
+                <div class="mockup-card" style="background: white; border: 3px solid #1D3557; border-radius: 16px;">
+                    <strong style="color: #1D3557; font-size: 18px;">&quot;Curry Chicken&quot;</strong>
+                    <p style="color: #457B9D; font-size: 14px; margin-top: 8px;">A classic Caribbean dish with...</p>
+                </div>
+                <div class="mockup-card" style="background: #F4A261; color: #1D3557; text-align: center; border: 3px solid #1D3557; border-radius: 50px; font-weight: bold;">
+                    Start Cooking! 🍳
+                </div>
+            </div>
+        </div>
+        <div class="rating">🎭 Most cartoonish!</div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; padding: 20px; background: #2a2a2a; border-radius: 12px;">
+        <h3>💬 How to Choose</h3>
+        <p style="color: #aaa; font-size: 14px; margin-top: 8px;">
+            Reply with your favorite (1, 2, 3, or 4)<br>
+            Or say &quot;Mix: use the [color] from option [X]&quot;<br>
+            I&apos;ll implement it in the app instantly!
+        </p>
+    </div>
+
+</body>
+</html>

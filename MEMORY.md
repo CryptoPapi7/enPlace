@@ -21,6 +21,12 @@
 - Main session bridged across Telegram and WebChat (deliveryContext points to telegram, may cause sync quirks)
 - Subagent sessions visible in WebChat session switcher
 
+## TODOs
+
+- [ ] **Enable Tailscale on OpenClaw gateway** — allow mobile approvals from phone
+  - Needed because approval UI is WebChat-only; currently can't approve while away from computer
+  - Config: `gateway.tailscale.mode: "on"` in `/home/azureuser/.openclaw/openclaw.json`
+
 ## Key Files
 
 - `TOOLS.md` — local setup notes, URLs, workflows

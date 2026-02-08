@@ -1,0 +1,14 @@
+[Unit]
+Description=Cloudflared Tunnel for enPlace
+After=network.target expo.service
+Requires=expo.service
+
+[Service]
+Type=simple
+User=azureuser
+ExecStart=/tmp/cloudflared tunnel --url http://localhost:8081
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

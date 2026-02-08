@@ -1,0 +1,15 @@
+[Unit]
+Description=Expo Dev Server for enPlace
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/.openclaw/workspace/app
+ExecStart=/usr/bin/npx expo start --port 8081
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=development
+
+[Install]
+WantedBy=multi-user.target

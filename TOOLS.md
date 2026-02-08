@@ -39,3 +39,22 @@ qrencode -o qr.png "exp://TUNNEL-URL.exp.direct"
 ## Why Separate?
 
 Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
+
+## Critical Config Backup Protocol
+
+**RULE: Backup BEFORE editing any of these files:**
+- `/home/azureuser/.openclaw/openclaw.json`
+- `/home/azureuser/.openclaw/litellm_config.yaml`
+- Any systemd service files
+
+**ALWAYS tell the user the exact backup path immediately after creating it.**
+
+**Command pattern:**
+```bash
+BACKUP="/path/to/backups/file.$(date +%Y%m%d-%H%M%S).bak"
+cp /path/to/file "$BACKUP"
+echo "✅ Backed up to: $BACKUP"
+echo "To restore: cp $BACKUP /path/to/file"
+```
+
+**Never skip this. Ever. TELL THEM THE PATH EVERY TIME.**
