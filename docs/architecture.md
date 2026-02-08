@@ -4,114 +4,232 @@
 
 This document describes the distributed development environment for the enPlace mobile cooking application. The architecture enables remote development where the user's workstation can remain idle while all development work happens on a cloud-hosted Linux VM.
 
+**Last Updated:** 2026-02-08 - Major infrastructure overhaul with Tailscale, Telegram approvals, and systemd services
+
 ## System Components
 
-| Component | Location | Platform | Software Stack |
-|-----------|----------|----------|----------------|
-| User Workstation | Home | Windows | Browser (occasional use), can sleep |
-| iPhone | Mobile | iOS | Expo Go app |
-| Azure Cloud | Microsoft datacenter | Cloud platform | Virtual Machine hosting |
-| Linux VM | Azure | Ubuntu 22.04 | Node.js v22, npm, Expo CLI, ngrok, OpenClaw gateway, git, Python3 |
+| Component | Location | Platform | Software Stack | Access Method |
+|-----------|----------|----------|----------------|---------------|
+| User Workstation | Home | Windows | Browser, SSH | Tailscale (100.89.156.81) |
+| iPhone | Mobile | iOS | Expo Go app, Telegram | Tailscale + Telegram |
+| Azure Cloud | Microsoft datacenter | Cloud platform | Virtual Machine | Public IP |
+| Linux VM | Azure | Ubuntu 22.04 | Node.js v22, npm, Expo CLI, OpenClaw, Tailscale, cloudflared | Tailscale IP: 100.102.100.72 |
 
 ## Architecture Diagram
 
 ```
-┌─────────────────────────┐         ┌─────────────────────────────────┐
-│   USER WORKSTATION      │         │      AZURE CLOUD PLATFORM       │
-│      (Windows)          │         │                                 │
-│  ┌───────────────────┐  │         │  ┌─────────────────────────┐   │
-│  │ ┌───────────────┐ │  │         │  │    LINUX VM (Ubuntu)    │   │
-│  │ │   Browser     │ │  │         │  │    40.117.250.147       │   │
-│  │ │  (optional)   │ │  │         │  │                         │   │
-│  │ └───────────────┘ │  │         │  │  ┌───────────────────┐  │   │
-│  │      (sleeps)     │  │         │  │  │ OpenClaw Gateway  │  │   │
-│  └───────────────────┘  │         │  │  │    Port 18789     │  │   │
-└──────────┬──────────────┘         │  │  └───────────────────┘  │   │
-           │                        │  │                         │   │
-           │  HTTP 8082             │  │  ┌───────────────────┐  │   │
-           │  (QR code)             │  │  │ Node.js / Expo CLI│  │   │
-           │                        │  │  └─────────┬─────────┘  │   │
-           ▼                        │  │            │            │   │
-┌─────────────────────────┐         │  │            ▼            │   │
-│        iPHONE           │◄════════╪══╪════════╦═══════════════╪═══╡
-│    (iOS / Expo Go)      │  ngrok   │  │        ║ Expo Dev      │   │
-│                         │  tunnel  │  │        ║ Server        │   │
-│  ┌───────────────────┐  │          │  │        ║ Port 8081     │   │
-│  │ • Scan QR code    │  │          │  │        ╚═══════╦═══════╝   │
-│  │ • Load app        │  │          │  │                ║           │
-│  │ • Live reload     │◄════════════╪══╪════════════════╪═══════════╡
-│  └───────────────────┘  │          │  │        ┌───────╨───────┐   │
-└─────────────────────────┘          │  │        │ ngrok Tunnel  │   │
-                                     │  │        │   Port 4040   │   │
-                                     │  │        └───────────────┘   │
-                                     │  └─────────────────────────────┘
-                                     └─────────────────────────────────┘
-```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           TAILSCALE NETWORK                                  │
+│                         (100.x.x.x mesh VPN)                                 │
+│                                                                              │
+│  ┌───────────────────┐          ┌──────────────────────────────────────┐   │
+│  │  iPhone           │          │     AZURE CLOUD PLATFORM             │   │
+│  │  (iOS)            │          │                                      │   │
+│  │  100.108.205.65   │          │  ┌──────────────────────────────┐   │   │
+│  │                   │          │  │     LINUX VM (Ubuntu)        │   │   │
+│  │  ┌─────────────┐  │          │  │     Tailscale: 100.102.100.72│   │   │
+│  │  │   Expo Go   │◄═╦═════════╪══╪══╡     Public: 40.117.250.147 │   │   │
+│  │  │   App       │  ║          │  │  │                             │   │   │
+│  │  └─────────────┘  ║          │  │  │  ┌───────────────────────┐  │   │   │
+│  │                   ║          │  │  │  │ OpenClaw Gateway      │  │   │   │
+│  │  ┌─────────────┐  ║          │  │  │  │ Port 18789 (LAN)      │  │   │   │
+│  │  │  Telegram   │  ║          │  │  │  └───────────────────────┘  │   │   │
+│  │  │  Approvals  │◄═╝          │  │  │                             │   │   │
+│  │  └─────────────┘             │  │  │  ┌───────────────────────┐  │   │   │
+│  └───────────────────┘          │  │  │  │ Expo Dev Server       │  │   │   │
+│                                  │  │  │  │ Port 8081             │  │   │   │
+│  ┌───────────────────┐          │  │  │  └───────────┬───────────┘  │   │   │
+│  │ Windows Desktop   │          │  │  │              │              │   │   │
+│  │ 100.89.156.81     │◄═════════╪══╪══╪══════════════╪══════════════╡   │   │
+│  │                   │  Tailscale│  │  │              │              │   │   │
+│  │  ┌─────────────┐  │   SSH     │  │  │  ┌───────────▼───────────┐  │   │   │
+│  │  │  Browser    │  │           │  │  │  │ systemd services:     │  │   │   │
+│  │  │  (Webchat)  │◄═╪═══════════╪══╪══╡  │  - expo.service       │  │   │   │
+│  │  └─────────────┘  │           │  │  │  │  - tailscaled         │  │   │   │
+│  └───────────────────┘           │  │  │  │  - cloudflared        │  │   │   │
+│                                    │  │  │  └───────────────────────┘  │   │   │
+└────────────────────────────────────┴──┴──┴──────────────────────────────┴───┴───┘
 
-## Data Flow
+## Access Matrix by Device
 
-1. **Development on VM**: Code changes made on the Linux VM
-2. **Bundle Creation**: Metro bundler creates JS bundle
-3. **Tunnel Establishment**: ngrok creates a public URL pointing to port 8081
-4. **Client Connection**: iPhone connects via Expo Go using the tunnel URL
-5. **Live Reload**: Code changes automatically push updates to the iPhone
+### From iPhone
+
+| Service | URL/Method | Notes |
+|---------|------------|-------|
+| **Expo Go** | `exp://100.102.100.72:8081` | Requires Tailscale app on phone |
+| **Telegram Approvals** | Reply `/approve [ID] allow-once` | Full UUID required |
+| **QR Code** | http://40.117.250.147:8082/qr.png | Static QR for Expo Go |
+
+### From Windows Desktop
+
+| Service | URL/Method | Notes |
+|---------|------------|-------|
+| **OpenClaw Webchat** | `http://10.0.0.4:18789` | Via Tailscale (same network) |
+| **SSH Access** | `ssh azureuser@40.117.250.147` | Direct to VM |
+| **Tailscale Admin** | https://login.tailscale.com | Manage devices |
+
+### From VM Itself
+
+| Command | Purpose |
+|---------|---------|
+| `tailscale status` | Check VPN connections |
+| `sudo systemctl status expo` | Check Expo server |
+| `sudo systemctl status tailscaled` | Check Tailscale daemon |
+| `qrencode -o qr.png "exp://100.102.100.72:8081"` | Generate QR code |
 
 ## Network Ports & Services
 
-| Port | Service | Purpose |
-|------|---------|---------|
-| 8081 | Expo Dev Server | Metro bundler, serves JavaScript bundle |
-| 8082 | QR Code Server | Python HTTP server serving QR code PNG |
-| 4040 | ngrok API | Tunnel management and status |
-| 18789 | OpenClaw Gateway | WebSocket control plane for agent |
+| Port | Service | Purpose | Access From |
+|------|---------|---------|-------------|
+| 8081 | Expo Dev Server | Metro bundler | Tailscale network |
+| 8082 | QR Code Server | Python HTTP server | Public internet |
+| 18789 | OpenClaw Gateway | WebSocket control plane | LAN + Tailscale |
+| 41641 | Tailscale | UDP tunnel traffic | Tailscale mesh |
+
+## Infrastructure Components
+
+### 1. Tailscale (VPN Mesh)
+
+**Purpose:** Secure private network connecting all devices
+- **VM:** `100.102.100.72`
+- **Windows Desktop:** `100.89.156.81`
+- **iPhone:** `100.108.205.65`
+- **Tailnet:** CryptoPapi7's network
+
+**Why Tailscale?**
+- Expo Go requires `exp://` URLs (not HTTP/HTTPS)
+- ngrok free tier now requires verified account
+- Tailscale gives direct IP access within private mesh
+- No port forwarding or firewall changes needed
+
+### 2. Cloudflared (HTTPS Tunnels)
+
+**Purpose:** Public HTTPS access for web services
+- **Ephemeral tunnels** created on-demand
+- **Use case:** Share development URLs temporarily
+- **Note:** Free tunnels rotate URLs on restart
+
+### 3. Systemd Services (Auto-start)
+
+| Service | Auto-starts | Status Command |
+|---------|-------------|----------------|
+| `expo` | ✅ On boot | `sudo systemctl status expo` |
+| `cloudflared` | ✅ On boot | `sudo systemctl status cloudflared` |
+| `tailscaled` | ✅ On boot | `sudo systemctl status tailscaled` |
+| `openclaw-gateway` | ✅ On boot | `sudo systemctl status openclaw-gateway` |
+
+### 4. Telegram Approvals
+
+**Configuration:** Added to `openclaw.json`:
+```json
+"approvals": {
+  "exec": {
+    "enabled": true,
+    "mode": "targets",
+    "agentFilter": ["main"],
+    "targets": [
+      { "channel": "telegram", "to": "8219560186" }
+    ]
+  }
+}
+```
+
+**How to approve from phone:**
+1. Wait for "Approval required (id xxxxxxxx-xxxx-..." message
+2. Reply with: `/approve xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx allow-once`
+3. Use `allow-always` to whitelist the command pattern
+4. **Important:** Use the FULL UUID, not just the short ID
+
+## Quick Reference Commands
+
+### Start/Stop Services
+```bash
+# Expo dev server (systemd)
+sudo systemctl start expo
+sudo systemctl stop expo
+sudo systemctl restart expo
+
+# Tailscale
+sudo tailscale up
+tailscale status
+
+# All services
+sudo systemctl status expo tailscaled openclaw-gateway
+```
+
+### Generate QR Code
+```bash
+cd /home/azureuser/.openclaw/workspace
+qrencode -o qr.png "exp://100.102.100.72:8081"
+# Access at: http://40.117.250.147:8082/qr.png
+```
+
+### Backup Config (REQUIRED before edits)
+```bash
+BACKUP="$HOME/.openclaw/backups/openclaw.json.$(date +%Y%m%d-%H%M%S).bak"
+cp "$HOME/.openclaw/openclaw.json" "$BACKUP"
+echo "✅ Backed up to: $BACKUP"
+```
 
 ## Key Design Decisions
 
-### Why This Architecture?
+### Why Tailscale over ngrok?
+- **ngrok free tier:** Now requires verified account + authtoken (ERR_NGROK_4018)
+- **Expo Go:** Requires `exp://` protocol which ngrok can't provide
+- **Tailscale:** Direct IP access, no URL rotation, works with Expo Go
 
-- **Workstation Independence**: The Windows workstation can sleep or be offline since all development happens on the Azure VM
-- **Network Flexibility**: The iPhone can connect from any WiFi network using the public ngrok tunnel
-- **Zero Local Setup**: No need to install Node.js, Expo, or development tools on the workstation
-- **Live Development**: Instant feedback loop with hot reload working across networks
+### Why systemd services?
+- VM reboots don't break development environment
+- Auto-restart on crash
+- Logs available via `journalctl`
+- Production-grade process management
 
-### Security Considerations
-
-- ngrok tunnels are ephemeral and change on each Expo restart
-- QR code server (port 8082) provides easy access without typing URLs
-- OpenClaw gateway requires authentication token
-- All services run on loopback unless explicitly exposed
-
-## Quick Start Commands
-
-```bash
-# Start Expo dev server with tunnel
-cd /home/azureuser/.openclaw/workspace/app
-npx expo start --tunnel --port 8081
-
-# Start QR code server (in separate terminal)
-cd /home/azureuser/.openclaw/workspace
-python3 -m http.server 8082
-
-# Access QR code
-# http://40.117.250.147:8082/qr.png
-```
+### Why Telegram approvals?
+- Mobile-friendly (already have Telegram on phone)
+- No web UI needed for approvals
+- Audit trail in chat history
+- Works from anywhere with internet
 
 ## Troubleshooting
 
-### Tunnel URL Changes
+### Expo Go won't connect
+1. Check Tailscale app is running on phone
+2. Verify phone has Tailscale IP: `tailscale status` on VM
+3. Ensure phone and VM are in same tailnet (CryptoPapi7)
+4. Try refreshing Tailscale connection on phone
 
-The ngrok tunnel URL rotates each time Expo restarts. The QR code server ensures you always have quick access to the current connection URL.
+### Telegram approval "unknown ID"
+- Approval IDs expire after ~30 seconds
+- Use FULL UUID format (with dashes)
+- Type `/approve` command quickly
 
-### Connection Issues
+### Can't access webchat on desktop
+- Ensure Windows machine has Tailscale installed
+- Check same account logged in
+- Verify status: `tailscale status` should show both devices
 
-1. Verify Expo dev server is running on port 8081
-2. Check ngrok tunnel is established (port 4040)
-3. Ensure iPhone has internet access
-4. Try re-scanning the QR code from the server
+### Service won't start
+```bash
+# Check logs
+sudo journalctl -u expo -n 50
+sudo journalctl -u openclaw-gateway -n 50
+
+# Validate config
+openclaw gateway config  # Will show errors
+```
+
+## Security Notes
+
+- **Tailscale:** Private mesh, no exposed ports to internet
+- **Expo:** Only accessible within Tailscale network
+- **Gateway:** Requires auth token even on LAN
+- **Backups:** Always created before config changes at `~/.openclaw/backups/`
+- **Approval system:** All exec commands require explicit approval
 
 ## Future Enhancements
 
-- Add HTTPS support for QR code server
-- Implement persistent tunnel URLs (paid ngrok feature)
-- Add CI/CD pipeline for automated builds
-- Explore EAS (Expo Application Services) for cloud builds
+- [ ] Persistent cloudflared tunnel with custom domain
+- [ ] HTTPS certificates via Tailscale for gateway
+- [ ] Discord integration for multi-agent setup
+- [ ] CI/CD pipeline for automated test builds
+- [ ] EAS (Expo Application Services) integration
