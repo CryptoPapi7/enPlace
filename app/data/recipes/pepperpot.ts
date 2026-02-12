@@ -1,0 +1,94 @@
+import { Recipe } from './types';
+
+export const pepperpotRecipe: Recipe = {
+  id: 'pepperpot',
+  title: 'Guyanese Pepperpot',
+  emoji: '🍖',
+  description: 'Aromatic Guyanese beef stew simmered in cinnamon and cassareep',
+  cuisine: 'Guyanese',
+  difficulty: 'medium',
+  totalTimeMinutes: 180,
+  servings: 6,
+  sections: {
+    marinade: [
+      {
+        id: 'pepperpot-m1',
+        title: 'Season the beef',
+        instructions: ['Mix beef with ground pepper, salt, and crushed garlic', 'Rub seasoning into meat thoroughly'],
+        durationMinutes: 10,
+        active: true,
+      },
+    ],
+    cooking: [
+      {
+        id: 'pepperpot-1',
+        title: 'Brown the beef',
+        instructions: ['Heat oil in a heavy pot over medium-high heat', 'Brown beef in batches', 'Set aside browned beef'],
+        durationMinutes: 15,
+        active: true,
+      },
+      {
+        id: 'pepperpot-2',
+        title: 'Sauté aromatics',
+        instructions: ['Add onions to the same pot', 'Cook until soft and golden', 'Add garlic and cook 1 minute more'],
+        durationMinutes: 5,
+        active: true,
+      },
+      {
+        id: 'pepperpot-3',
+        title: 'Add spices',
+        instructions: ['Add cinnamon sticks, thyme, and cassareep', 'Stir to combine', 'Return beef to pot'],
+        durationMinutes: 3,
+        active: true,
+      },
+      {
+        id: 'pepperpot-4',
+        title: 'Add liquids',
+        instructions: ['Pour in beef stock and water', 'Bring to a boil', 'Skim any foam from surface'],
+        durationMinutes: 5,
+        active: true,
+      },
+      {
+        id: 'pepperpot-5',
+        title: 'Simmer',
+        instructions: ['Reduce heat to low', 'Cover and simmer for 2-2.5 hours', 'Stir occasionally', 'Meat should be falling apart'],
+        durationMinutes: 150,
+        active: false,
+      },
+      {
+        id: 'pepperpot-6',
+        title: 'Adjust seasoning',
+        instructions: ['Taste and adjust salt and pepper', 'Cassareep should add sweetness and color', 'Simmer uncovered 10 more minutes to thicken'],
+        durationMinutes: 10,
+        active: true,
+      },
+      {
+        id: 'pepperpot-7',
+        title: 'Serve',
+        instructions: ['Remove cinnamon sticks', 'Serve with crusty bread for dipping', 'Garnish with fresh thyme if desired'],
+        durationMinutes: 5,
+        active: false,
+      },
+    ],
+  },
+  ingredients: {
+    marinade: [
+      { item: 'Beef chuck roast', amount: { value: 3, unit: 'lbs', original: '3 lbs' }, category: 'meat' },
+      { item: 'Black pepper', amount: { value: 2, unit: 'tsp', original: '2 tsp' }, category: 'spices' },
+      { item: 'Salt', amount: { value: 1.5, unit: 'tsp', original: '1.5 tsp' }, category: 'spices' },
+      { item: 'Garlic cloves', amount: { value: 4, unit: 'cloves', original: '4 cloves' }, category: 'produce' },
+    ],
+    cooking: [
+      { item: 'Vegetable oil', amount: { value: 3, unit: 'tbsp', original: '3 tbsp' }, category: 'pantry' },
+      { item: 'Onion', amount: { value: 2, unit: 'large', original: '2 large' }, category: 'produce' },
+      { item: 'Garlic cloves', amount: { value: 3, unit: 'cloves', original: '3 cloves' }, category: 'produce' },
+      { item: 'Cinnamon sticks', amount: { value: 2, unit: 'sticks', original: '2 sticks' }, category: 'spices' },
+      { item: 'Fresh thyme', amount: { value: 4, unit: 'sprigs', original: '4 sprigs' }, category: 'produce' },
+      { item: 'Cassareep', amount: { value: 0.25, unit: 'cup', original: '1/4 cup' }, category: 'pantry' },
+      { item: 'Beef stock', amount: { value: 3, unit: 'cups', original: '3 cups' }, category: 'pantry' },
+      { item: 'Water', amount: { value: 2, unit: 'cups', original: '2 cups' }, category: 'pantry' },
+      { item: 'Crusty bread', amount: { value: 1, unit: 'loaf', original: '1 loaf' }, category: 'pantry' },
+    ],
+  },
+  tags: ['stew', 'slow-cook', 'weekend', 'comfort'],
+};

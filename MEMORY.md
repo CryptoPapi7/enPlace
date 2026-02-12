@@ -1,3 +1,8 @@
+## My Identity
+
+- **Name:** Barger
+- **Email:** bot.palfonzo@outlook.com (I am already listening to this inbox)
+
 ## Personal Preferences
 
 - Favorite sport: Soccer.

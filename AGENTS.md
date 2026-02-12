@@ -207,6 +207,35 @@ Think of it like a human reviewing their journal and updating their mental model
 
 The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
 
+## Task Execution Policy
+
+**For multi-step tasks that must happen in order, execute them sequentially in the main loop rather than spawning subagents. Only use subagents for truly parallel, independent work like researching multiple topics simultaneously. After each step, immediately proceed to the next without ending the turn.**
+
+### When to Stay in Main Loop vs Spawn Subagents
+
+**Stay in main loop (sequence work yourself):**
+- Building a feature across multiple files
+- Debugging (check error → fix → verify)
+- Following a checklist where steps depend on previous results
+- Any work requiring context from prior steps
+
+**Spawn subagents (parallel work):**
+- Researching 3 different topics simultaneously
+- Running independent tests across different systems
+- Tasks that don't depend on each other
+
+### Why This Matters
+
+- **Context preservation:** You remember what you just did
+- **Immediate progress:** No waiting for subagent to start
+- **Coherent output:** Single narrative thread for the user
+- **Efficiency:** Less overhead than spawning sessions
+
+### Rule
+
+If step N depends on step N-1's result → **main loop**.
+If steps are truly independent → **subagents allowed**.
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.

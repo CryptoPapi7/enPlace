@@ -1,0 +1,105 @@
+export const chickenCurryRecipe = {
+  id: 'chicken-curry',
+  title: 'Chicken Curry with Paratha Roti',
+  description: 'Traditional West Indian style curry with flaky, buttery paratha roti made from scratch',
+  cuisine: 'Trinidadian / Guyanese',
+  vibe: 'comfort',
+  emoji: '🍛',
+  servings: 4,
+  totalTimeMinutes: 120,
+  prepTimeMinutes: 30,
+  cookTimeMinutes: 90,
+  difficulty: 'Medium',
+  
+  sections: {
+    curry: [
+      {
+        id: 'season-chicken',
+        title: 'Season the chicken',
+        instructions: ['Cut chicken into pieces. Rub with green seasoning, salt, and pepper. Marinate for at least 30 minutes or overnight.'],
+        durationMinutes: 10,
+        active: true,
+      },
+      {
+        id: 'sear-chicken',
+        title: 'Sear the chicken',
+        instructions: ['Heat oil in heavy pot. Sear chicken pieces until golden brown on all sides. Remove and set aside.'],
+        durationMinutes: 15,
+        active: true,
+      },
+      {
+        id: 'build-curry-base',
+        title: 'Build the curry base',
+        instructions: ['In same pot, sauté onions until soft. Add garlic, ginger, and curry powder. Toast spices for 2 minutes.'],
+        durationMinutes: 10,
+        active: true,
+      },
+      {
+        id: 'simmer-curry',
+        title: 'Simmer the curry',
+        instructions: ['Add tomatoes, potatoes, chicken, and coconut milk. Simmer covered until chicken is tender and potatoes are cooked.'],
+        durationMinutes: 45,
+        active: false,
+      },
+    ],
+    roti: [
+      {
+        id: 'make-dough',
+        title: 'Make the dough',
+        instructions: ['Mix flour, baking powder, salt. Add water gradually to form soft dough. Knead for 5 minutes. Rest 30 minutes.'],
+        durationMinutes: 40,
+        active: true,
+      },
+      {
+        id: 'roll-roti',
+        title: 'Roll and shape',
+        instructions: ['Divide dough into balls. Roll each into thin circle. Spread with ghee, fold, and roll again.'],
+        durationMinutes: 20,
+        active: true,
+      },
+      {
+        id: 'cook-roti',
+        title: 'Cook on tawa',
+        instructions: ['Heat tawa or flat pan. Cook each roti until golden spots appear, flipping and pressing gently. Brush with ghee.'],
+        durationMinutes: 15,
+        active: true,
+      },
+    ],
+  },
+  
+  ingredients: {
+    curry: [
+      { item: 'Chicken thighs', amount: '1.5 kg', category: 'meat' },
+      { item: 'Yellow seasoning', amount: '2 tbsp', category: 'spices' },
+      { item: 'Salt', amount: '1 tsp', category: 'spices' },
+      { item: 'Black pepper', amount: '1/2 tsp', category: 'spices' },
+      { item: 'Vegetable oil', amount: '3 tbsp', category: 'pantry' },
+      { item: 'Onion', amount: '1 large', category: 'produce' },
+      { item: 'Garlic', amount: '4 cloves', category: 'produce' },
+      { item: 'Ginger', amount: '1 inch', category: 'produce' },
+      { item: 'Curry powder', amount: '3 tbsp', category: 'spices' },
+      { item: 'Tomatoes', amount: '2 medium', category: 'produce' },
+      { item: 'Potatoes', amount: '3 medium', category: 'produce' },
+      { item: 'Coconut milk', amount: '1 cup', category: 'pantry' },
+      { item: 'Water', amount: '2 cups', category: 'pantry' },
+      { item: 'Scotch bonnet', amount: '1', category: 'produce' },
+      { item: 'Fresh thyme', amount: '4 sprigs', category: 'produce' },
+    ],
+    roti: [
+      { item: 'All-purpose flour', amount: '3 cups', category: 'pantry' },
+      { item: 'Baking powder', amount: '1 tsp', category: 'pantry' },
+      { item: 'Salt', amount: '1/2 tsp', category: 'spices' },
+      { item: 'Water', amount: '1 cup', category: 'pantry' },
+      { item: 'Ghee', amount: '4 tbsp', category: 'dairy' },
+    ],
+  },
+  
+  chefNotes: [
+    'For best flavor, marinate chicken overnight',
+    'The key to flaky roti is the folding and re-rolling',
+    'Cook roti on medium heat - too hot will burn, too cool will be tough',
+    'Freshly ground curry powder makes a huge difference',
+  ],
+  
+  tags: ['trinidadian', 'guayanese', 'curry', 'roti', 'weekend'],
+};

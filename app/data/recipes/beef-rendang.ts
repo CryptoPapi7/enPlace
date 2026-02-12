@@ -1,0 +1,85 @@
+export const beefRendangRecipe = {
+  id: 'beef-rendang',
+  title: 'Beef Rendang',
+  description: 'Slow-cooked Indonesian beef curry with aromatic spices and caramelized coconut',
+  cuisine: 'Indonesian',
+  vibe: 'showoff',
+  emoji: '🥩',
+  servings: 4,
+  totalTimeMinutes: 180,
+  prepTimeMinutes: 30,
+  cookTimeMinutes: 150,
+  difficulty: 'Medium',
+  
+  sections: {
+    main: [
+      {
+        id: 'blend-spices',
+        title: 'Blend the spice paste',
+        instructions: ['Combine shallots, garlic, ginger, galangal, and chilies in a food processor. Blend into a smooth paste.'],
+        durationMinutes: 10,
+        active: true,
+      },
+      {
+        id: 'toast-coconut',
+        title: 'Toast coconut (kerisik)',
+        instructions: ['Dry toast grated coconut in a pan until golden brown. Stir constantly to prevent burning.'],
+        durationMinutes: 15,
+        active: true,
+      },
+      {
+        id: 'sear-beef',
+        title: 'Sear the beef',
+        instructions: ['Cut beef into 4cm chunks. Sear in batches until browned on all sides. Set aside.'],
+        durationMinutes: 15,
+        active: true,
+      },
+      {
+        id: 'cook-spices',
+        title: 'Cook the spice paste',
+        instructions: ['Fry spice paste in oil until fragrant and oil separates (pecah minyak). This is crucial for authentic flavor.'],
+        durationMinutes: 20,
+        active: true,
+      },
+      {
+        id: 'simmer',
+        title: 'Long gentle simmer',
+        instructions: ['Add beef, coconut milk, toasted coconut, lime leaves, lemongrass, and tamarind. Simmer uncovered, stirring occasionally.'],
+        durationMinutes: 120,
+        active: false,
+      },
+    ],
+  },
+  
+  ingredients: {
+    main: [
+      { item: 'Beef chuck', amount: '1 kg', category: 'meat' },
+      { item: 'Shallots', amount: '200g', category: 'produce' },
+      { item: 'Garlic', amount: '6 cloves', category: 'produce' },
+      { item: 'Ginger', amount: '50g', category: 'produce' },
+      { item: 'Galangal', amount: '30g', category: 'produce' },
+      { item: 'Dried chilies', amount: '10', category: 'spices' },
+      { item: 'Coconut milk', amount: '400ml', category: 'pantry' },
+      { item: 'Desiccated coconut', amount: '100g', category: 'pantry' },
+      { item: 'Kaffir lime leaves', amount: '8 leaves', category: 'produce' },
+      { item: 'Lemongrass', amount: '4 stalks', category: 'produce' },
+      { item: 'Tamarind paste', amount: '2 tbsp', category: 'spices' },
+      { item: 'Palm sugar', amount: '3 tbsp', category: 'pantry' },
+      { item: 'Cinnamon stick', amount: '2', category: 'spices' },
+      { item: 'Star anise', amount: '3', category: 'spices' },
+      { item: 'Cardamom pods', amount: '4', category: 'spices' },
+      { item: 'Cloves', amount: '6', category: 'spices' },
+      { item: 'Cooking oil', amount: '4 tbsp', category: 'pantry' },
+      { item: 'Salt', amount: 'to taste', category: 'spices' },
+    ],
+  },
+  
+  chefNotes: [
+    'The key to rendang is patience - low and slow cooking',
+    "Don't rush the spice paste - fry until oil separates",
+    'Can be made 2 days ahead - flavors improve',
+    'Serve with steamed rice or nasi lemak',
+  ],
+  
+  tags: ['indonesian', 'curry', 'slow-cook', 'spicy', 'weekend-project'],
+};
