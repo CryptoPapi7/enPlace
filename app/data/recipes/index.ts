@@ -1,0 +1,176 @@
+import { chickenCurryRecipe } from './chicken-curry';
+import { beefRendangRecipe } from './beef-rendang';
+import { freshPastaRecipe } from './fresh-pasta';
+import { sourdoughRecipe } from './sourdough';
+import { pepperpotRecipe } from './pepperpot';
+import { doublesRecipe } from './doubles';
+import { fishCurryRecipe } from './fish-curry';
+import { dhalPuriRecipe } from './dhal-puri';
+import { pastaPomodoroRecipe } from './pasta-pomodoro';
+import { rotiCurryChannaRecipe } from './roti-curry-channa';
+import { phoBoRecipe } from './pho-bo';
+import { jerkChickenRecipe } from './jerk-chicken';
+
+export { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe };
+
+// Full recipe database for v0.1
+export const ALL_RECIPES = [
+  {
+    id: chickenCurryRecipe.id,
+    title: chickenCurryRecipe.title,
+    cuisine: chickenCurryRecipe.cuisine,
+    time: chickenCurryRecipe.totalTimeMinutes,
+    timeDisplay: '2 hrs',
+    difficulty: chickenCurryRecipe.difficulty,
+    vibe: chickenCurryRecipe.vibe,
+    emoji: chickenCurryRecipe.emoji,
+    available: true,
+    data: chickenCurryRecipe,
+  },
+  {
+    id: beefRendangRecipe.id,
+    title: beefRendangRecipe.title,
+    cuisine: beefRendangRecipe.cuisine,
+    time: beefRendangRecipe.totalTimeMinutes,
+    timeDisplay: '3 hrs',
+    difficulty: beefRendangRecipe.difficulty,
+    vibe: beefRendangRecipe.vibe,
+    emoji: beefRendangRecipe.emoji,
+    available: true,
+    data: beefRendangRecipe,
+  },
+  {
+    id: freshPastaRecipe.id,
+    title: freshPastaRecipe.title,
+    cuisine: freshPastaRecipe.cuisine,
+    time: freshPastaRecipe.totalTimeMinutes,
+    timeDisplay: '45 min',
+    difficulty: freshPastaRecipe.difficulty,
+    vibe: freshPastaRecipe.vibe,
+    emoji: freshPastaRecipe.emoji,
+    available: true,
+    data: freshPastaRecipe,
+  },
+  {
+    id: sourdoughRecipe.id,
+    title: sourdoughRecipe.title,
+    cuisine: sourdoughRecipe.cuisine,
+    time: sourdoughRecipe.totalTimeMinutes,
+    timeDisplay: '24 hrs',
+    difficulty: sourdoughRecipe.difficulty,
+    vibe: sourdoughRecipe.vibe,
+    emoji: sourdoughRecipe.emoji,
+    available: true,
+    data: sourdoughRecipe,
+  },
+  // More Trini/Guyanese recipes
+  {
+    id: pepperpotRecipe.id,
+    title: pepperpotRecipe.title,
+    cuisine: pepperpotRecipe.cuisine,
+    time: pepperpotRecipe.totalTimeMinutes,
+    timeDisplay: '3 hrs',
+    difficulty: pepperpotRecipe.difficulty,
+    vibe: 'comfort',
+    emoji: pepperpotRecipe.emoji,
+    available: true,
+    data: pepperpotRecipe,
+  },
+  {
+    id: doublesRecipe.id,
+    title: doublesRecipe.title,
+    cuisine: doublesRecipe.cuisine,
+    time: doublesRecipe.totalTimeMinutes,
+    timeDisplay: '1.5 hrs',
+    difficulty: doublesRecipe.difficulty,
+    vibe: 'showoff',
+    emoji: doublesRecipe.emoji,
+    available: true,
+    data: doublesRecipe,
+  },
+  {
+    id: fishCurryRecipe.id,
+    title: fishCurryRecipe.title,
+    cuisine: fishCurryRecipe.cuisine,
+    time: fishCurryRecipe.totalTimeMinutes,
+    timeDisplay: '45 min',
+    difficulty: fishCurryRecipe.difficulty,
+    vibe: 'quick',
+    emoji: fishCurryRecipe.emoji,
+    available: true,
+    data: fishCurryRecipe,
+  },
+  {
+    id: dhalPuriRecipe.id,
+    title: dhalPuriRecipe.title,
+    cuisine: dhalPuriRecipe.cuisine,
+    time: dhalPuriRecipe.totalTimeMinutes,
+    timeDisplay: '2 hrs',
+    difficulty: dhalPuriRecipe.difficulty,
+    vibe: 'showoff',
+    emoji: dhalPuriRecipe.emoji,
+    available: true,
+    data: dhalPuriRecipe,
+  },
+  {
+    id: pastaPomodoroRecipe.id,
+    title: pastaPomodoroRecipe.title,
+    cuisine: pastaPomodoroRecipe.cuisine,
+    time: pastaPomodoroRecipe.totalTimeMinutes,
+    timeDisplay: '30 min',
+    difficulty: pastaPomodoroRecipe.difficulty,
+    vibe: 'quick',
+    emoji: pastaPomodoroRecipe.emoji,
+    available: true,
+    data: pastaPomodoroRecipe,
+  },
+  {
+    id: rotiCurryChannaRecipe.id,
+    title: rotiCurryChannaRecipe.title,
+    cuisine: rotiCurryChannaRecipe.cuisine,
+    time: rotiCurryChannaRecipe.totalTimeMinutes,
+    timeDisplay: '1.5 hrs',
+    difficulty: rotiCurryChannaRecipe.difficulty,
+    vibe: 'comfort',
+    emoji: rotiCurryChannaRecipe.emoji,
+    available: true,
+    data: rotiCurryChannaRecipe,
+  },
+  {
+    id: phoBoRecipe.id,
+    title: phoBoRecipe.title,
+    cuisine: phoBoRecipe.cuisine,
+    time: phoBoRecipe.totalTimeMinutes,
+    timeDisplay: '4 hrs',
+    difficulty: phoBoRecipe.difficulty,
+    vibe: 'showoff',
+    emoji: phoBoRecipe.emoji,
+    available: true,
+    data: phoBoRecipe,
+  },
+  {
+    id: jerkChickenRecipe.id,
+    title: jerkChickenRecipe.title,
+    cuisine: jerkChickenRecipe.cuisine,
+    time: jerkChickenRecipe.totalTimeMinutes,
+    timeDisplay: '3 hrs',
+    difficulty: jerkChickenRecipe.difficulty,
+    vibe: 'showoff',
+    emoji: jerkChickenRecipe.emoji,
+    available: true,
+    data: jerkChickenRecipe,
+  },
+  {
+    id: 'tacos',
+    title: 'Street Tacos',
+    cuisine: 'Mexican',
+    time: 30,
+    timeDisplay: '30 min',
+    difficulty: 'Easy',
+    vibe: 'quick',
+    emoji: '🌮',
+    available: false,
+  },
+];
+
+export type Recipe = typeof ALL_RECIPES[0];

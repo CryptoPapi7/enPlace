@@ -118,7 +118,79 @@ This document describes the distributed development environment for the enPlace 
 | `tailscaled` | ✅ On boot | `sudo systemctl status tailscaled` |
 | `openclaw-gateway` | ✅ On boot | `sudo systemctl status openclaw-gateway` |
 
-### 4. Telegram Approvals
+### 4. TTS Server (Text-to-Speech)
+
+**Purpose:** Azure OpenAI-powered voice synthesis for recipe step narration
+- **Port:** 3001 (internal API)
+- **Service:** `enplace-tts.service`
+- **Code:** `/home/azureuser/.openclaw/workspace/app/scripts/tts-server.js`
+- **Client:** `/home/azureuser/.openclaw/workspace/app/screens/CookScreen.tsx`
+
+**Architecture:**
+```
+┌─────────────────┐     HTTP POST      ┌──────────────────────────┐
+│  React Native   │ ─────────────────► │  TTS Server (port 3001)  │
+│  CookScreen.tsx │   {text}           │  Node.js + Express       │
+│                 │ ◄───────────────── │                          │
+│  Audio.Sound    │   audio/mpeg       │  Azure OpenAI API call   │
+└─────────────────┘                    └──────────────────────────┘
+```
+
+**Configuration Files:**
+
+| File | Purpose |
+|------|---------|
+| `/etc/systemd/system/enplace-tts.service` | Systemd service definition |
+| `/home/azureuser/.openclaw/workspace/app/scripts/tts-server.js` | TTS server code |
+| `/home/azureuser/.openclaw/workspace/app/screens/CookScreen.tsx` | React Native client |
+
+**Service File Contents (`/etc/systemd/system/enplace-tts.service`):**
+```ini
+[Unit]
+Description=EnPlace TTS Server
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/.openclaw/workspace
+Environment=ENPLACE_SECRET=ep_voice_7f3c9d2a1b8e4c6a
+Environment=AZURE_OPENAI_ENDPOINT=https://palfo-m15iclhe-eastus2.cognitiveservices.azure.com/
+Environment=AZURE_OPENAI_DEPLOYMENT=gpt-4o-mini-tts
+Environment=OPENAI_API_VERSION=2025-03-01-preview
+Environment=AZURE_OPENAI_API_KEY=[REDACTED]
+ExecStart=/usr/bin/node /home/azureuser/.openclaw/workspace/app/scripts/tts-server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Key Commands:**
+```bash
+# Restart TTS server after code changes
+sudo systemctl restart enplace-tts
+
+# View logs in real-time
+sudo journalctl -u enplace-tts -f
+
+# Check service status
+sudo systemctl status enplace-tts
+
+# View recent logs
+sudo journalctl -u enplace-tts -n 50
+```
+
+**Implementation Notes:**
+- **Model:** Azure OpenAI `gpt-4o-mini-tts` (preview)
+- **API Version:** `2025-03-01-preview`
+- **Limitation:** `instructions` parameter is **not supported** by Azure yet
+- **v0.1 Workaround:** Bracket syntax in input text (e.g., `[Speak in a warm, friendly Trinidadian Creole English accent] ...`)
+- **Client handling:** React Native uses custom `arrayBufferToBase64()` function (Buffer doesn't exist in RN)
+- **Audio format:** Returns base64-encoded MP3, decoded and played via Expo's `Audio.Sound`
+
+### 5. Telegram Approvals
 
 **Configuration:** Added to `openclaw.json`:
 ```json
