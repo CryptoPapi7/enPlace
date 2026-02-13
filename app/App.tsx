@@ -12,6 +12,10 @@ import PlanWeekScreen from "./screens/PlanWeekScreen";
 import CookLauncherScreen from "./screens/CookLauncherScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import MyLibraryScreen from "./screens/MyLibraryScreen";
+import ImportRecipeScreen from "./screens/ImportRecipeScreen";
+import PhotoRecipeScreen from "./screens/PhotoRecipeScreen";
+import RecipePreviewScreen from "./screens/RecipePreviewScreen";
+import CreateRecipeScreen from "./screens/CreateRecipeScreen";
 
 // Stack navigator for Recipe flow
 const RecipeStack = createNativeStackNavigator();
@@ -23,6 +27,10 @@ function RecipeStackScreen() {
       <RecipeStack.Screen name="Cook" component={CookScreen} />
       <RecipeStack.Screen name="RecipeLibrary" component={RecipeLibraryScreen} />
       <RecipeStack.Screen name="MyLibrary" component={MyLibraryScreen} />
+      <RecipeStack.Screen name="ImportRecipe" component={ImportRecipeScreen} />
+      <RecipeStack.Screen name="CreateRecipe" component={CreateRecipeScreen} />
+      <RecipeStack.Screen name="RecipePreview" component={RecipePreviewScreen} />
+      <RecipeStack.Screen name="PhotoRecipe" component={PhotoRecipeScreen} />
       <RecipeStack.Screen name="PlanWeek" component={PlanWeekScreen} />
       <RecipeStack.Screen name="Profile" component={ProfileScreen} />
     </RecipeStack.Navigator>
@@ -41,6 +49,7 @@ export default function App() {
           tabBarIcon: ({ focused }) => {
             let emoji = '';
             if (route.name === 'Home') emoji = '🏠';
+            else if (route.name === 'Plan') emoji = '📅';
             else if (route.name === 'Cook') emoji = '👨‍🍳';
             else if (route.name === 'Shopping') emoji = '🛒';
             return <Text style={styles.tabIcon}>{emoji}</Text>;

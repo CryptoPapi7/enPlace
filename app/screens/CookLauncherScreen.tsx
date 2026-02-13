@@ -2,8 +2,110 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } fr
 import { useState, useEffect, useCallback } from "react";
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
-import { getActiveCooking, ActiveCooking } from '../utils/activeCooking';
+import { getActiveCooking, ActiveCooking, clearActiveCooking } from '../utils/activeCooking';
+import { getWeeklyPlan } from '../utils/weeklyPlan';
 import { getFavorites, initFavorites } from '../utils/favorites';
+
+// Recipe validation map (ids that exist in the app)
+const VALID_RECIPE_IDS = [
+  'chicken-curry',
+  'beef-rendang',
+  'fresh-pasta',
+  'sourdough',
+  'pepperpot',
+  'doubles',
+  'fish-curry',
+  'dhal-puri',
+  'pasta-pomodoro',
+  'roti-curry-channa',
+  'pho-bo',
+  'jerk-chicken',
+];
+
+// Smart empty state component for when not actively cooking
+function NoActiveCookingCard({ navigation }: any) {
+  const [plannedMeal, setPlannedMeal] = useState<{recipeId: string; recipeName: string; emoji: string; serveTime?: string} | null>(null);
+  
+  // Re-check plan whenever screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      const checkPlan = async () => {
+        try {
+          const plan = await getWeeklyPlan();
+          // Weekly plan uses relative indices: first item is always "Today"
+          // dayName: "Today", "Mon", "Tue", etc.
+          const todayPlan = plan?.find((p: any) => p.dayName === 'Today');
+          
+          if (todayPlan?.meals?.length > 0) {
+            const meal = todayPlan.meals[0];
+            setPlannedMeal({
+              recipeId: meal.recipeId,
+              recipeName: meal.recipeName,
+              emoji: meal.emoji || '🍽️',
+              serveTime: meal.serveTime
+            });
+          } else {
+            // Reset when no meal planned for today
+            setPlannedMeal(null);
+          }
+        } catch (e) {
+          console.error('Error checking plan:', e);
+        }
+      };
+      checkPlan();
+    }, [])
+  );
+
+  const startCooking = () => {
+    if (plannedMeal) {
+      navigation.navigate('Cook', { recipeId: plannedMeal.recipeId });
+    }
+  };
+
+  if (plannedMeal) {
+    return (
+      <TouchableOpacity style={styles.readyCard} onPress={startCooking}>
+        <View style={styles.readyHeader}>
+          <Text style={styles.readyEmoji}>🍳</Text>
+          <Text style={styles.readyLabel}>READY TO COOK</Text>
+        </View>
+        <Text style={styles.readyTitle}>Ready to start cooking?</Text>
+        <View style={styles.recipePreview}>
+          <Text style={styles.readyRecipeEmoji}>{plannedMeal.emoji}</Text>
+          <Text style={styles.readyRecipeName}>{plannedMeal.recipeName}</Text>
+        </View>
+        {plannedMeal.serveTime && (
+          <Text style={styles.readyTime}>Planned for {plannedMeal.serveTime}</Text>
+        )}
+        <View style={styles.startCookingBtn}>
+          <Text style={styles.startCookingText}>START COOKING →</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <View style={styles.startCard}>
+      <Text style={styles.startEmoji}>👨‍🍳</Text>
+      <Text style={styles.startTitle}>Not cooking today?</Text>
+      <Text style={styles.startSub}>Pick a recipe or plan your week</Text>
+      <View style={styles.emptyActions}>
+        <TouchableOpacity 
+          style={styles.smallBtn}
+          onPress={() => navigation.navigate('RecipeLibrary')}
+        >
+          <Text style={styles.smallBtnText}>Browse</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.smallBtn}
+          onPress={() => navigation.navigate('PlanWeek')}
+        >
+          <Text style={styles.smallBtnText}>Plan</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
 
 export default function CookLauncherScreen({ navigation }: any) {
   const [activeCooking, setActiveCooking] = useState<ActiveCooking | null>(null);
@@ -13,7 +115,16 @@ export default function CookLauncherScreen({ navigation }: any) {
     useCallback(() => {
       const load = async () => {
         const cooking = await getActiveCooking();
-        setActiveCooking(cooking);
+        
+        // Validate active cooking state - clear if recipe doesn't exist anymore
+        if (cooking && !VALID_RECIPE_IDS.includes(cooking.recipeId)) {
+          console.log('Clearing invalid active cooking state:', cooking.recipeId);
+          await clearActiveCooking();
+          setActiveCooking(null);
+        } else {
+          setActiveCooking(cooking);
+        }
+        
         await initFavorites();
         const favs = await getFavorites();
         setFavorites(favs);
@@ -31,6 +142,11 @@ export default function CookLauncherScreen({ navigation }: any) {
     }
   };
 
+  const handleClearProgress = async () => {
+    await clearActiveCooking();
+    setActiveCooking(null);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
@@ -39,28 +155,26 @@ export default function CookLauncherScreen({ navigation }: any) {
         
         {/* Active Cooking */}
         {activeCooking ? (
-          <TouchableOpacity style={styles.activeCard} onPress={resume}>
-            <View style={styles.activeHeader}>
-              <Text style={styles.fireEmoji}>🔥</Text>
-              <Text style={styles.cookingNow}>COOKING NOW</Text>
-            </View>
-            <Text style={styles.recipeName}>{activeCooking.recipeName}</Text>
-            <Text style={styles.stepText}>
-              Step {activeCooking.currentStep + 1} of {activeCooking.totalSteps}
-            </Text>
-            <View style={styles.resumeBtn}>
-              <Text style={styles.resumeText}>RESUME →</Text>
-            </View>
-          </TouchableOpacity>
+          <View style={styles.activeCard}>
+            <TouchableOpacity onPress={resume} style={styles.activeCardContent}>
+              <View style={styles.activeHeader}>
+                <Text style={styles.fireEmoji}>🔥</Text>
+                <Text style={styles.cookingNow}>COOKING NOW</Text>
+              </View>
+              <Text style={styles.recipeName}>{activeCooking.recipeName}</Text>
+              <Text style={styles.stepText}>
+                Step {activeCooking.currentStep + 1} of {activeCooking.totalSteps}
+              </Text>
+              <View style={styles.resumeBtn}>
+                <Text style={styles.resumeText}>RESUME →</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.clearBtn} onPress={handleClearProgress}>
+              <Text style={styles.clearText}>✕ Clear Progress</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
-          <TouchableOpacity 
-            style={styles.startCard}
-            onPress={() => navigation.navigate('RecipeLibrary')}
-          >
-            <Text style={styles.startEmoji}>👨‍🍳</Text>
-            <Text style={styles.startTitle}>Ready to cook?</Text>
-            <Text style={styles.startSub}>Pick a recipe from your favorites</Text>
-          </TouchableOpacity>
+          <NoActiveCookingCard navigation={navigation} />
         )}
 
         {/* My Favorites */}
@@ -93,7 +207,7 @@ export default function CookLauncherScreen({ navigation }: any) {
         {/* Quick Access */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>⚡ Quick Access</Text>
-          <View style={styles.quickGrid}>
+          <View style={styles.quickGrid2x2}>
             <TouchableOpacity 
               style={styles.quickBtn}
               onPress={() => navigation.navigate('MyLibrary')}
@@ -110,10 +224,17 @@ export default function CookLauncherScreen({ navigation }: any) {
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.quickBtn}
-              onPress={() => navigation.navigate('Home')}
+              onPress={() => navigation.navigate('CreateRecipe')}
             >
-              <Text style={styles.quickEmoji}>🔥</Text>
-              <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Trending</Text>
+              <Text style={styles.quickEmoji}>✍️</Text>
+              <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Create Recipe</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.quickBtn}
+              onPress={() => navigation.navigate('ImportRecipe')}
+            >
+              <Text style={styles.quickEmoji}>📥</Text>
+              <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Import Recipe</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -151,6 +272,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 4,
+  },
+  activeCardContent: {
+    flex: 1,
   },
   activeHeader: {
     flexDirection: 'row',
@@ -192,8 +316,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FF8C42',
   },
+  clearBtn: {
+    marginTop: 12,
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  clearText: {
+    fontSize: 12,
+    color: '#FFF',
+    opacity: 0.8,
+  },
   
-  // Start Card (no active cooking)
+  // Start Card (no active cooking, no plan)
   startCard: {
     backgroundColor: '#FFF',
     borderRadius: 20,
@@ -216,7 +351,112 @@ const styles = StyleSheet.create({
   },
   startSub: {
     fontSize: 14,
+    color: '#8B7355',
+  },
+  startSubSmall: {
+    fontSize: 12,
     color: '#999',
+    marginTop: 4,
+  },
+  browseBtn: {
+    marginTop: 16,
+    backgroundColor: '#FF8C42',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  browseBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFF',
+  },
+  smallBtn: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginHorizontal: 4,
+  },
+  smallBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#5D4E37',
+  },
+  emptyActions: {
+    flexDirection: 'row',
+    marginTop: 16,
+  },
+  
+  // Ready to Cook Card (has planned recipe for today)
+  readyCard: {
+    backgroundColor: '#7CB342',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 32,
+    shadowColor: '#7CB342',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  readyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  readyEmoji: {
+    fontSize: 24,
+    marginRight: 8,
+  },
+  readyLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFF',
+    letterSpacing: 1,
+    opacity: 0.9,
+  },
+  readyTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 16,
+  },
+  recipePreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+  },
+  readyRecipeEmoji: {
+    fontSize: 28,
+    marginRight: 12,
+  },
+  readyRecipeName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFF',
+    flex: 1,
+  },
+  readyTime: {
+    fontSize: 13,
+    color: '#FFF',
+    opacity: 0.8,
+    marginBottom: 16,
+    marginLeft: 4,
+  },
+  startCookingBtn: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  startCookingText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#7CB342',
   },
   
   // Sections
@@ -240,8 +480,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
   favEmoji: {
@@ -249,7 +489,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   favName: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#5D4E37',
     textAlign: 'center',
@@ -259,28 +499,26 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#E8E8E8',
-    borderStyle: 'dashed',
   },
   emptyText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#5D4E37',
     marginBottom: 4,
   },
   emptySub: {
-    fontSize: 13,
-    color: '#999',
+    fontSize: 14,
+    color: '#8B7355',
   },
   
   // Quick Access
-  quickGrid: {
+  quickGrid2x2: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   quickBtn: {
-    flex: 1,
+    width: '47%',
     backgroundColor: '#FFF',
     borderRadius: 16,
     paddingVertical: 16,
@@ -290,6 +528,7 @@ const styles = StyleSheet.create({
     minHeight: 100,
     borderWidth: 2,
     borderColor: '#E8E8E8',
+    marginBottom: 12,
   },
   quickEmoji: {
     fontSize: 32,

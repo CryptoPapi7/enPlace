@@ -133,7 +133,7 @@ export default function RecipeScreen({ navigation, route }: any) {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header with Favorite */}
+        {/* Header with Favorite and Library */}
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
@@ -141,18 +141,20 @@ export default function RecipeScreen({ navigation, route }: any) {
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.libraryButton}
-            onPress={handleToggleLibrary}
-          >
-            <Text style={styles.libraryEmoji}>{inLibrary ? '📚' : '📑'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.favoriteButton}
-            onPress={handleToggleFavorite}
-          >
-            <Text style={styles.favoriteEmoji}>{isFav ? '❤️' : '🤍'}</Text>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={styles.libraryButton}
+              onPress={handleToggleLibrary}
+            >
+              <Text style={styles.libraryEmoji}>{inLibrary ? '📚' : '📑'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.favoriteButton}
+              onPress={handleToggleFavorite}
+            >
+              <Text style={styles.favoriteEmoji}>{isFav ? '❤️' : '🤍'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Hero Section */}
@@ -422,6 +424,11 @@ const styles = StyleSheet.create({
   favoriteEmoji: {
     fontSize: 24,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   libraryButton: {
     width: 44,
     height: 44,
@@ -434,7 +441,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    marginRight: 8,
   },
   libraryEmoji: {
     fontSize: 22,

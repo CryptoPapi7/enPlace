@@ -79,25 +79,54 @@ export default function MyLibraryScreen({ navigation }: any) {
           />
         </View>
 
-        {/* Recipe Count */}
-        <Text style={styles.countText}>
-          {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your library
-        </Text>
+        {/* Favorites Section */}
+        {filtered.filter(r => r.isFav).length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>⭐ My Favorites</Text>
+              <Text style={styles.sectionCount}>
+                {filtered.filter(r => r.isFav).length}
+              </Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+              {filtered.filter(r => r.isFav).map((recipe) => (
+                <TouchableOpacity 
+                  key={`fav-${recipe.id}`}
+                  style={styles.horizontalCard}
+                  onPress={() => handleRecipePress(recipe.id)}
+                >
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.recipeEmoji}>{recipe.emoji}</Text>
+                  </View>
+                  <Text style={styles.recipeName} numberOfLines={2}>{recipe.title}</Text>
+                  <Text style={styles.recipeMeta}>{recipe.cuisine} • {recipe.time}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
-        {/* Recipe Grid */}
-        {filtered.length > 0 ? (
-          <View style={styles.grid}>
-            {filtered.map((recipe) => (
-              <TouchableOpacity 
-                key={recipe.id}
-                style={styles.recipeCard}
-                onPress={() => handleRecipePress(recipe.id)}
-              >
-                <View style={styles.cardHeader}>
-                  <Text style={styles.recipeEmoji}>{recipe.emoji}</Text>
-                  <TouchableOpacity 
-                    style={styles.favButton}
-                    onPress={() => handleToggleFavorite(recipe)}
+        {/* Saved Recipes Section */}
+        {filtered.filter(r => !r.isFav).length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>📚 Saved Recipes</Text>
+              <Text style={styles.sectionCount}>
+                {filtered.filter(r => !r.isFav).length}
+              </Text>
+            </View>
+            <View style={styles.grid}>
+              {filtered.filter(r => !r.isFav).map((recipe) => (
+                <TouchableOpacity 
+                  key={`saved-${recipe.id}`}
+                  style={styles.recipeCard}
+                  onPress={() => handleRecipePress(recipe.id)}
+                >
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.recipeEmoji}>{recipe.emoji}</Text>
+                    <TouchableOpacity 
+                      style={styles.favButton}
+                      onPress={() => handleToggleFavorite(recipe)}
                   >
                     <Text style={styles.favEmoji}>
                       {recipe.isFav ? '❤️' : '🤍'}
@@ -109,25 +138,39 @@ export default function MyLibraryScreen({ navigation }: any) {
               </TouchableOpacity>
             ))}
           </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>📚</Text>
-            <Text style={styles.emptyTitle}>Your library is empty</Text>
-            <Text style={styles.emptySubtitle}>
-              {searchQuery 
-                ? "No recipes match your search" 
-                : "Add recipes from the recipe screen to see them here"}
-            </Text>
-            {!searchQuery && (
-              <TouchableOpacity 
-                style={styles.browseButton}
-                onPress={() => navigation.navigate('RecipeLibrary')}
-              >
-                <Text style={styles.browseButtonText}>Browse All Recipes</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+        </View>
+      )}
+
+      {/* My Creations Section (Future) */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>✍️ My Creations</Text>
+          <Text style={styles.sectionCount}>0</Text>
+        </View>
+        <View style={styles.emptyCreations}>
+          <Text style={styles.emptyCreationsText}>
+            Create your own recipes to see them here
+          </Text>
+        </View>
+      </View>
+
+      {/* Total Count */}
+      <Text style={styles.totalCount}>
+        {recipes.length} total recipe{recipes.length !== 1 ? 's' : ''} in your library
+      </Text>
+
+      {recipes.length === 0 && !searchQuery && (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyEmoji}>📚</Text>
+          <Text style={styles.emptyTitle}>Your library is empty</Text>
+          <TouchableOpacity 
+            style={styles.browseButton}
+            onPress={() => navigation.navigate('RecipeLibrary')}
+          >
+            <Text style={styles.browseButtonText}>Browse All Recipes</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -194,6 +237,62 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#5D4E37',
+  },
+  sectionCount: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8B7355',
+    backgroundColor: '#E8E8E8',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  horizontalScroll: {
+    minHeight: 140,
+  },
+  horizontalCard: {
+    width: 120,
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 12,
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  totalCount: {
+    fontSize: 14,
+    color: '#8B7355',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 24,
+  },
+  emptyCreations: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyCreationsText: {
+    fontSize: 14,
+    color: '#999',
+    fontStyle: 'italic',
   },
   recipeCard: {
     width: '47%',
