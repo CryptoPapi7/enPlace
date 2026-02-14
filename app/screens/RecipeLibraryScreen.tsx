@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
 import { ALL_RECIPES } from '../data/recipes';
 import { isFavorite, toggleFavorite, getFavorites, initFavorites } from '../utils/favorites';
+import { colors, spacing, typography, shadows } from '../theme';
 
 // Filter categories
 const FILTERS = [
@@ -191,7 +192,7 @@ export default function RecipeLibraryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: colors.cream[50],
   },
   header: {
     flexDirection: 'row',

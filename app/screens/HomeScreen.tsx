@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect, router } from 'expo-router';
 import { ALL_RECIPES } from '../data/recipes';
 import { getAvatar } from '../utils/avatar';
+import { colors, spacing, typography, shadows } from '../theme';
 
 const VIBES = [
   { id: 'comfort', label: 'Comfort', emoji: '🛋️', color: '#FF8C42' },
@@ -146,7 +147,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: colors.cream[50],
   },
   scrollView: {
     flex: 1,
@@ -163,9 +164,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   greeting: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#5D4E37',
+    fontSize: typography.h1.fontSize,
+    fontWeight: typography.h1.fontWeight,
+    color: colors.neutral[900],
     flex: 1,
   },
   avatarPlaceholder: {

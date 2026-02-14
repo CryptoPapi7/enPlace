@@ -7,6 +7,7 @@ import LottieView from 'lottie-react-native';
 import { Step } from "../data/recipe";
 import { StatusBar } from 'expo-status-bar';
 import { setActiveCooking, updateCurrentStep, clearActiveCooking } from '../utils/activeCooking';
+import { colors, spacing, typography, shadows } from '../theme';
 
 // Configure audio session for iOS speech
 async function setupAudio() {
@@ -364,7 +365,7 @@ export default function CookScreen() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: '#FFF8E7' 
+    backgroundColor: colors.cream[50]
   },
   
   // Header
