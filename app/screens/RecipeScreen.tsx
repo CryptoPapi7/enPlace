@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, TextInput } from "react-native";
 import { useState, useCallback } from "react";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
 import { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe } from "../data/recipes";
 import { StatusBar } from 'expo-status-bar';
 import { scaleAmount, scaleServings, scaleTime } from "../utils/scaling";
@@ -49,8 +49,9 @@ const getSectionInfo = (sectionKey: string, recipe: any) => {
   };
 };
 
-export default function RecipeScreen({ navigation, route }: any) {
-  const recipeId = route.params?.recipeId || 'chicken-curry';
+export default function RecipeScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const recipeId = id || 'chicken-curry';
   const recipe = RECIPE_MAP[recipeId] || chickenCurryRecipe;
   
   // Get all section keys from the recipe
@@ -126,7 +127,7 @@ export default function RecipeScreen({ navigation, route }: any) {
   const totalIngredients = Object.values(recipe.ingredients).reduce((acc, section) => acc + (section as any[]).length, 0);
 
   const handleStartCooking = () => {
-    navigation.navigate('Cook', { recipeId, servings, fromLauncher: true });
+    router.push(`/cooking?recipeId=${recipeId}&servings=${servings}`);
   };
 
   return (
@@ -137,7 +138,7 @@ export default function RecipeScreen({ navigation, route }: any) {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => router.back()}
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
@@ -366,7 +367,7 @@ export default function RecipeScreen({ navigation, route }: any) {
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.addToPlanButton}
-          onPress={() => navigation.navigate('PlanWeek', { addRecipe: { id: recipeId, title: recipe.title, emoji: recipe.emoji } })}
+          onPress={() => router.push(`/plan?addRecipe=${recipeId}`)}
         >
           <Text style={styles.addToPlanText}>+ Add to Weekly Plan</Text>
         </TouchableOpacity>

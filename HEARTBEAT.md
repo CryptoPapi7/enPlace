@@ -1,27 +1,27 @@
 # HEARTBEAT.md - Periodic Checklist
 
-This file is checked every 30 minutes. Add tasks here for continuous work.
+This file is checked every 30 minutes. Auto-continue work if TODO files exist.
 
-## Current Tasks
+## 🌙 OVERNIGHT WORK (ACTIVE)
+If `memory/2026-02-12-TODO.md` exists, **continue working immediately**:
+1. Read the TODO file
+2. Pick next task (Task 1: Import Recipe OR Task 2: AI Generation)
+3. Work on it - create screens, components, logic
+4. Update progress in TODO file
+5. **DO NOT stop** - keep going until done or approval needed
+6. If approval needed → Request it, then continue next heartbeat
 
-### 🍳 Recipe Development (Auto-continue)
-If `memory/RECIPES_TODO.md` exists, continue working on recipes:
-1. Read TODO list
-2. Pick next recipe to create
-3. Write recipe file
-4. Update index
-5. Remove from TODO
+### Current Priority Tasks:
+- Import Recipe (web scraping + photo/camera)
+- AI Recipe Generation (GPT-powered)
 
-### 🔧 General Maintenance
-- Check for any pending approvals
+## General Checklist
+- Check for pending approvals
 - Report progress on long-running tasks
+- Continue overnight work if TODO exists
 
-## To Start Overnight Work
-
-Create a file with task description, e.g.:
-```
-memory/RECIPES_TODO.md - List of recipes to create
-memory/CODE_TODO.md - Code tasks to complete
-```
-
-I will auto-detect and continue working on these.
+## When TODO Complete
+- Update MEMORY.md with what was built
+- Push changes to GitHub
+- Clear TODO file
+- Message "All overnight tasks complete!"

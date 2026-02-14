@@ -1,3 +1,1 @@
-import PlanWeekScreen from '../../screens/PlanWeekScreen';
-
-export default PlanWeekScreen;
+export { default } from "../../screens/PlanWeekScreen";

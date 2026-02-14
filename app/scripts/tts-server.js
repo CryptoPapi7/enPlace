@@ -133,6 +133,6 @@ app.post('/tts', async (req, res) => {
  * Start server
  * =========================
  */
-app.listen(PORT, () => {
-  console.log(`EnPlace TTS server listening on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`EnPlace TTS server listening on 0.0.0.0:${PORT}`);
 });

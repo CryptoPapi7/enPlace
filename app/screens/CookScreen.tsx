@@ -1,10 +1,27 @@
-import { View, Button, StyleSheet, SafeAreaView, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
+import { View, StyleSheet, SafeAreaView, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { Audio } from 'expo-av';
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { router, useLocalSearchParams } from 'expo-router';
+import * as Speech from 'expo-speech';
 import LottieView from 'lottie-react-native';
 import { Step } from "../data/recipe";
 import { StatusBar } from 'expo-status-bar';
 import { setActiveCooking, updateCurrentStep, clearActiveCooking } from '../utils/activeCooking';
+
+// Configure audio session for iOS speech
+async function setupAudio() {
+  try {
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: true,
+    });
+    console.log('🔊 Audio session configured');
+  } catch (e) {
+    console.log('Audio setup error:', e);
+  }
+}
 
 // ✅ Import all recipes and map by id
 import {
@@ -37,23 +54,8 @@ const RECIPE_MAP: Record<string, any> = {
   'jerk-chicken': jerkChickenRecipe,
 };
 
-// Lazy import speech recognition to avoid crash if not available
-let SpeechRecognition: any = null;
-try {
-  SpeechRecognition = require('expo-speech-recognition');
-} catch (e) {
-  console.warn('Speech recognition not available');
-}
-
 // Steps that benefit from stirring animation
 const STIRRING_STEPS = ['curry-2', 'curry-4', 'curry-5'];
-
-// Voice commands we recognize
-const VOICE_COMMANDS = {
-  NEXT: ['next', 'forward', 'continue', 'go on', 'next step'],
-  BACK: ['back', 'previous', 'go back', 'last step', 'before'],
-  REPEAT: ['repeat', 'again', 'say again', 'read again', 'what'],
-} as const;
 
 // ✅ Build cook steps dynamically from selected recipe
 function buildSteps(recipe: any): Step[] {
@@ -90,13 +92,12 @@ function buildSteps(recipe: any): Step[] {
   return steps;
 }
 
-export default function CookScreen({ navigation, route }: any) {
-  const recipeId = route?.params?.recipeId;
-  const recipe = RECIPE_MAP[recipeId];
+export default function CookScreen() {
+  const { recipeId, servings, resumeStep } = useLocalSearchParams<{ recipeId?: string; servings?: string; resumeStep?: string }>();
+  const recipe = recipeId ? RECIPE_MAP[recipeId] : null;
 
-  // Handle invalid recipe (backward compatibility for old saved states)
+  // Handle invalid recipe
   if (!recipe) {
-    // Clear invalid active cooking state
     clearActiveCooking();
     
     return (
@@ -105,89 +106,440 @@ export default function CookScreen({ navigation, route }: any) {
           <Text style={{ fontSize: 48, marginBottom: 16 }}>🍳</Text>
           <Text style={{ fontSize: 20, fontWeight: '700', color: '#5D4E37', marginBottom: 8 }}>Recipe not found</Text>
           <Text style={{ fontSize: 14, color: '#8B7355', textAlign: 'center', marginBottom: 24 }}>
-            This recipe may have been moved or updated.{'\n'}Please select a recipe from your library.
+            Please go back and select a recipe.
           </Text>
           <TouchableOpacity 
             style={{ backgroundColor: '#FF8C42', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
-            onPress={() => navigation.navigate('RecipeLibrary')}
+            onPress={() => router.back()}
           >
-            <Text style={{ color: '#FFF', fontWeight: '700' }}>Browse Recipes →</Text>
+            <Text style={{ color: '#FFF', fontWeight: '700' }}>Go Back →</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
-  const servings = route?.params?.servings || recipe.servings;
-  const resumeStep = route?.params?.resumeStep || 0;
-
+  const effectiveServings = servings ? Number(servings) : recipe.servings;
   const allSteps = useMemo(() => buildSteps(recipe), [recipeId]);
 
-  const [stepIndex, setStepIndex] = useState(resumeStep);
+  const [stepIndex, setStepIndex] = useState(resumeStep ? Number(resumeStep) : 0);
   const [isStirring, setIsStirring] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [lastCommand, setLastCommand] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const animationRef = useRef<LottieView>(null);
   const step = allSteps[stepIndex];
 
+  // Setup audio on mount
+  useEffect(() => {
+    setupAudio();
+  }, []);
+
   const shouldShowStirring = STIRRING_STEPS.includes(step.id);
 
+  // Configure audio session for speech (iOS needs this)
   useEffect(() => {
-    if (stepIndex > 0) {
-      setActiveCooking({
-        recipeId: recipe.id,
-        recipeName: recipe.title,
-        currentStep: stepIndex,
-        totalSteps: allSteps.length,
-        startedAt: new Date().toISOString(),
-      });
+    const setupAudio = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          interruptionModeIOS: Audio.InterruptionModeIOS.DoNotMix,
+          playsInSilentModeIOS: true,
+          interruptionModeAndroid: Audio.InterruptionModeAndroid.DoNotMix,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+        console.log('🔊 Audio mode set');
+      } catch (error) {
+        console.log('🔊 Audio setup error:', error);
+      }
+    };
+    setupAudio();
+  }, []);
+
+  // Persist cooking state (start immediately)
+  useEffect(() => {
+    setActiveCooking({
+      recipeId: recipe.id,
+      recipeName: recipe.title,
+      currentStep: stepIndex,
+      totalSteps: allSteps.length,
+      startedAt: new Date().toISOString(),
+    });
+  }, [stepIndex, recipe, allSteps.length]);
+
+  // Speak step using GPT TTS server
+  const speakStep = useCallback(async () => {
+    if (isSpeaking) {
+      // Stop current playback
+      Speech?.stop();
+      setIsSpeaking(false);
+      return;
     }
+
+    const TTS_URL = process.env.EXPO_PUBLIC_TTS_URL;
+    const ENPLACE_SECRET = process.env.EXPO_PUBLIC_ENPLACE_SECRET;
+
+    // Build clean text without dashes
+    const cleanInstructions = step.instructions
+      .filter(i => i !== '---')
+      .join('. ');
+    const textToSpeak = `${step.title}. ${cleanInstructions}`;
+
+    if (!TTS_URL || !ENPLACE_SECRET) {
+      console.log('TTS env vars missing, using fallback');
+      Speech.speak(textToSpeak, { language: 'en' });
+      return;
+    }
+
+    console.log('🔊 Speaking via GPT TTS:', textToSpeak);
+    setIsSpeaking(true);
+
+    try {
+      const response = await fetch(TTS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-enplace-secret': ENPLACE_SECRET,
+        },
+        body: JSON.stringify({ text: textToSpeak }),
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        console.error('TTS failed:', err);
+        Speech.speak(textToSpeak, { language: 'en' });
+        setIsSpeaking(false);
+        return;
+      }
+
+      const audioData = await response.arrayBuffer();
+      const bytes = new Uint8Array(audioData);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = global.btoa ? global.btoa(binary) : binary;
+      const sound = new Audio.Sound();
+      
+      await sound.loadAsync({ uri: `data:audio/mp3;base64,${base64}` });
+      
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setIsSpeaking(false);
+          sound.unloadAsync();
+        }
+      });
+      
+      await sound.playAsync();
+    } catch (e) {
+      console.error('TTS error', e);
+      Speech.speak(textToSpeak, { language: 'en' });
+      setIsSpeaking(false);
+    }
+  }, [step, isSpeaking]);
+
+  // Stop speech on unmount or step change
+  useEffect(() => {
+    return () => {
+      Speech.stop();
+      setIsSpeaking(false);
+    };
   }, [stepIndex]);
 
   const goNext = () => {
+    Speech.stop();
+    setIsSpeaking(false);
+    
     if (stepIndex < allSteps.length - 1) {
       setStepIndex(stepIndex + 1);
       updateCurrentStep(stepIndex + 1);
     } else {
       clearActiveCooking();
-      navigation.goBack();
+      router.back();
     }
   };
 
   const goBack = () => {
-    if (stepIndex > 0) setStepIndex(stepIndex - 1);
+    Speech.stop();
+    setIsSpeaking(false);
+    
+    if (stepIndex > 0) {
+      setStepIndex(stepIndex - 1);
+      updateCurrentStep(stepIndex - 1);
+    }
+  };
+
+  const exitCooking = () => {
+    Speech.stop();
+    // DON'T clear active cooking — let user resume later
+    router.push('/(tabs)/cook');
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
 
+      {/* Header with Exit and Voice */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.exitButton} onPress={exitCooking}>
+          <Text style={styles.exitButtonText}>✕</Text>
+        </TouchableOpacity>
+        
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View 
+              style={[
+                styles.progressFill, 
+                { width: `${((stepIndex + 1) / allSteps.length) * 100}%` }
+              ]} 
+            />
+          </View>
+          <Text style={styles.progressText}>
+            Step {stepIndex + 1} of {allSteps.length}
+          </Text>
+        </View>
+        
+        <TouchableOpacity 
+          style={[styles.voiceButton, isSpeaking && styles.voiceButtonActive]} 
+          onPress={speakStep}
+        >
+          <Text style={styles.voiceButtonText}>
+            {isSpeaking ? '⏹' : '🔊'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Main Content */}
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.stepNumber}>Step {stepIndex + 1} of {allSteps.length}</Text>
-        <Text style={styles.title}>{step.title}</Text>
-        {step.instructions.map((i, idx) => (
-          <Text key={idx} style={styles.instruction}>• {i}</Text>
+        <Text style={styles.stepTitle}>{step.title}</Text>
+        
+        {step.instructions.map((instruction, idx) => (
+          <View key={idx} style={styles.instructionRow}>
+            <Text style={styles.bullet}>•</Text>
+            <Text style={styles.instruction}>{instruction}</Text>
+          </View>
         ))}
+
+        {step.durationMinutes > 0 && (
+          <View style={styles.durationBadge}>
+            <Text style={styles.durationText}>⏱️ {step.durationMinutes} min</Text>
+          </View>
+        )}
       </ScrollView>
 
-      {/* ✅ Home button removed — bottom tab already exists */}
-      <View style={styles.controls}>
-        <View style={styles.buttonGroup}>
-          <Button title="← Back" disabled={stepIndex === 0} onPress={goBack} />
+      {/* Navigation Bar */}
+      <View style={styles.navBar}>
+        <TouchableOpacity 
+          style={[styles.navButton, stepIndex === 0 && styles.navButtonDisabled]} 
+          onPress={goBack}
+          disabled={stepIndex === 0}
+        >
+          <Text style={[styles.navButtonText, stepIndex === 0 && styles.navButtonTextDisabled]}>
+            ← Back
+          </Text>
+        </TouchableOpacity>
+        
+        <View style={styles.stepDots}>
+          {allSteps.map((_, idx) => (
+            <View 
+              key={idx} 
+              style={[
+                styles.dot, 
+                idx === stepIndex && styles.dotActive,
+                idx < stepIndex && styles.dotCompleted
+              ]} 
+            />
+          ))}
         </View>
-        <Button title={stepIndex === allSteps.length - 1 ? 'Done' : 'Next →'} onPress={goNext} />
+        
+        <TouchableOpacity style={styles.navButton} onPress={goNext}>
+          <Text style={styles.navButtonText}>
+            {stepIndex === allSteps.length - 1 ? 'Finish ✓' : 'Next →'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF8E7' },
-  scrollView: { flex: 1 },
-  scrollContent: { padding: 24 },
-  stepNumber: { fontSize: 14, color: '#87CEEB', marginBottom: 8, fontWeight: '600' },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 16 },
-  instruction: { fontSize: 18, marginBottom: 8 },
-  controls: { padding: 16, borderTopWidth: 1, borderColor: '#eee' },
-  buttonGroup: { marginBottom: 8 },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#FFF8E7' 
+  },
+  
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  exitButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  exitButtonText: {
+    fontSize: 20,
+    color: '#5D4E37',
+    fontWeight: '600',
+  },
+  
+  // Progress
+  progressContainer: {
+    flex: 1,
+    marginHorizontal: 16,
+    alignItems: 'center',
+  },
+  progressBar: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#FF8C42',
+    borderRadius: 3,
+  },
+  progressText: {
+    fontSize: 12,
+    color: '#8B7355',
+    marginTop: 6,
+    fontWeight: '500',
+  },
+  
+  // Voice Button
+  voiceButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  voiceButtonActive: {
+    backgroundColor: '#FF8C42',
+  },
+  voiceButtonText: {
+    fontSize: 20,
+  },
+  
+  // Content
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 24,
+    paddingTop: 16,
+  },
+  stepTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#5D4E37',
+    marginBottom: 24,
+  },
+  instructionRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    alignItems: 'flex-start',
+  },
+  bullet: {
+    fontSize: 18,
+    color: '#FF8C42',
+    marginRight: 12,
+    marginTop: 2,
+  },
+  instruction: {
+    fontSize: 18,
+    color: '#5D4E37',
+    lineHeight: 26,
+    flex: 1,
+  },
+  durationBadge: {
+    backgroundColor: '#87CEEB20',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginTop: 16,
+  },
+  durationText: {
+    fontSize: 14,
+    color: '#5D4E37',
+    fontWeight: '600',
+  },
+  
+  // Navigation Bar
+  navBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#FFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  navButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FF8C42',
+    borderRadius: 12,
+    minWidth: 90,
+  },
+  navButtonDisabled: {
+    backgroundColor: '#E0E0E0',
+  },
+  navButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  navButtonTextDisabled: {
+    color: '#999',
+  },
+  
+  // Step Dots
+  stepDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginHorizontal: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    maxWidth: 120,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E0E0E0',
+  },
+  dotActive: {
+    backgroundColor: '#FF8C42',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  dotCompleted: {
+    backgroundColor: '#4CAF50',
+  },
 });

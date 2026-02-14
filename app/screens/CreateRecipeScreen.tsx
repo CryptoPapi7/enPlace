@@ -16,6 +16,7 @@ import {
 // Get API key from environment or config
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || 'your-api-key-here';
 import { StatusBar } from 'expo-status-bar';
+import { router } from 'expo-router';
 
 interface AIRecipe {
   title: string;
@@ -30,7 +31,7 @@ interface AIRecipe {
   tags: string[];
 }
 
-export default function CreateRecipeScreen({ navigation }: any) {
+export default function CreateRecipeScreen() {
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -167,7 +168,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
           <View style={styles.header}>
             <TouchableOpacity 
               style={styles.backButton}
-              onPress={() => navigation.goBack()}
+              onPress={() => router.back()}
             >
               <Text style={styles.backButtonText}>←</Text>
             </TouchableOpacity>

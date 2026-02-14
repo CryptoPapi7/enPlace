@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } fr
 import { useState, useEffect, useCallback } from "react";
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { getActiveCooking, ActiveCooking, clearActiveCooking } from '../utils/activeCooking';
 import { getWeeklyPlan } from '../utils/weeklyPlan';
 import { getFavorites, initFavorites } from '../utils/favorites';
@@ -23,7 +24,7 @@ const VALID_RECIPE_IDS = [
 ];
 
 // Smart empty state component for when not actively cooking
-function NoActiveCookingCard({ navigation }: any) {
+function NoActiveCookingCard() {
   const [plannedMeal, setPlannedMeal] = useState<{recipeId: string; recipeName: string; emoji: string; serveTime?: string} | null>(null);
   
   // Re-check plan whenever screen comes into focus
@@ -58,7 +59,7 @@ function NoActiveCookingCard({ navigation }: any) {
 
   const startCooking = () => {
     if (plannedMeal) {
-      navigation.navigate('Cook', { recipeId: plannedMeal.recipeId });
+      router.push(`/recipe/${plannedMeal.recipeId}`);
     }
   };
 
@@ -92,13 +93,13 @@ function NoActiveCookingCard({ navigation }: any) {
       <View style={styles.emptyActions}>
         <TouchableOpacity 
           style={styles.smallBtn}
-          onPress={() => navigation.navigate('RecipeLibrary')}
+          onPress={() => router.push('/(tabs)/library')}
         >
           <Text style={styles.smallBtnText}>Browse</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.smallBtn}
-          onPress={() => navigation.navigate('PlanWeek')}
+          onPress={() => router.push('/(tabs)/plan')}
         >
           <Text style={styles.smallBtnText}>Plan</Text>
         </TouchableOpacity>
@@ -107,7 +108,7 @@ function NoActiveCookingCard({ navigation }: any) {
   );
 }
 
-export default function CookLauncherScreen({ navigation }: any) {
+export default function CookLauncherScreen() {
   const [activeCooking, setActiveCooking] = useState<ActiveCooking | null>(null);
   const [favorites, setFavorites] = useState<any[]>([]);
 
@@ -135,10 +136,7 @@ export default function CookLauncherScreen({ navigation }: any) {
 
   const resume = () => {
     if (activeCooking) {
-      navigation.navigate('Cook', { 
-        recipeId: activeCooking.recipeId,
-        resumeStep: activeCooking.currentStep 
-      });
+      router.push(`/cooking?recipeId=${activeCooking.recipeId}&resumeStep=${activeCooking.currentStep}`);
     }
   };
 
@@ -174,7 +172,7 @@ export default function CookLauncherScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
         ) : (
-          <NoActiveCookingCard navigation={navigation} />
+          <NoActiveCookingCard />
         )}
 
         {/* My Favorites */}
@@ -186,7 +184,7 @@ export default function CookLauncherScreen({ navigation }: any) {
                 <TouchableOpacity 
                   key={fav.id}
                   style={styles.favCard}
-                  onPress={() => navigation.navigate('RecipeHome', { recipeId: fav.id })}
+                  onPress={() => router.push(`/recipe/${fav.id}`)}
                 >
                   <Text style={styles.favEmoji}>{fav.emoji}</Text>
                   <Text style={styles.favName} numberOfLines={2}>{fav.title}</Text>
@@ -196,7 +194,7 @@ export default function CookLauncherScreen({ navigation }: any) {
           ) : (
             <TouchableOpacity 
               style={styles.emptyFavs}
-              onPress={() => navigation.navigate('RecipeLibrary')}
+              onPress={() => router.replace('/(tabs)/library')}
             >
               <Text style={styles.emptyText}>No favorites yet</Text>
               <Text style={styles.emptySub}>Browse recipes and save the ones you love</Text>
@@ -210,28 +208,28 @@ export default function CookLauncherScreen({ navigation }: any) {
           <View style={styles.quickGrid2x2}>
             <TouchableOpacity 
               style={styles.quickBtn}
-              onPress={() => navigation.navigate('MyLibrary')}
+              onPress={() => router.push('/my-library')}
             >
               <Text style={styles.quickEmoji}>📚</Text>
               <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">My Library</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.quickBtn}
-              onPress={() => navigation.navigate('PlanWeek')}
+              onPress={() => router.push('/(tabs)/plan')}
             >
               <Text style={styles.quickEmoji}>📅</Text>
               <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">This Week</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.quickBtn}
-              onPress={() => navigation.navigate('CreateRecipe')}
+              onPress={() => router.push('/create-recipe')}
             >
               <Text style={styles.quickEmoji}>✍️</Text>
               <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Create Recipe</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.quickBtn}
-              onPress={() => navigation.navigate('ImportRecipe')}
+              onPress={() => router.push('/import-recipe')}
             >
               <Text style={styles.quickEmoji}>📥</Text>
               <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Import Recipe</Text>

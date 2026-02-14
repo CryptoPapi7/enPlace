@@ -1,7 +1,7 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import { useState, useCallback } from "react";
 import { StatusBar } from 'expo-status-bar';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
 import { ALL_RECIPES } from '../data/recipes';
 import { isFavorite, toggleFavorite, getFavorites, initFavorites } from '../utils/favorites';
 
@@ -14,11 +14,12 @@ const FILTERS = [
   { id: 'mindful', label: 'Mindful' },
 ];
 
-export default function RecipeLibraryScreen({ navigation, route }: any) {
+export default function RecipeLibraryScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [favorites, setFavorites] = useState<string[]>([]);
-  const selectingForPlan = route.params?.selectingForPlan || false;
+  const { selectingForPlan } = useLocalSearchParams<{ selectingForPlan?: string }>();
+  const isSelectingForPlan = selectingForPlan === 'true';
 
   // Refresh favorites when screen is focused
   useFocusEffect(
@@ -53,13 +54,8 @@ export default function RecipeLibraryScreen({ navigation, route }: any) {
       return;
     }
     
-    if (selectingForPlan) {
-      // Return selected recipe to PlanWeek
-      navigation.navigate('PlanWeek', { selectedRecipe: recipe });
-    } else {
-      // Normal navigation to recipe detail
-      navigation.navigate('RecipeHome', { recipeId: recipe.id });
-    }
+    // Navigate to recipe detail screen
+    router.push(`/recipe/${recipe.id}`);
   };
 
   const handleToggleFavorite = async (recipe: typeof ALL_RECIPES[0]) => {
@@ -81,7 +77,7 @@ export default function RecipeLibraryScreen({ navigation, route }: any) {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backButton}>←</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Recipe Library</Text>
@@ -163,7 +159,7 @@ export default function RecipeLibraryScreen({ navigation, route }: any) {
               <View style={styles.cardActions}>
                 <TouchableOpacity 
                   style={styles.addToPlanButton}
-                  onPress={() => navigation.navigate('PlanWeek', { selectedRecipe: recipe })}
+                  onPress={() => router.push(`/plan?addRecipe=${recipe.id}`)}
                 >
                   <Text style={styles.addToPlanText}>➕ Add to Plan</Text>
                 </TouchableOpacity>

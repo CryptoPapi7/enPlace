@@ -1,0 +1,18 @@
+[Unit]
+Description=Chart App Development Server (Catherine)
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/.openclaw/workspace/chart
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=NODE_ENV=development
+ExecStart=/usr/bin/npx expo start --tunnel --port 8083
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

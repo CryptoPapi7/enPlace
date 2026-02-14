@@ -1,0 +1,17 @@
+[Unit]
+Description=Chart App (Catherine) - Tailscale
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/.openclaw/workspace/chart
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/bin/npx expo start --lan --port 8083
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

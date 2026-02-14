@@ -2,10 +2,11 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Tex
 import { useState, useCallback } from "react";
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { getMyLibraryRecipes, LibraryRecipe } from '../utils/library';
 import { toggleFavorite, isFavorite } from '../utils/favorites';
 
-export default function MyLibraryScreen({ navigation }: any) {
+export default function MyLibraryScreen() {
   const [recipes, setRecipes] = useState<(LibraryRecipe & { isFav?: boolean })[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -41,7 +42,7 @@ export default function MyLibraryScreen({ navigation }: any) {
   };
 
   const handleRecipePress = (recipeId: string) => {
-    navigation.navigate('RecipeHome', { recipeId });
+    router.push(`/recipe/${recipeId}`);
   };
 
   // Filter recipes
@@ -60,7 +61,7 @@ export default function MyLibraryScreen({ navigation }: any) {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => router.back()}
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
@@ -165,7 +166,7 @@ export default function MyLibraryScreen({ navigation }: any) {
           <Text style={styles.emptyTitle}>Your library is empty</Text>
           <TouchableOpacity 
             style={styles.browseButton}
-            onPress={() => navigation.navigate('RecipeLibrary')}
+            onPress={() => router.push('/(tabs)/library')}
           >
             <Text style={styles.browseButtonText}>Browse All Recipes</Text>
           </TouchableOpacity>

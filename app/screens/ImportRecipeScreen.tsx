@@ -12,8 +12,9 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 
-export default function ImportRecipeScreen({ navigation }: any) {
+export default function ImportRecipeScreen() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [method, setMethod] = useState<'url' | 'photo'>('url');
@@ -98,7 +99,7 @@ export default function ImportRecipeScreen({ navigation }: any) {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => router.back()}
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>

@@ -1,5 +1,6 @@
 import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useState, useEffect } from "react";
+import { router, useLocalSearchParams } from 'expo-router';
 import { ConsolidatedItem, consolidateShoppingList, getNeedToBuy, getShoppingStats } from "../utils/shopping";
 import { getWeeklyPlan } from "../utils/weeklyPlan";
 import { ALL_RECIPES } from "../data/recipes";
@@ -56,8 +57,9 @@ const CATEGORY_NAMES: Record<string, string> = {
   other: 'Other',
 };
 
-export default function ShoppingScreen({ navigation, route }: any) {
-  const weeklyPlan = route.params?.weeklyPlan;
+export default function ShoppingScreen() {
+  const { weeklyPlan: weeklyPlanParam } = useLocalSearchParams<{ weeklyPlan?: string }>();
+  const weeklyPlan = weeklyPlanParam ? JSON.parse(weeklyPlanParam) : null;
   const [items, setItems] = useState<ConsolidatedItem[]>([]);
   const [showBreakdown, setShowBreakdown] = useState<string | null>(null);
   const [activeRecipes, setActiveRecipes] = useState<any[]>(weeklyPlan?.recipes || MOCK_WEEKLY_PLAN.recipes);

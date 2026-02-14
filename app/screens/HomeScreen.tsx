@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image } from "react-native";
 import { useState, useCallback } from "react";
 import { StatusBar } from 'expo-status-bar';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, router } from 'expo-router';
 import { ALL_RECIPES } from '../data/recipes';
 import { getAvatar } from '../utils/avatar';
 
@@ -25,7 +25,7 @@ const PEOPLE_YOU_FOLLOW = [
   { id: 3, name: 'Nana', avatar: '👵', latestRecipe: 'Sunday Roast' },
 ];
 
-export default function HomeScreen({ navigation }: any) {
+export default function HomeScreen() {
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
@@ -53,7 +53,7 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.greeting}>What's for dinner?</Text>
             <TouchableOpacity 
               style={styles.avatarPlaceholder}
-              onPress={() => navigation.navigate('Cook', { screen: 'Profile' })}
+              onPress={() => router.push('/cook/profile')}
             >
               {avatarUri ? (
                 <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
@@ -64,7 +64,7 @@ export default function HomeScreen({ navigation }: any) {
           </View>
           <TouchableOpacity 
             style={styles.browseBtn}
-            onPress={() => navigation.navigate('Cook', { screen: 'RecipeLibrary' })}
+            onPress={() => router.push('/(tabs)/library')}
           >
             <Text style={styles.browseBtnText}>Browse All Recipes →</Text>
           </TouchableOpacity>
@@ -127,7 +127,7 @@ export default function HomeScreen({ navigation }: any) {
               <TouchableOpacity 
                 key={recipe.id}
                 style={styles.communityCard}
-                onPress={() => navigation.navigate('Cook', { screen: 'RecipeHome', params: { recipeId: recipe.id } })}
+                onPress={() => router.push(`/recipe/${recipe.id}`)}
               >
                 <Text style={styles.communityEmoji}>{recipe.emoji}</Text>
                 <Text style={styles.communityName} numberOfLines={2}>{recipe.title}</Text>

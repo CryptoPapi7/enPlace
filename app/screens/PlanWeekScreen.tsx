@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Modal } from "react-native";
 import { useState, useEffect } from "react";
+import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ALL_RECIPES, beefRendangRecipe, chickenCurryRecipe, freshPastaRecipe, sourdoughRecipe } from '../data/recipes';
 import { saveWeeklyPlan, getWeeklyPlan } from '../utils/weeklyPlan';
@@ -45,7 +46,12 @@ function generateWeekDays(): DayPlan[] {
   return result;
 }
 
-export default function PlanWeekScreen({ navigation, route }: any) {
+export default function PlanWeekScreen() {
+  const { selectedRecipe: selectedRecipeParam, addRecipe, moveRecipe } = useLocalSearchParams<{
+    selectedRecipe?: string;
+    addRecipe?: string;
+    moveRecipe?: string;
+  }>();
   const [weekPlan, setWeekPlan] = useState<DayPlan[]>(generateWeekDays());
   const [showDayPicker, setShowDayPicker] = useState(false);
   const [showRecipePicker, setShowRecipePicker] = useState(false);
@@ -67,23 +73,24 @@ export default function PlanWeekScreen({ navigation, route }: any) {
 
   // Handle recipe selected from RecipeLibrary
   useEffect(() => {
-    if (route.params?.selectedRecipe) {
-      setSelectedRecipe(route.params.selectedRecipe);
+    if (selectedRecipeParam) {
+      const recipe = JSON.parse(selectedRecipeParam);
+      setSelectedRecipe(recipe);
       setShowDayPicker(true);
-      // Clear the param so it doesn't re-trigger
-      navigation.setParams({ selectedRecipe: null });
     }
-  }, [route.params?.selectedRecipe]);
+  }, [selectedRecipeParam]);
 
   // Handle add to plan from RecipeScreen
   useEffect(() => {
-    if (route.params?.addRecipe) {
-      setSelectedRecipe(route.params.addRecipe);
-      setShowDayPicker(true);
-      // Clear the param so it doesn't re-trigger
-      navigation.setParams({ addRecipe: null });
+    if (addRecipe) {
+      const recipeId = addRecipe;
+      const recipe = ALL_RECIPES.find(r => r.id === recipeId);
+      if (recipe) {
+        setSelectedRecipe(recipe);
+        setShowDayPicker(true);
+      }
     }
-  }, [route.params?.addRecipe]);
+  }, [addRecipe]);
 
   // Auto-save weekly plan when it changes
   useEffect(() => {
@@ -168,7 +175,7 @@ export default function PlanWeekScreen({ navigation, route }: any) {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backButton}>←</Text>
         </TouchableOpacity>
         <Text style={styles.title}>🗓️ Plan This Week</Text>
@@ -406,8 +413,11 @@ export default function PlanWeekScreen({ navigation, route }: any) {
               })
             );
             
-            navigation.navigate('Shopping', { 
-              weeklyPlan: { recipes: allRecipes }
+            router.push({
+              pathname: '/(tabs)/grocery',
+              params: { 
+                weeklyPlan: JSON.stringify({ recipes: allRecipes })
+              }
             });
           }}
         >
