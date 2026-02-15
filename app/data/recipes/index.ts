@@ -10,8 +10,9 @@ import { pastaPomodoroRecipe } from './pasta-pomodoro';
 import { rotiCurryChannaRecipe } from './roti-curry-channa';
 import { phoBoRecipe } from './pho-bo';
 import { jerkChickenRecipe } from './jerk-chicken';
+import { valentineDinnerRecipe } from './valentine-dinner';
 
-export { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe };
+export { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe, valentineDinnerRecipe };
 
 // Full recipe database for v0.1
 export const ALL_RECIPES = [
@@ -159,6 +160,18 @@ export const ALL_RECIPES = [
     emoji: jerkChickenRecipe.emoji,
     available: true,
     data: jerkChickenRecipe,
+  },
+  {
+    id: valentineDinnerRecipe.id,
+    title: valentineDinnerRecipe.title,
+    cuisine: valentineDinnerRecipe.cuisine,
+    time: valentineDinnerRecipe.totalTimeMinutes,
+    timeDisplay: '2 hrs',
+    difficulty: valentineDinnerRecipe.difficulty,
+    vibe: 'special',
+    emoji: valentineDinnerRecipe.emoji,
+    available: true,
+    data: valentineDinnerRecipe,
   },
   {
     id: 'tacos',

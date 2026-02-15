@@ -65,6 +65,7 @@ export default function ShoppingScreen() {
   const [activeRecipes, setActiveRecipes] = useState<any[]>(weeklyPlan?.recipes || MOCK_WEEKLY_PLAN.recipes);
   const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>('imperial'); // Default: US shopping
   const [recipesExpanded, setRecipesExpanded] = useState(true);
+  const [editingRecipeServings, setEditingRecipeServings] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPlan = async () => {
@@ -93,7 +94,8 @@ export default function ShoppingScreen() {
               return {
                 recipeId: meal.recipeId,
                 recipeName: meal.recipeName,
-                servings: 4, // Default
+                servings: meal.servings || recipeData?.data?.servings || 4,
+                defaultServings: recipeData?.data?.servings || 4,
                 ingredients: allIngredients
               };
             })
@@ -147,6 +149,16 @@ export default function ShoppingScreen() {
       }
     }
     return amountStr; // Return original if no conversion needed
+  };
+
+  const updateRecipeServings = (recipeId: string, newServings: number) => {
+    const updated = activeRecipes.map(r => 
+      r.recipeId === recipeId ? { ...r, servings: newServings } : r
+    );
+    setActiveRecipes(updated);
+    const consolidated = consolidateShoppingList(updated);
+    setItems(consolidated);
+    setEditingRecipeServings(null);
   };
 
   const removeRecipe = (recipeId: string) => {
@@ -217,15 +229,42 @@ export default function ShoppingScreen() {
         {recipesExpanded && (
           <View style={styles.recipePills}>
             {activeRecipes.map((r: any, index: number) => (
-              <TouchableOpacity 
-                key={`${r.recipeId}-${index}`} 
-                style={styles.recipePill}
-                onPress={() => removeRecipe(r.recipeId)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.recipePillText}>{r.recipeName}</Text>
-                <Text style={styles.removePillText}> ✕</Text>
-              </TouchableOpacity>
+              <View key={`${r.recipeId}-${index}`} style={styles.recipePillContainer}>
+                {editingRecipeServings === r.recipeId ? (
+                  <View style={styles.servingsEditRow}>
+                    <TouchableOpacity 
+                      style={styles.servingsEditButton}
+                      onPress={() => updateRecipeServings(r.recipeId, Math.max(1, r.servings - 1))}
+                    >
+                      <Text style={styles.servingsEditText}>−</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.servingsEditValue}>{r.servings}</Text>
+                    <TouchableOpacity 
+                      style={styles.servingsEditButton}
+                      onPress={() => updateRecipeServings(r.recipeId, Math.min(20, r.servings + 1))}
+                    >
+                      <Text style={styles.servingsEditText}>+</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={styles.servingsDoneButton}
+                      onPress={() => setEditingRecipeServings(null)}
+                    >
+                      <Text style={styles.servingsDoneText}>Done</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity 
+                    style={styles.recipePill}
+                    onLongPress={() => setEditingRecipeServings(r.recipeId)}
+                    onPress={() => removeRecipe(r.recipeId)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.recipePillText}>{r.recipeName}</Text>
+                    <Text style={styles.servingsBadge}>Serves {r.servings || 4}</Text>
+                    <Text style={styles.removePillText}> ✕</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             ))}
           </View>
         )}
@@ -591,5 +630,57 @@ const styles = StyleSheet.create({
   breakdownText: {
     fontSize: 13,
     color: '#666',
+  },
+  recipePillContainer: {
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  servingsBadge: {
+    fontSize: 11,
+    color: '#FF8C42',
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  servingsEditRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF8E7',
+    borderRadius: 16,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#FF8C42',
+  },
+  servingsEditButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FF8C42',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  servingsEditText: {
+    fontSize: 16,
+    color: '#FFF',
+    fontWeight: '700',
+  },
+  servingsEditValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#5D4E37',
+    marginHorizontal: 12,
+    minWidth: 20,
+    textAlign: 'center',
+  },
+  servingsDoneButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  servingsDoneText: {
+    fontSize: 12,
+    color: '#FFF',
+    fontWeight: '600',
   },
 });

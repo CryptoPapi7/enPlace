@@ -4,6 +4,7 @@ export interface RecipePlan {
   recipeId: string;
   recipeName: string;
   servings: number;
+  defaultServings: number;
   ingredients: {
     item: string;
     amount: string;
@@ -35,11 +36,51 @@ function normalizeItemName(name: string): string {
     .trim();
 }
 
+// Scale amount based on servings ratio
+function scaleAmount(amountStr: string, ratio: number): string {
+  if (ratio === 1) return amountStr;
+  
+  // Try to find a number at the start
+  const match = amountStr.match(/^([\d./]+)\s*(.*)$/);
+  if (!match) return amountStr; // Can't parse, return original
+  
+  let value: number;
+  const numStr = match[1];
+  const unit = match[2].trim(); // Remove leading space
+  
+  // Handle fractions like "1/2"
+  if (numStr.includes('/')) {
+    const [num, den] = numStr.split('/').map(Number);
+    value = num / den;
+  } else {
+    value = parseFloat(numStr);
+  }
+  
+  if (isNaN(value)) return amountStr;
+  
+  const scaled = value * ratio;
+  
+  // Format nicely
+  let formatted: string;
+  if (scaled >= 10) {
+    formatted = Math.round(scaled).toString();
+  } else if (scaled % 1 === 0) {
+    formatted = scaled.toFixed(0);
+  } else if (scaled % 0.5 === 0) {
+    formatted = scaled.toFixed(1).replace('.0', '');
+  } else {
+    formatted = scaled.toFixed(2).replace(/\.?0+$/, '');
+  }
+  
+  // No space between number and unit for parser compatibility
+  return unit ? `${formatted}${unit}` : formatted;
+}
+
 // Categorize ingredients
 function categorizeItem(item: string): ConsolidatedItem['category'] {
   const name = item.toLowerCase();
   
-  if (/chicken|beef|pork|meat|fish|shrimp|protein/i.test(name)) {
+  if (/chicken|beef|pork|meat|fish|shrimp|protein|cod|salmon|tuna|tilapia|halibut/i.test(name)) {
     return 'meat';
   }
   if (/onion|garlic|tomato|potato|pepper|scallion|shadon|cilantro|culantro|ginger|produce/i.test(name)) {
@@ -62,8 +103,12 @@ export function consolidateShoppingList(recipes: RecipePlan[]): ConsolidatedItem
   const itemMap = new Map<string, ConsolidatedItem>();
   
   recipes.forEach(recipe => {
+    // Calculate scaling ratio for this recipe
+    const ratio = recipe.servings / recipe.defaultServings;
+    
     recipe.ingredients.forEach(ing => {
       const normalizedName = normalizeItemName(ing.item);
+      const scaledAmount = scaleAmount(ing.amount, ratio);
       
       if (itemMap.has(normalizedName)) {
         // Add to existing item
@@ -71,21 +116,21 @@ export function consolidateShoppingList(recipes: RecipePlan[]): ConsolidatedItem
         existing.breakdown.push({
           recipeId: recipe.recipeId,
           recipeName: recipe.recipeName,
-          amount: ing.amount,
+          amount: scaledAmount,
           category: ing.category,
         });
         // Update total (approximate - just appending for now)
-        existing.totalAmount += ` + ${ing.amount}`;
+        existing.totalAmount += ` + ${scaledAmount}`;
       } else {
         // Create new item
         itemMap.set(normalizedName, {
           id: `${recipe.recipeId}_${normalizedName}`,
           item: ing.item, // keep original display name
-          totalAmount: ing.amount,
+          totalAmount: scaledAmount,
           breakdown: [{
             recipeId: recipe.recipeId,
             recipeName: recipe.recipeName,
-            amount: ing.amount,
+            amount: scaledAmount,
             category: ing.category,
           }],
           checked: false,

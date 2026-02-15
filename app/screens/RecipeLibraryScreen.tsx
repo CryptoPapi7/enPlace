@@ -1,9 +1,12 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from "react-native";
-import { useState, useCallback } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, RefreshControl } from "react-native";
+import { useState, useCallback, useEffect } from "react";
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
 import { ALL_RECIPES } from '../data/recipes';
 import { isFavorite, toggleFavorite, getFavorites, initFavorites } from '../utils/favorites';
+import { getAllRecipes, deleteRecipe } from '../database/db';
+import { migrateFromAsyncStorage } from '../database/migrate';
+import type { Recipe } from '../schemas/recipe';
 import { colors, spacing, typography, shadows } from '../theme';
 
 // Filter categories
@@ -19,10 +22,37 @@ export default function RecipeLibraryScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [myRecipes, setMyRecipes] = useState<Recipe[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [migrationStatus, setMigrationStatus] = useState<string>('');
   const { selectingForPlan } = useLocalSearchParams<{ selectingForPlan?: string }>();
   const isSelectingForPlan = selectingForPlan === 'true';
 
-  // Refresh favorites when screen is focused
+  // Run migration once on mount
+  useEffect(() => {
+    const runMigration = async () => {
+      const result = await migrateFromAsyncStorage();
+      if (result.migrated > 0) {
+        setMigrationStatus(`Migrated ${result.migrated} recipes`);
+      }
+    };
+    runMigration();
+  }, []);
+
+  // Load my recipes from SQLite
+  const loadMyRecipes = async () => {
+    try {
+      setIsLoading(true);
+      const recipes = await getAllRecipes();
+      setMyRecipes(recipes);
+    } catch (error) {
+      console.error('Failed to load recipes:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Refresh when screen is focused
   useFocusEffect(
     useCallback(() => {
       initFavorites().then(() => {
@@ -30,8 +60,29 @@ export default function RecipeLibraryScreen() {
           setFavorites(favs.map(f => f.id));
         });
       });
+      loadMyRecipes();
     }, [])
   );
+
+  const handleDeleteRecipe = async (recipe: Recipe) => {
+    Alert.alert(
+      'Delete Recipe?',
+      `Are you sure you want to delete "${recipe.title}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            if (recipe.id) {
+              await deleteRecipe(recipe.id);
+              await loadMyRecipes();
+            }
+          }
+        }
+      ]
+    );
+  };
 
   // Filter recipes
   let filtered = ALL_RECIPES;
@@ -128,8 +179,22 @@ export default function RecipeLibraryScreen() {
         ))}
       </ScrollView>
 
-      {/* Recipe Grid */}
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.grid}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.grid}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={loadMyRecipes} />}
+      >
+        {/* Migration Status */}
+        {migrationStatus ? (
+          <View style={styles.migrationBanner}>
+            <Text style={styles.migrationText}>✅ {migrationStatus}</Text>
+          </View>
+        ) : null}
+
+        {/* Built-in Recipes */}
+        <View style={styles.sectionHeaderFullWidth}>
+          <Text style={styles.sectionTitle}>📚 Recipe Library</Text>
+        </View>
         {filtered.map(recipe => (
           <View
             key={recipe.id}
@@ -277,6 +342,47 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingHorizontal: 20,
     gap: 12,
+  },
+  sectionHeaderFullWidth: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#5D4E37',
+  },
+  sectionCount: {
+    fontSize: 14,
+    color: '#87CEEB',
+    marginLeft: 8,
+    fontWeight: '600',
+  },
+  migrationBanner: {
+    width: '100%',
+    backgroundColor: '#4CAF50',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  migrationText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 10,
+    padding: 4,
+  },
+  deleteEmoji: {
+    fontSize: 20,
   },
   recipeCard: {
     width: '47%',

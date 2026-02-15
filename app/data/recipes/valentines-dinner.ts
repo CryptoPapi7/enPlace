@@ -1,0 +1,177 @@
+export const valentinesDinnerRecipe = {
+  id: 'valentines-dinner',
+  title: "Valentine's Dinner: Cod Piccata + Fresh Pappardelle + Broccolini",
+  description: 'A special family dinner: handmade pasta with flaky cod in lemon-butter sauce and charred broccolini',
+  cuisine: 'Italian-American',
+  vibe: 'special',
+  emoji: '💝',
+  servings: 4,
+  totalTimeMinutes: 120,
+  prepTimeMinutes: 60,
+  cookTimeMinutes: 30,
+  difficulty: 'Medium',
+  
+  sections: {
+    prep: [
+      {
+        id: 'mise-en-place',
+        title: 'Mise en place',
+        instructions: ['Gather all ingredients. Set out KitchenAid with pasta roller. Pat cod dry. Mince garlic. Zest and juice lemons.'],
+        durationMinutes: 15,
+        active: true,
+      },
+    ],
+    pasta: [
+      {
+        id: 'make-dough',
+        title: 'Make pasta dough',
+        instructions: ['In KitchenAid bowl: flour, semolina, salt. Mix on low. Add eggs, yolks, oil. Paddle 2 mins until shaggy. Switch to dough hook, knead 5 mins until smooth.'],
+        durationMinutes: 10,
+        active: true,
+      },
+      {
+        id: 'rest-dough',
+        title: 'Rest dough',
+        instructions: ['Wrap dough tightly in plastic. Rest at room temperature 30 minutes (do not refrigerate).'],
+        durationMinutes: 30,
+        active: false,
+      },
+      {
+        id: 'roll-pasta',
+        title: 'Roll pasta sheets',
+        instructions: ['Divide dough into 4 pieces. Flatten one piece. Feed through pasta roller starting at setting 1, gradually to setting 5. Dust with semolina between passes.'],
+        durationMinutes: 15,
+        active: true,
+      },
+      {
+        id: 'cut-pappardelle',
+        title: 'Cut pappardelle',
+        instructions: ['Roll each sheet loosely like a cigar. Cut into 3/4-inch ribbons. Unfurl and dust with semolina. Lay on floured tray to dry slightly.'],
+        durationMinutes: 10,
+        active: true,
+      },
+    ],
+    fish: [
+      {
+        id: 'dredge-cod',
+        title: 'Dredge the cod',
+        instructions: ['Season flour with salt and pepper. Lightly dredge cod fillets, shaking off excess. Place on plate.'],
+        durationMinutes: 5,
+        active: true,
+      },
+      {
+        id: 'sear-cod',
+        title: 'Sear cod',
+        instructions: ['Large skillet: 2 tbsp butter + olive oil over medium-high. Sear cod 3 minutes per side until golden. Remove to plate, keep warm.'],
+        durationMinutes: 8,
+        active: true,
+      },
+      {
+        id: 'make-sauce',
+        title: 'Make piccata sauce',
+        instructions: ['Same pan: add garlic, cook 30 seconds. Add wine, scrape up brown bits. Add stock, lemon juice, zest, capers. Simmer 3 minutes until slightly reduced.'],
+        durationMinutes: 5,
+        active: true,
+      },
+      {
+        id: 'finish-sauce',
+        title: 'Finish sauce',
+        instructions: ['Off heat. Swirl in remaining 2 tbsp butter until melted and silky. Return cod to pan, spoon sauce over.'],
+        durationMinutes: 2,
+        active: true,
+      },
+    ],
+    broccolini: [
+      {
+        id: 'blanch-broccolini',
+        title: 'Blanch broccolini',
+        instructions: ['Boil salted water. Add broccolini, cook 2 minutes until bright green. Shock in ice bath. Drain well.'],
+        durationMinutes: 5,
+        active: true,
+      },
+      {
+        id: 'saute-broccolini',
+        title: 'Sauté broccolini',
+        instructions: ['Hot skillet with olive oil. Add garlic, cook until golden. Add broccolini, toss 2 minutes until charred in spots. Add lemon zest.'],
+        durationMinutes: 4,
+        active: true,
+      },
+      {
+        id: 'finish-broccolini',
+        title: 'Finish broccolini',
+        instructions: ['Off heat, squeeze lemon juice over. Season with salt and red pepper flakes.'],
+        durationMinutes: 1,
+        active: true,
+      },
+    ],
+    serve: [
+      {
+        id: 'cook-pasta',
+        title: 'Cook pasta',
+        instructions: ['Boil large pot of salted water. Cook pappardelle 2-3 minutes until al dente. Reserve 1/2 cup pasta water. Drain.'],
+        durationMinutes: 5,
+        active: true,
+      },
+      {
+        id: 'plate',
+        title: 'Plate the dinner',
+        instructions: ['Toss pasta with a splash of piccata sauce. Divide among plates. Top with cod, spoon more sauce over. Broccolini alongside. Garnish with parsley.'],
+        durationMinutes: 5,
+        active: true,
+      },
+    ],
+  },
+  
+  ingredients: {
+    prep: [
+      { item: 'Cod fillets (skinless)', amount: '500g (4 pieces)', category: 'protein' },
+      { item: 'Broccolini', amount: '2 bunches', category: 'produce' },
+    ],
+    pasta: [
+      { item: '00 flour or all-purpose', amount: '300g', category: 'pantry' },
+      { item: 'Fine semolina', amount: '50g', category: 'pantry' },
+      { item: 'Large eggs', amount: '3', category: 'dairy' },
+      { item: 'Egg yolks', amount: '2', category: 'dairy' },
+      { item: 'Fine sea salt', amount: '1 tsp', category: 'spices' },
+      { item: 'Extra virgin olive oil', amount: '1 tsp', category: 'pantry' },
+    ],
+    fish: [
+      { item: 'All-purpose flour', amount: '1/2 cup', category: 'pantry' },
+      { item: 'Unsalted butter', amount: '4 tbsp', category: 'dairy' },
+      { item: 'Olive oil', amount: '2 tbsp', category: 'pantry' },
+      { item: 'Garlic', amount: '3 cloves', category: 'produce' },
+      { item: 'Lemons', amount: '2', category: 'produce' },
+      { item: 'Capers', amount: '3 tbsp', category: 'pantry' },
+      { item: 'Dry white wine', amount: '1/2 cup', category: 'pantry' },
+      { item: 'Vegetable or chicken stock', amount: '1/2 cup', category: 'pantry' },
+      { item: 'Fresh parsley', amount: '2 tbsp chopped', category: 'produce' },
+      { item: 'Salt and pepper', amount: 'to taste', category: 'spices' },
+    ],
+    broccolini: [
+      { item: 'Olive oil', amount: '2 tbsp', category: 'pantry' },
+      { item: 'Garlic', amount: '4 cloves', category: 'produce' },
+      { item: 'Red pepper flakes', amount: 'pinch', category: 'spices' },
+      { item: 'Salt', amount: 'to taste', category: 'spices' },
+    ],
+  },
+  
+  chefNotes: [
+    'Make pasta dough 2 hours ahead — it rests at room temp while you prep everything else',
+    'KitchenAid pasta roller: start at setting 1, gradually go to 5 for perfect thickness',
+    'Pat cod VERY dry before dredging — this is key for golden crust',
+    'Sauce comes together in the same pan as the fish — those brown bits are flavor gold',
+    'Blanch broccolini ahead, sauté just before serving',
+    'Pasta cooks in 2-3 minutes — have your sauce ready first!',
+    'Reserve pasta water to thin sauce if needed',
+  ],
+  
+  tags: ['valentines', 'special', 'italian', 'pasta', 'fish', 'family dinner'],
+  
+  equipment: [
+    'KitchenAid stand mixer',
+    'Pasta roller attachment',
+    'Large pot for pasta',
+    'Large skillet for fish',
+    'Skillet for broccolini',
+  ],
+};

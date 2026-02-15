@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect, router } from 'expo-router';
 import { ALL_RECIPES } from '../data/recipes';
 import { getAvatar } from '../utils/avatar';
+import { Card } from '../components/Card';
 import { colors, spacing, typography, shadows } from '../theme';
 
 const VIBES = [

@@ -18,6 +18,7 @@ interface PlannedMeal {
   recipeName: string;
   emoji: string;
   serveTime: string;
+  servings: number;
 }
 
 interface DayPlan {
@@ -47,7 +48,7 @@ function generateWeekDays(): DayPlan[] {
 }
 
 export default function PlanWeekScreen() {
-  const { selectedRecipe: selectedRecipeParam, addRecipe, moveRecipe } = useLocalSearchParams<{
+  const { selectedRecipe: selectedRecipeParam, addRecipe, servings: servingsParam, moveRecipe } = useLocalSearchParams<{
     selectedRecipe?: string;
     addRecipe?: string;
     moveRecipe?: string;
@@ -56,9 +57,12 @@ export default function PlanWeekScreen() {
   const [showDayPicker, setShowDayPicker] = useState(false);
   const [showRecipePicker, setShowRecipePicker] = useState(false);
   const [showMoveMenu, setShowMoveMenu] = useState(false);
+  const [showServingsPicker, setShowServingsPicker] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [selectedDayForRecipe, setSelectedDayForRecipe] = useState<number | null>(null);
   const [mealToMove, setMealToMove] = useState<{ dayIndex: number; mealIndex: number } | null>(null);
+  const [pendingServings, setPendingServings] = useState<number>(4);
+  const [skipServingsPicker, setSkipServingsPicker] = useState(false);
 
   // Load saved weekly plan on mount
   useEffect(() => {
@@ -76,6 +80,7 @@ export default function PlanWeekScreen() {
     if (selectedRecipeParam) {
       const recipe = JSON.parse(selectedRecipeParam);
       setSelectedRecipe(recipe);
+      setPendingServings(recipe.data?.servings || 4);
       setShowDayPicker(true);
     }
   }, [selectedRecipeParam]);
@@ -86,11 +91,14 @@ export default function PlanWeekScreen() {
       const recipeId = addRecipe;
       const recipe = ALL_RECIPES.find(r => r.id === recipeId);
       if (recipe) {
+        const customServings = servingsParam ? parseInt(servingsParam, 10) : recipe.data?.servings || 4;
+        console.log(`RecipeScreen flow: ${recipe.title}, customServings=${customServings}`);
         setSelectedRecipe(recipe);
+        setPendingServings(customServings);
         setShowDayPicker(true);
       }
     }
-  }, [addRecipe]);
+  }, [addRecipe, servingsParam]);
 
   // Auto-save weekly plan when it changes
   useEffect(() => {
@@ -101,32 +109,45 @@ export default function PlanWeekScreen() {
   const addMealToDay = (dayIndex: number) => {
     if (!selectedRecipe) return;
     
+    console.log(`addMealToDay: ${selectedRecipe.title}, pendingServings=${pendingServings}`);
     const newPlan = [...weekPlan];
     newPlan[dayIndex].meals.push({
       recipeId: selectedRecipe.id,
       recipeName: selectedRecipe.title,
       emoji: selectedRecipe.emoji,
       serveTime: '18:00',
+      servings: pendingServings,
     });
     setWeekPlan(newPlan);
     setSelectedRecipe(null);
+    setPendingServings(4);
     setShowDayPicker(false);
+    setShowServingsPicker(false);
+  };
+  
+  // Handle day selected from day picker
+  const handleDaySelected = (dayIndex: number) => {
+    if (selectedDayForRecipe !== null) {
+      // Coming from empty slot flow - show servings picker
+      setSelectedDayForRecipe(dayIndex);
+      setShowDayPicker(false);
+      setShowServingsPicker(true);
+    } else {
+      // Coming from RecipeScreen - add directly with recipe default servings
+      addMealToDay(dayIndex);
+    }
   };
 
   // Add a recipe to selected day (from empty slot tap)
   const addRecipeToSelectedDay = (recipe: any) => {
     if (selectedDayForRecipe === null) return;
     
-    const newPlan = [...weekPlan];
-    newPlan[selectedDayForRecipe].meals.push({
-      recipeId: recipe.id,
-      recipeName: recipe.title,
-      emoji: recipe.emoji,
-      serveTime: '18:00',
-    });
-    setWeekPlan(newPlan);
+    const defaultServings = recipe.data?.servings || 4;
+    console.log(`addRecipeToSelectedDay: ${recipe.title}, defaultServings=${defaultServings}`);
+    setSelectedRecipe(recipe);
+    setPendingServings(defaultServings);
     setShowRecipePicker(false);
-    setSelectedDayForRecipe(null);
+    setShowServingsPicker(true);
   };
 
   // Remove meal from day
@@ -266,7 +287,7 @@ export default function PlanWeekScreen() {
               <TouchableOpacity
                 key={idx}
                 style={styles.dayOption}
-                onPress={() => addMealToDay(idx)}
+                onPress={() => handleDaySelected(idx)}
               >
                 <Text style={styles.dayOptionEmoji}>📅</Text>
                 <View>
@@ -280,6 +301,59 @@ export default function PlanWeekScreen() {
               onPress={() => setShowDayPicker(false)}
             >
               <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Servings Picker Modal */}
+      <Modal
+        visible={showServingsPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowServingsPicker(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          onPress={() => setShowServingsPicker(false)}
+          activeOpacity={1}
+        >
+          <TouchableOpacity 
+            style={styles.modalContent}
+            onPress={(e) => e.stopPropagation()}
+            activeOpacity={1}
+          >
+            <Text style={styles.modalTitle}>How many servings?</Text>
+            <Text style={styles.servingsSubtitle}>{selectedRecipe?.title}</Text>
+            <View style={styles.servingsRow}>
+              <TouchableOpacity
+                style={styles.servingsButton}
+                onPress={() => setPendingServings(Math.max(1, pendingServings - 1))}
+              >
+                <Text style={styles.servingsButtonText}>−</Text>
+              </TouchableOpacity>
+              <Text style={styles.servingsValue}>{pendingServings}</Text>
+              <TouchableOpacity
+                style={styles.servingsButton}
+                onPress={() => setPendingServings(Math.min(20, pendingServings + 1))}
+              >
+                <Text style={styles.servingsButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity 
+              style={styles.confirmButton}
+              onPress={() => addMealToDay(selectedDayForRecipe!)}
+            >
+              <Text style={styles.confirmButtonText}>Add to Plan</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.cancelButton}
+              onPress={() => {
+                setShowServingsPicker(false);
+                setShowDayPicker(true);
+              }}
+            >
+              <Text style={styles.cancelText}>Back</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -392,20 +466,26 @@ export default function PlanWeekScreen() {
             // Build weekly plan with actual ingredients from recipes
             const allRecipes = weekPlan.flatMap((day) => 
               day.meals.map(meal => {
-                const recipeData = RECIPE_DATA[meal.recipeId];
+                // Look up recipe in ALL_RECIPES
+                const recipeInfo = ALL_RECIPES.find(r => r.id === meal.recipeId);
+                const recipeData = recipeInfo?.data;
                 // Flatten all ingredients from all sections
-                const allIngredients = recipeData 
+                const allIngredients = recipeData?.ingredients 
                   ? Object.values(recipeData.ingredients).flat()
                   : [];
                 
+                const finalServings = meal.servings || recipeData?.data?.servings || 4;
+                const defaultServings = recipeData?.data?.servings || 4;
+                console.log(`Recipe ${meal.recipeName}: meal.servings=${meal.servings}, recipeDefault=${defaultServings}, using=${finalServings}`);
                 return {
                   recipeId: meal.recipeId,
                   recipeName: meal.recipeName,
-                  servings: 4,
+                  servings: finalServings,
+                  defaultServings: defaultServings,
                   ingredients: allIngredients.map((ing: any) => ({
                     item: ing.item,
-                    amount: ing.amount?.value !== undefined 
-                      ? `${ing.amount.value} ${ing.amount.unit}` 
+                    amount: typeof ing.amount === 'string' 
+                      ? ing.amount 
                       : ing.amount?.toString() || 'as needed',
                     category: ing.category || 'other',
                   })),
@@ -680,6 +760,60 @@ const styles = StyleSheet.create({
   shoppingButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    color: '#FFF',
+  },
+  // Servings picker styles
+  servingsSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 20,
+  },
+  servingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    gap: 16,
+  },
+  servingsButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FF8C42',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  servingsButtonText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFF',
+  },
+  servingsValue: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: '#5D4E37',
+    minWidth: 60,
+    textAlign: 'center',
+  },
+  confirmButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+    marginHorizontal: 20,
+  },
+  confirmButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
     color: '#FFF',
   },
 });

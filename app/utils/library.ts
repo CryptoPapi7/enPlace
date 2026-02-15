@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getAllRecipes } from '../database/db';
+import type { Recipe } from '../schemas/recipe';
 
 // My Library system - recipes explicitly added (beyond just favorites)
 
@@ -99,23 +101,35 @@ export async function initLibrary(): Promise<void> {
   await loadLibrary();
 }
 
-// Get library + favorites combined (for My Library view)
-import { getFavorites, FavoriteRecipe } from './favorites';
-
-export async function getMyLibraryRecipes(): Promise<(LibraryRecipe | FavoriteRecipe)[]> {
-  const [library, favorites] = await Promise.all([
-    loadLibrary(),
-    getFavorites()
-  ]);
+/**
+ * Get combined library: AsyncStorage library + SQLite custom recipes
+ * Used by MyLibraryScreen - no UI changes, just data source
+ */
+export async function getMyLibraryRecipes(): Promise<LibraryRecipe[]> {
+  // Load from AsyncStorage (existing library)
+  const library = await loadLibrary();
   
-  // Combine and dedupe by id
-  const combined = [...library];
-  const libraryIds = new Set(library.map(r => r.id));
+  // Load custom recipes from SQLite
+  const customRecipes = await getAllRecipes();
   
-  // Add favorites that aren't already in library
-  favorites.forEach(fav => {
-    if (!libraryIds.has(fav.id)) {
-      combined.push(fav);
+  // Convert SQLite recipes to LibraryRecipe format
+  const sqliteAsLibrary: LibraryRecipe[] = customRecipes.map(r => ({
+    id: r.id!,
+    title: r.title,
+    emoji: r.emoji || '🍽️',
+    cuisine: r.cuisine || 'Custom',
+    time: r.totalTime || '30 min',
+    addedAt: r.createdAt?.toISOString() || new Date().toISOString(),
+  }));
+  
+  // Combine: SQLite recipes first (newer), then library
+  const combined = [...sqliteAsLibrary];
+  const sqliteIds = new Set(sqliteAsLibrary.map(r => r.id));
+  
+  // Add library recipes that aren't from SQLite
+  library.forEach(libRecipe => {
+    if (!sqliteIds.has(libRecipe.id)) {
+      combined.push(libRecipe);
     }
   });
   

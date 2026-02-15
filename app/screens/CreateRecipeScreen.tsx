@@ -17,19 +17,9 @@ import {
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || 'your-api-key-here';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
+import { parseAIRecipe, type Recipe } from '../schemas/recipe';
 
-interface AIRecipe {
-  title: string;
-  description: string;
-  emoji: string;
-  cuisine: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  totalTime: string;
-  servings: string;
-  ingredients: string[];
-  instructions: string[];
-  tags: string[];
-}
+interface AIRecipe extends Recipe {}
 
 export default function CreateRecipeScreen() {
   const [prompt, setPrompt] = useState('');
@@ -121,21 +111,34 @@ export default function CreateRecipeScreen() {
     setLoading(true);
     
     try {
-      const recipe = await generateRecipe();
+      const rawRecipe = await generateRecipe();
       
-      if (recipe) {
-        navigation.navigate('RecipePreview', {
-          recipe: recipe,
-          source: 'ai',
-          isNew: true,
-        });
-      } else {
+      if (!rawRecipe) {
         Alert.alert(
           'Generation failed',
           'Could not generate a recipe. Try a different description.',
           [{ text: 'OK' }]
         );
+        return;
       }
+      
+      // Validate with Zod before passing to preview
+      const validation = parseAIRecipe(rawRecipe);
+      
+      if (!validation.success) {
+        Alert.alert(
+          'Recipe validation failed',
+          `Generated recipe had issues:\n${validation.errors.join('\n')}`,
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      
+      navigation.navigate('RecipePreview', {
+        recipe: validation.data,
+        source: 'ai',
+        isNew: true,
+      });
     } catch (err) {
       Alert.alert(
         'Something went wrong',

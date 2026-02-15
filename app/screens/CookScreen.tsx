@@ -38,6 +38,7 @@ import {
   rotiCurryChannaRecipe,
   phoBoRecipe,
   jerkChickenRecipe,
+  valentineDinnerRecipe,
 } from "../data/recipes";
 
 const RECIPE_MAP: Record<string, any> = {
@@ -53,6 +54,7 @@ const RECIPE_MAP: Record<string, any> = {
   'roti-curry-channa': rotiCurryChannaRecipe,
   'pho-bo': phoBoRecipe,
   'jerk-chicken': jerkChickenRecipe,
+  'valentine-dinner': valentineDinnerRecipe,
 };
 
 // Steps that benefit from stirring animation
@@ -299,14 +301,16 @@ export default function CookScreen() {
           </Text>
         </View>
         
-        <TouchableOpacity 
-          style={[styles.voiceButton, isSpeaking && styles.voiceButtonActive]} 
-          onPress={speakStep}
-        >
-          <Text style={styles.voiceButtonText}>
-            {isSpeaking ? '⏹' : '🔊'}
-          </Text>
-        </TouchableOpacity>
+        <View style={[styles.voiceGlow, isSpeaking && styles.voiceGlowActive]}>
+          <TouchableOpacity 
+            style={[styles.voiceButton, isSpeaking && styles.voiceButtonActive]} 
+            onPress={speakStep}
+          >
+            <Text style={styles.voiceButtonText}>
+              {isSpeaking ? '⏹' : '🔊'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Main Content */}
@@ -316,7 +320,7 @@ export default function CookScreen() {
         {step.instructions.map((instruction, idx) => (
           <View key={idx} style={styles.instructionRow}>
             <Text style={styles.bullet}>•</Text>
-            <Text style={styles.instruction}>{instruction}</Text>
+            <Text style={styles.stepInstruction}>{instruction}</Text>
           </View>
         ))}
 
@@ -363,6 +367,20 @@ export default function CookScreen() {
 }
 
 const styles = StyleSheet.create({
+  stepTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    lineHeight: 34,
+    color: colors.neutral[900],
+    marginBottom: spacing.md,
+  },
+  stepInstruction: {
+    fontSize: 18,
+    lineHeight: 26,
+    color: colors.neutral[800],
+    marginBottom: spacing.lg,
+  },
+
   container: { 
     flex: 1, 
     backgroundColor: colors.cream[50]
@@ -404,9 +422,9 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     width: '100%',
-    height: 6,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 3,
+    height: 4,
+    backgroundColor: colors.neutral[200],
+    borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
@@ -423,20 +441,20 @@ const styles = StyleSheet.create({
   
   // Voice Button
   voiceButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFF',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   voiceButtonActive: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 24,
+    elevation: 16,
   },
   voiceButtonText: {
     fontSize: 20,
@@ -450,12 +468,6 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 16,
   },
-  stepTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#5D4E37',
-    marginBottom: 24,
-  },
   instructionRow: {
     flexDirection: 'row',
     marginBottom: 16,
@@ -468,23 +480,25 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   instruction: {
-    fontSize: 18,
+    fontSize: 22,
     color: '#5D4E37',
-    lineHeight: 26,
+    lineHeight: 32,
     flex: 1,
   },
   durationBadge: {
-    backgroundColor: '#87CEEB20',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
+    backgroundColor: colors.primary[500] + '20',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
     alignSelf: 'flex-start',
-    marginTop: 16,
+    marginTop: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.primary[400] + '40',
   },
   durationText: {
-    fontSize: 14,
-    color: '#5D4E37',
-    fontWeight: '600',
+    fontSize: 15,
+    color: colors.primary[600],
+    fontWeight: '700',
   },
   
   // Navigation Bar
@@ -492,11 +506,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#FFF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: colors.white,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: colors.neutral[200],
   },
   navButton: {
     paddingHorizontal: 16,
@@ -518,29 +532,61 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   
+  // Voice Button
+  voiceGlow: {
+    padding: 4,
+  },
+  voiceGlowActive: {
+    backgroundColor: colors.primary[500] + '30',
+    borderRadius: 26,
+    padding: 4,
+  },
+  voiceButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.neutral[900],
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  voiceButtonActive: {
+    backgroundColor: colors.primary[500],
+  },
+  voiceButtonText: {
+    fontSize: 20,
+  },
+  
   // Step Dots
   stepDots: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     marginHorizontal: 8,
     flexWrap: 'wrap',
     justifyContent: 'center',
     maxWidth: 120,
   },
   dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.neutral[200],
+  },
+  dotActive: {
+    backgroundColor: colors.primary[500],
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E0E0E0',
-  },
-  dotActive: {
-    backgroundColor: '#FF8C42',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
   },
   dotCompleted: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary[400],
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 });

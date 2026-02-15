@@ -9,7 +9,8 @@ import {
   TextInput,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveRecipe } from '../database/db';
+import { Alert } from 'react-native';
 
 export default function RecipePreviewScreen({ route, navigation }: any) {
   const { recipe, source, isNew } = route.params;
@@ -22,26 +23,39 @@ export default function RecipePreviewScreen({ route, navigation }: any) {
 
   const handleSave = async () => {
     try {
-      // Generate unique ID
-      const recipeId = `custom-${Date.now()}`;
-      const recipeToSave = {
-        ...editRecipe,
-        id: recipeId,
-        type: 'recipe',
-        isCustom: true,
-        createdAt: new Date().toISOString(),
-      };
+      // Save to SQLite database
+      const savedRecipe = await saveRecipe({
+        title: editRecipe.title,
+        description: editRecipe.description,
+        emoji: editRecipe.emoji,
+        cuisine: editRecipe.cuisine,
+        difficulty: editRecipe.difficulty || 'Medium',
+        prepTime: editRecipe.prepTime || '',
+        cookTime: editRecipe.cookTime || '',
+        totalTime: editRecipe.totalTime,
+        servings: editRecipe.servings,
+        ingredients: editRecipe.ingredients,
+        instructions: editRecipe.instructions,
+        tags: editRecipe.tags || [],
+        image: editRecipe.image,
+        source: source === 'import' ? editRecipe.source : undefined,
+      });
 
-      // Save to custom recipes storage
-      const existing = await AsyncStorage.getItem('customRecipes');
-      const recipes = existing ? JSON.parse(existing) : [];
-      recipes.push(recipeToSave);
-      await AsyncStorage.setItem('customRecipes', JSON.stringify(recipes));
-
-      // Navigate to the recipe
-      navigation.navigate('RecipeHome', { recipeId });
+      Alert.alert(
+        'Recipe Saved',
+        `${savedRecipe.title} has been saved to your collection!`,
+        [{ 
+          text: 'View Recipe', 
+          onPress: () => navigation.navigate('RecipeHome', { recipeId: savedRecipe.id })
+        }]
+      );
     } catch (error) {
       console.error('Error saving recipe:', error);
+      Alert.alert(
+        'Save Failed',
+        'Could not save the recipe. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 

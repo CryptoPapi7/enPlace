@@ -65,7 +65,14 @@ export function scaleAmount(amountStr: string, ratio: number): string {
   formatted = formatted.replace(/\.0$/, '');
   
   if (parsed.unit) {
-    return `${formatted} ${parsed.unit}`;
+    // Check if it's a standard unit that should have no space
+    const standardUnits = ['g', 'kg', 'ml', 'l', 'tsp', 'tbs', 'tbsp', 'cup', 'cups', 'oz', 'lb', 'lbs', 'floz'];
+    const useNoSpace = standardUnits.includes(parsed.unit.toLowerCase()) || 
+                       standardUnits.includes(parsed.unit.toLowerCase().replace(/s$/, ''));
+    
+    return useNoSpace 
+      ? `${formatted}${parsed.unit}` 
+      : `${formatted} ${parsed.unit}`;
   }
   return formatted;
 }

@@ -175,10 +175,14 @@ export function convertIngredient(
   const category = getIngredientCategory(ingredientName);
   const targetUnit = preferences[category];
   
-  // Get current unit conversion
-  const currentConv = CONVERSIONS[parsed.unit] || CONVERSIONS[parsed.unit + 's'];
+  // Get current unit conversion (try trimmed base, then +s, then common aliases)
+  const unitBase = parsed.unit.trim().toLowerCase();
+  console.log(`Converting: ${amountStr}, parsed: ${parsed.value}${unitBase}, category: ${category}, target: ${preferences[category]}`);
+  const currentConv = CONVERSIONS[unitBase] 
+    || CONVERSIONS[unitBase + 's']
+    || CONVERSIONS[unitBase.replace(/s$/, '')]; // try singular if plural
   if (!currentConv) {
-    // Unknown unit, return original
+    console.log(`  No conversion found for unit: ${unitBase}`);
     return amountStr;
   }
   
@@ -251,7 +255,9 @@ export function convertIngredient(
   // Clean up
   formatted = formatted.replace(/\.0$/, '');
   
-  return `${formatted} ${finalUnit}`;
+  const result = `${formatted}${finalUnit}`;
+  console.log(`  Result: ${result}`);
+  return result;
 }
 
 // Quick toggle presets
@@ -270,7 +276,7 @@ export const UNIT_PRESETS = {
     fats: 'tbs' as const,
     produce: 'count' as const,
   },
-  baker_friendly: {
+  baker: {
     dryGoods: 'grams' as const,      // Weight for accuracy
     liquids: 'ml' as const,          // Weight/volume equivalence
     smallAmounts: 'grams' as const,  // Precise measurements

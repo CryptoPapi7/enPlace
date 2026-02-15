@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, TextInput } from "react-native";
+import { colors, spacing, shadows, typography } from '../theme';
 import { useState, useCallback } from "react";
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
-import { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe } from "../data/recipes";
+import { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe, valentineDinnerRecipe } from "../data/recipes";
 import { StatusBar } from 'expo-status-bar';
 import { scaleAmount, scaleServings, scaleTime } from "../utils/scaling";
 import { convertIngredient, DEFAULT_PREFERENCES, UNIT_PRESETS, UnitPreference } from "../utils/units";
@@ -22,6 +23,7 @@ const RECIPE_MAP: Record<string, any> = {
   'roti-curry-channa': rotiCurryChannaRecipe,
   'pho-bo': phoBoRecipe,
   'jerk-chicken': jerkChickenRecipe,
+  'valentine-dinner': valentineDinnerRecipe,
 };
 
 // Section metadata (emoji, display name)
@@ -33,6 +35,14 @@ const SECTION_META: Record<string, { emoji: string; title: string }> = {
   'pasta': { emoji: '🍝', title: 'Fresh Pasta' },
   'sauce': { emoji: '🍅', title: 'Pomodoro Sauce' },
   'starter': { emoji: '🫧', title: 'Starter & Autolyse' },
+  // Valentine's Dinner
+  'pasta-dough': { emoji: '🍝', title: 'Pasta Dough' },
+  'prep-mise': { emoji: '📋', title: 'Mise en Place' },
+  'pasta-roll-cut': { emoji: '🍜', title: 'Roll & Cut' },
+  'fish-sauce': { emoji: '🐟', title: 'Cod Piccata' },
+  'pasta-cook': { emoji: '🔥', title: 'Cook Pasta' },
+  'broccolini': { emoji: '🥬', title: 'Broccolini' },
+  'serve': { emoji: '🍽️', title: 'Plate & Serve' },
   'bulk': { emoji: '💪', title: 'Bulk Fermentation' },
   'shape': { emoji: '🌀', title: 'Shaping' },
   'bake': { emoji: '🔥', title: 'Proofing & Baking' },
@@ -129,6 +139,8 @@ export default function RecipeScreen() {
   const handleStartCooking = () => {
     router.push(`/cooking?recipeId=${recipeId}&servings=${servings}`);
   };
+
+  const styles = getStyles(colors, spacing, shadows);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -253,14 +265,19 @@ export default function RecipeScreen() {
                 return (
                   <View key={sectionKey} style={styles.ingredientGroup}>
                     <Text style={styles.ingredientGroupTitle}>{info.emoji} For the {info.title}</Text>
-                    {info.ingredients.map((ing: any, idx: number) => (
-                      <View key={idx} style={styles.ingredientRow}>
-                        <Text style={styles.ingredientAmount}>
-                          {convertIngredient(scaleAmount(ing.amount, ratio), ing.item, unitPrefs)}
-                        </Text>
-                        <Text style={styles.ingredientItem}>{ing.item}</Text>
-                      </View>
-                    ))}
+                    {info.ingredients.map((ing: any, idx: number) => {
+                      const scaled = scaleAmount(ing.amount, ratio);
+                      const converted = convertIngredient(scaled, ing.item, unitPrefs);
+                      console.log(`${ing.item}: ${ing.amount} -> scaled: ${scaled} -> converted: ${converted}`);
+                      return (
+                        <View key={idx} style={styles.ingredientRow}>
+                          <Text style={styles.ingredientAmount}>
+                            {converted}
+                          </Text>
+                          <Text style={styles.ingredientItem}>{ing.item}</Text>
+                        </View>
+                      );
+                    })}
                   </View>
                 );
               })}
@@ -367,7 +384,7 @@ export default function RecipeScreen() {
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.addToPlanButton}
-          onPress={() => router.push(`/plan?addRecipe=${recipeId}`)}
+          onPress={() => router.push(`/plan?addRecipe=${recipeId}&servings=${servings}`)}
         >
           <Text style={styles.addToPlanText}>+ Add to Weekly Plan</Text>
         </TouchableOpacity>
@@ -376,7 +393,7 @@ export default function RecipeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF8E7',
@@ -388,39 +405,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
   backButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...shadows.sm,
   },
   backButtonText: {
     fontSize: 20,
-    color: '#5D4E37',
+    color: colors.neutral[700],
   },
   favoriteButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...shadows.sm,
   },
   favoriteEmoji: {
     fontSize: 24,
@@ -428,40 +437,37 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   libraryButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...shadows.sm,
   },
   libraryEmoji: {
     fontSize: 22,
   },
   hero: {
     alignItems: 'center',
-    paddingTop: 20,
-    paddingHorizontal: 24,
+    paddingTop: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
   heroEmoji: {
     fontSize: 100,
     lineHeight: 120,
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#5D4E37',
+    fontSize: typography.display.fontSize,
+    fontWeight: typography.display.fontWeight,
+    color: colors.neutral[900],
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
+    lineHeight: typography.display.lineHeight,
   },
   heroSubtitle: {
     fontSize: 16,
@@ -793,3 +799,4 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+

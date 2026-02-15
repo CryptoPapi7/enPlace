@@ -13,6 +13,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+import { parseImportedRecipe } from '../schemas/recipe';
 
 export default function ImportRecipeScreen() {
   const [url, setUrl] = useState('');
@@ -32,21 +33,34 @@ export default function ImportRecipeScreen() {
       const html = await response.text();
       
       // Extract recipe data (basic parsing - can be improved)
-      const recipeData = parseRecipeFromHtml(html, url);
+      const rawRecipeData = parseRecipeFromHtml(html, url);
       
-      if (recipeData) {
-        navigation.navigate('RecipePreview', { 
-          recipe: recipeData,
-          source: 'import',
-          isNew: true 
-        });
-      } else {
+      if (!rawRecipeData) {
         Alert.alert(
           'Could not parse recipe',
           'We couldn\'t automatically extract the recipe. Try a different URL or use the photo import.',
           [{ text: 'OK' }]
         );
+        return;
       }
+      
+      // Validate with Zod before passing to preview
+      const validation = parseImportedRecipe(rawRecipeData);
+      
+      if (!validation.success) {
+        Alert.alert(
+          'Recipe validation failed',
+          `Extracted recipe had issues:\n${validation.errors.join('\n')}`,
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      
+      navigation.navigate('RecipePreview', { 
+        recipe: validation.data,
+        source: 'import',
+        isNew: true 
+      });
     } catch (error) {
       Alert.alert(
         'Import failed',
