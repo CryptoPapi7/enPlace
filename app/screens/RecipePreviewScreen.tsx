@@ -11,8 +11,11 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { saveRecipe } from '../database/db';
 import { Alert } from 'react-native';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function RecipePreviewScreen({ route, navigation }: any) {
+  const { colors, isMichelin } = useTheme();
+  const dynamicStyles = createStyles(colors, isMichelin);
   const { recipe, source, isNew } = route.params;
   const [editRecipe, setEditRecipe] = useState({
     ...recipe,
@@ -67,31 +70,31 @@ export default function RecipePreviewScreen({ route, navigation }: any) {
   const emojiOptions = ['🍽️', '🍕', '🍜', '🥗', '🍔', '🌮', '🍛', '🥘', '🍝', '🥪', '🥞', '🍰', '🥧', '🍪'];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <ScrollView style={styles.scrollView}>
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <ScrollView style={dynamicStyles.scrollView}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={dynamicStyles.header}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={dynamicStyles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <Text style={dynamicStyles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Review Recipe</Text>
+          <Text style={dynamicStyles.title}>Review Recipe</Text>
           <TouchableOpacity 
-            style={styles.editButton}
+            style={dynamicStyles.editButton}
             onPress={() => setIsEditing(!isEditing)}
           >
-            <Text style={styles.editButtonText}>
+            <Text style={dynamicStyles.editButtonText}>
               {isEditing ? 'Done' : 'Edit'}
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Source Badge */}
-        <View style={styles.sourceBadge}>
-          <Text style={styles.sourceText}>
+        <View style={dynamicStyles.sourceBadge}>
+          <Text style={dynamicStyles.sourceText}>
             {source === 'import' ? '🔗 Imported from web' : 
              source === 'photo' ? '📷 From photo' : 
              source === 'ai' ? '✨ AI Generated' : 'Custom Recipe'}
@@ -100,61 +103,61 @@ export default function RecipePreviewScreen({ route, navigation }: any) {
 
         {isEditing ? (
           // Edit Mode
-          <View style={styles.editSection}>
-            <Text style={styles.label}>Recipe Name</Text>
+          <View style={dynamicStyles.editSection}>
+            <Text style={dynamicStyles.label}>Recipe Name</Text>
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               value={editRecipe.title}
               onChangeText={(text) => updateField('title', text)}
             />
 
-            <Text style={styles.label}>Select Emoji</Text>
-            <View style={styles.emojiRow}>
+            <Text style={dynamicStyles.label}>Select Emoji</Text>
+            <View style={dynamicStyles.emojiRow}>
               {emojiOptions.map(emoji => (
                 <TouchableOpacity
                   key={emoji}
-                  style={[styles.emojiBtn, editRecipe.emoji === emoji && styles.emojiBtnActive]}
+                  style={[dynamicStyles.emojiBtn, editRecipe.emoji === emoji && dynamicStyles.emojiBtnActive]}
                   onPress={() => updateField('emoji', emoji)}
                 >
-                  <Text style={styles.emojiText}>{emoji}</Text>
+                  <Text style={dynamicStyles.emojiText}>{emoji}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={styles.label}>Cuisine</Text>
-            <View style={styles.chipRow}>
+            <Text style={dynamicStyles.label}>Cuisine</Text>
+            <View style={dynamicStyles.chipRow}>
               {cuisineOptions.map(cuisine => (
                 <TouchableOpacity
                   key={cuisine}
-                  style={[styles.chip, editRecipe.cuisine === cuisine && styles.chipActive]}
+                  style={[dynamicStyles.chip, editRecipe.cuisine === cuisine && dynamicStyles.chipActive]}
                   onPress={() => updateField('cuisine', cuisine)}
                 >
-                  <Text style={[styles.chipText, editRecipe.cuisine === cuisine && styles.chipTextActive]}>
+                  <Text style={[dynamicStyles.chipText, editRecipe.cuisine === cuisine && dynamicStyles.chipTextActive]}>
                     {cuisine}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={styles.label}>Description</Text>
+            <Text style={dynamicStyles.label}>Description</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[dynamicStyles.input, dynamicStyles.textArea]}
               multiline
               value={editRecipe.description}
               onChangeText={(text) => updateField('description', text)}
             />
 
-            <Text style={styles.label}>Cooking Time</Text>
+            <Text style={dynamicStyles.label}>Cooking Time</Text>
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               value={editRecipe.totalTime}
               onChangeText={(text) => updateField('totalTime', text)}
               placeholder="e.g., 30 minutes"
             />
 
-            <Text style={styles.label}>Servings</Text>
+            <Text style={dynamicStyles.label}>Servings</Text>
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               value={editRecipe.servings}
               onChangeText={(text) => updateField('servings', text)}
               placeholder="e.g., 4 servings"
@@ -162,58 +165,58 @@ export default function RecipePreviewScreen({ route, navigation }: any) {
           </View>
         ) : (
           // Preview Mode
-          <View style={styles.previewSection}>
-            <View style={styles.titleRow}>
-              <Text style={styles.recipeEmoji}>{editRecipe.emoji}</Text>
-              <Text style={styles.recipeTitle}>{editRecipe.title}</Text>
+          <View style={dynamicStyles.previewSection}>
+            <View style={dynamicStyles.titleRow}>
+              <Text style={dynamicStyles.recipeEmoji}>{editRecipe.emoji}</Text>
+              <Text style={dynamicStyles.recipeTitle}>{editRecipe.title}</Text>
             </View>
 
-            <Text style={styles.recipeCuisine}>{editRecipe.cuisine}</Text>
+            <Text style={dynamicStyles.recipeCuisine}>{editRecipe.cuisine}</Text>
 
             {editRecipe.description && (
-              <Text style={styles.description}>{editRecipe.description}</Text>
+              <Text style={dynamicStyles.description}>{editRecipe.description}</Text>
             )}
 
-            <View style={styles.metaRow}>
-              <View style={styles.metaItem}>
-                <Text style={styles.metaIcon}>⏱️</Text>
-                <Text style={styles.metaLabel}>{editRecipe.totalTime}</Text>
+            <View style={dynamicStyles.metaRow}>
+              <View style={dynamicStyles.metaItem}>
+                <Text style={dynamicStyles.metaIcon}>⏱️</Text>
+                <Text style={dynamicStyles.metaLabel}>{editRecipe.totalTime}</Text>
               </View>
-              <View style={styles.metaItem}>
-                <Text style={styles.metaIcon}>👥</Text>
-                <Text style={styles.metaLabel}>{editRecipe.servings}</Text>
+              <View style={dynamicStyles.metaItem}>
+                <Text style={dynamicStyles.metaIcon}>👥</Text>
+                <Text style={dynamicStyles.metaLabel}>{editRecipe.servings}</Text>
               </View>
             </View>
 
-            <Text style={styles.sectionTitle}>📝 Ingredients</Text>
+            <Text style={dynamicStyles.sectionTitle}>📝 Ingredients</Text>
             {editRecipe.ingredients?.map((ing: string, i: number) => (
-              <Text key={i} style={styles.listItem}>• {ing}</Text>
+              <Text key={i} style={dynamicStyles.listItem}>• {ing}</Text>
             ))}
 
-            <Text style={styles.sectionTitle}>👨‍🍳 Instructions</Text>
+            <Text style={dynamicStyles.sectionTitle}>👨‍🍳 Instructions</Text>
             {editRecipe.instructions?.map((step: string, i: number) => (
-              <View key={i} style={styles.stepRow}>
-                <Text style={styles.stepNumber}>{i + 1}</Text>
-                <Text style={styles.step}>{step}</Text>
+              <View key={i} style={dynamicStyles.stepRow}>
+                <Text style={dynamicStyles.stepNumber}>{i + 1}</Text>
+                <Text style={dynamicStyles.step}>{step}</Text>
               </View>
             ))}
           </View>
         )}
 
         {/* Actions */}
-        <View style={styles.actions}>
+        <View style={dynamicStyles.actions}>
           <TouchableOpacity 
-            style={styles.cancelBtn}
+            style={dynamicStyles.cancelBtn}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.cancelBtnText}>Cancel</Text>
+            <Text style={dynamicStyles.cancelBtnText}>Cancel</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={styles.saveBtn}
+            style={dynamicStyles.saveBtn}
             onPress={handleSave}
           >
-            <Text style={styles.saveBtnText}>💾 Save to My Library</Text>
+            <Text style={dynamicStyles.saveBtnText}>💾 Save to My Library</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -221,10 +224,10 @@ export default function RecipePreviewScreen({ route, navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   scrollView: {
     flex: 1,
@@ -240,7 +243,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -251,12 +254,12 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   editButton: {
     paddingHorizontal: 12,
@@ -267,7 +270,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
   },
   sourceBadge: {
     backgroundColor: '#E8E8E8',
@@ -279,11 +282,11 @@ const styles = StyleSheet.create({
   },
   sourceText: {
     fontSize: 13,
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
     fontWeight: '500',
   },
   previewSection: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
@@ -306,7 +309,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 26,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   recipeCuisine: {
     fontSize: 14,
@@ -318,7 +321,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 15,
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
     lineHeight: 22,
     marginBottom: 16,
   },
@@ -338,18 +341,18 @@ const styles = StyleSheet.create({
   metaLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginTop: 20,
     marginBottom: 12,
   },
   listItem: {
     fontSize: 15,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 6,
     lineHeight: 22,
   },
@@ -361,8 +364,8 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FF8C42',
-    color: '#FFF',
+    backgroundColor: colors.primary[500],
+    color: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
     fontSize: 14,
     fontWeight: '700',
     textAlign: 'center',
@@ -372,11 +375,11 @@ const styles = StyleSheet.create({
   step: {
     flex: 1,
     fontSize: 15,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     lineHeight: 22,
   },
   editSection: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
@@ -384,7 +387,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 8,
     marginTop: 16,
   },
@@ -393,7 +396,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   textArea: {
     minHeight: 80,
@@ -413,7 +416,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emojiBtnActive: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
   },
   emojiText: {
     fontSize: 28,
@@ -434,10 +437,10 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 14,
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
   },
   chipTextActive: {
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
     fontWeight: '600',
   },
   actions: {
@@ -455,11 +458,11 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   saveBtn: {
     flex: 1,
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     padding: 16,
     borderRadius: 12,
     marginLeft: 8,
@@ -468,6 +471,6 @@ const styles = StyleSheet.create({
   saveBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
   },
 });

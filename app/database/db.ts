@@ -36,7 +36,36 @@ async function initDatabase(): Promise<void> {
       created_at INTEGER DEFAULT (unixepoch()),
       updated_at INTEGER DEFAULT (unixepoch())
     );
+
+    -- Create preferences table for user settings (anonymous users)
+    CREATE TABLE IF NOT EXISTS preferences (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
   `);
+}
+
+/**
+ * Get a preference value from SQLite
+ */
+export async function getPreference(key: string): Promise<string | null> {
+  const database = await getDatabase();
+  const row = await database.getFirstAsync<{ value: string }>(
+    'SELECT value FROM preferences WHERE key = ?',
+    [key]
+  );
+  return row?.value ?? null;
+}
+
+/**
+ * Set a preference value in SQLite
+ */
+export async function setPreference(key: string, value: string): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync(
+    'INSERT OR REPLACE INTO preferences (key, value) VALUES (?, ?)',
+    [key, value]
+  );
 }
 
 /**

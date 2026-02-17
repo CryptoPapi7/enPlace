@@ -14,8 +14,11 @@ import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { parseImportedRecipe } from '../schemas/recipe';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function ImportRecipeScreen() {
+  const { colors, isMichelin } = useTheme();
+  const dynamicStyles = createStyles(colors, isMichelin);
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [method, setMethod] = useState<'url' | 'photo'>('url');
@@ -106,36 +109,36 @@ export default function ImportRecipeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <ScrollView style={styles.scrollView}>
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <ScrollView style={dynamicStyles.scrollView}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={dynamicStyles.header}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={dynamicStyles.backButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <Text style={dynamicStyles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Import Recipe</Text>
-          <View style={styles.placeholder} />
+          <Text style={dynamicStyles.title}>Import Recipe</Text>
+          <View style={dynamicStyles.placeholder} />
         </View>
 
         {/* Method Toggle */}
-        <View style={styles.methodToggle}>
+        <View style={dynamicStyles.methodToggle}>
           <TouchableOpacity 
-            style={[styles.methodBtn, method === 'url' && styles.methodBtnActive]}
+            style={[dynamicStyles.methodBtn, method === 'url' && dynamicStyles.methodBtnActive]}
             onPress={() => setMethod('url')}
           >
-            <Text style={[styles.methodText, method === 'url' && styles.methodTextActive]}>
+            <Text style={[dynamicStyles.methodText, method === 'url' && dynamicStyles.methodTextActive]}>
               🔗 From Website
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.methodBtn, method === 'photo' && styles.methodBtnActive]}
+            style={[dynamicStyles.methodBtn, method === 'photo' && dynamicStyles.methodBtnActive]}
             onPress={() => setMethod('photo')}
           >
-            <Text style={[styles.methodText, method === 'photo' && styles.methodTextActive]}>
+            <Text style={[dynamicStyles.methodText, method === 'photo' && dynamicStyles.methodTextActive]}>
               📷 From Photo
             </Text>
           </TouchableOpacity>
@@ -144,59 +147,59 @@ export default function ImportRecipeScreen() {
         {method === 'url' ? (
           <>
             {/* URL Input */}
-            <View style={styles.inputSection}>
-              <Text style={styles.label}>Recipe URL</Text>
+            <View style={dynamicStyles.inputSection}>
+              <Text style={dynamicStyles.label}>Recipe URL</Text>
               <TextInput
-                style={styles.input}
+                style={dynamicStyles.input}
                 placeholder="Paste recipe link here..."
                 value={url}
                 onChangeText={setUrl}
                 autoCapitalize="none"
                 keyboardType="url"
               />
-              <Text style={styles.hint}>
+              <Text style={dynamicStyles.hint}>
                 Works with most recipe websites (AllRecipes, Food Network, etc.)
               </Text>
             </View>
 
             {/* Import Button */}
             <TouchableOpacity 
-              style={[styles.importBtn, loading && styles.importBtnDisabled]}
+              style={[dynamicStyles.importBtn, loading && dynamicStyles.importBtnDisabled]}
               onPress={handleImportFromUrl}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text style={styles.importBtnText}>📥 Import Recipe</Text>
+                <Text style={dynamicStyles.importBtnText}>📥 Import Recipe</Text>
               )}
             </TouchableOpacity>
           </>
         ) : (
           <>
             {/* Photo Options */}
-            <View style={styles.photoSection}>
-              <Text style={styles.label}>Choose a method</Text>
+            <View style={dynamicStyles.photoSection}>
+              <Text style={dynamicStyles.label}>Choose a method</Text>
               
               <TouchableOpacity 
-                style={styles.photoOption}
+                style={dynamicStyles.photoOption}
                 onPress={handleTakePhoto}
               >
-                <Text style={styles.photoEmoji}>📸</Text>
+                <Text style={dynamicStyles.photoEmoji}>📸</Text>
                 <View>
-                  <Text style={styles.photoTitle}>Take Photo</Text>
-                  <Text style={styles.photoSub}>Snap a photo of a recipe</Text>
+                  <Text style={dynamicStyles.photoTitle}>Take Photo</Text>
+                  <Text style={dynamicStyles.photoSub}>Snap a photo of a recipe</Text>
                 </View>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={styles.photoOption}
+                style={dynamicStyles.photoOption}
                 onPress={handlePickImage}
               >
-                <Text style={styles.photoEmoji}>🖼️</Text>
+                <Text style={dynamicStyles.photoEmoji}>🖼️</Text>
                 <View>
-                  <Text style={styles.photoTitle}>Choose from Library</Text>
-                  <Text style={styles.photoSub}>Select a saved recipe photo</Text>
+                  <Text style={dynamicStyles.photoTitle}>Choose from Library</Text>
+                  <Text style={dynamicStyles.photoSub}>Select a saved recipe photo</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -204,11 +207,11 @@ export default function ImportRecipeScreen() {
         )}
 
         {/* Tips */}
-        <View style={styles.tipsSection}>
-          <Text style={styles.tipsTitle}>💡 Tips</Text>
-          <Text style={styles.tip}>• Make sure photos are well-lit and clear</Text>
-          <Text style={styles.tip}>• Website import works best with popular recipe sites</Text>
-          <Text style={styles.tip}>• You can edit the imported recipe before saving</Text>
+        <View style={dynamicStyles.tipsSection}>
+          <Text style={dynamicStyles.tipsTitle}>💡 Tips</Text>
+          <Text style={dynamicStyles.tip}>• Make sure photos are well-lit and clear</Text>
+          <Text style={dynamicStyles.tip}>• Website import works best with popular recipe sites</Text>
+          <Text style={dynamicStyles.tip}>• You can edit the imported recipe before saving</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -268,10 +271,10 @@ function parseRecipeFromHtml(html: string, url: string): any {
   return null;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   scrollView: {
     flex: 1,
@@ -287,7 +290,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -298,12 +301,12 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   placeholder: {
     width: 44,
@@ -322,7 +325,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   methodBtnActive: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -332,10 +335,10 @@ const styles = StyleSheet.create({
   methodText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
   },
   methodTextActive: {
-    color: '#FF8C42',
+    color: colors.primary[500],
   },
   inputSection: {
     marginBottom: 24,
@@ -343,21 +346,21 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     borderWidth: 1,
     borderColor: '#E8E8E8',
   },
   hint: {
     fontSize: 13,
-    color: '#999',
+    color: isMichelin ? colors.neutral[500] : colors.neutral[500],
     marginTop: 8,
   },
   quickGrid2x2: {
@@ -366,7 +369,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   importBtn: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -378,7 +381,7 @@ const styles = StyleSheet.create({
   importBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : '#FFF',
   },
   photoSection: {
     marginBottom: 24,
@@ -386,7 +389,7 @@ const styles = StyleSheet.create({
   photoOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 20,
     marginBottom: 12,
@@ -403,26 +406,26 @@ const styles = StyleSheet.create({
   photoTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   photoSub: {
     fontSize: 14,
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
   },
   tipsSection: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 20,
   },
   tipsTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 12,
   },
   tip: {
     fontSize: 14,
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
     marginBottom: 8,
   },
 });

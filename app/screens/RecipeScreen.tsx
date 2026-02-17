@@ -1,13 +1,15 @@
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, TextInput } from "react-native";
-import { colors, spacing, shadows, typography } from '../theme';
-import { useState, useCallback } from "react";
+import { spacing, shadows, typography } from '../theme';
+import { useState, useCallback, useEffect } from "react";
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
 import { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe, valentineDinnerRecipe } from "../data/recipes";
 import { StatusBar } from 'expo-status-bar';
 import { scaleAmount, scaleServings, scaleTime } from "../utils/scaling";
 import { convertIngredient, DEFAULT_PREFERENCES, UNIT_PRESETS, UnitPreference } from "../utils/units";
-import { isFavorite, toggleFavorite, getFavorites, FavoriteRecipe, initFavorites, isFavoriteSync } from "../utils/favorites";
+import { isFavorite, toggleFavorite, FavoriteRecipe } from "../utils/favorites";
+import { getUnitSystem, UnitSystem, loadSettings } from "../utils/settings";
 import { isInLibrary, toggleLibrary, initLibrary } from "../utils/library";
+import { useTheme } from '@/providers/ThemeProvider';
 
 // Recipe lookup
 const RECIPE_MAP: Record<string, any> = {
@@ -60,6 +62,7 @@ const getSectionInfo = (sectionKey: string, recipe: any) => {
 };
 
 export default function RecipeScreen() {
+  const { colors, isMichelin } = useTheme();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const recipeId = id || 'chicken-curry';
   const recipe = RECIPE_MAP[recipeId] || chickenCurryRecipe;
@@ -88,17 +91,25 @@ export default function RecipeScreen() {
   const [showIngredients, setShowIngredients] = useState(false);
   const [showSteps, setShowSteps] = useState<string | null>(null);
   const [showShoppingModal, setShowShoppingModal] = useState(false);
-  const [unitPreset, setUnitPreset] = useState<'metric' | 'imperial' | 'baker'>('metric');
+  const [unitPreset, setUnitPreset] = useState<UnitSystem>('metric');
   const [myNotes, setMyNotes] = useState<Record<string, string>>({});
   const [isFav, setIsFav] = useState(false);
   const [inLibrary, setInLibrary] = useState(false);
+  const [buttonsCollapsed, setButtonsCollapsed] = useState(false);
 
-  // Check favorite and library status on mount and when focused
+  // Load settings once on mount
+  useEffect(() => {
+    loadSettings().then(settings => {
+      console.log('Loaded settings:', settings);
+      setUnitPreset(settings.unitSystem);
+      setServings(settings.defaultServings);
+    });
+  }, []);
+
+  // Check favorite and library status when focused
   useFocusEffect(
     useCallback(() => {
-      initFavorites().then(() => {
-        setIsFav(isFavoriteSync(recipeId));
-      });
+      isFavorite(recipeId).then(setIsFav);
       initLibrary().then(() => {
         isInLibrary(recipeId).then(setInLibrary);
       });
@@ -106,14 +117,16 @@ export default function RecipeScreen() {
   );
 
   const handleToggleFavorite = async () => {
-    const newState = await toggleFavorite({
+    const success = await toggleFavorite({
       id: recipeId,
       title: recipe.title,
       emoji: recipe.emoji,
       cuisine: recipe.cuisine,
       time: recipe.totalTimeMinutes >= 60 ? `${Math.round(recipe.totalTimeMinutes / 60)}h` : `${recipe.totalTimeMinutes}m`,
     });
-    setIsFav(newState);
+    if (success) {
+      setIsFav(!isFav);
+    }
   };
 
   const handleToggleLibrary = async () => {
@@ -140,105 +153,105 @@ export default function RecipeScreen() {
     router.push(`/cooking?recipeId=${recipeId}&servings=${servings}`);
   };
 
-  const styles = getStyles(colors, spacing, shadows);
+  const dynamicStyles = getStyles(colors, spacing, shadows, isMichelin);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <ScrollView style={dynamicStyles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header with Favorite and Library */}
-        <View style={styles.header}>
+        <View style={dynamicStyles.header}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={dynamicStyles.backButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <Text style={dynamicStyles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <View style={styles.headerActions}>
+          <View style={dynamicStyles.headerActions}>
             <TouchableOpacity 
-              style={styles.libraryButton}
+              style={dynamicStyles.libraryButton}
               onPress={handleToggleLibrary}
             >
-              <Text style={styles.libraryEmoji}>{inLibrary ? '📚' : '📑'}</Text>
+              <Text style={dynamicStyles.libraryEmoji}>{inLibrary ? '📚' : '📑'}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.favoriteButton}
+              style={dynamicStyles.favoriteButton}
               onPress={handleToggleFavorite}
             >
-              <Text style={styles.favoriteEmoji}>{isFav ? '❤️' : '🤍'}</Text>
+              <Text style={dynamicStyles.favoriteEmoji}>{isFav ? '❤️' : '🤍'}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Hero Section */}
-        <View style={styles.hero}>
-          <Text style={styles.heroEmoji}>{recipe.emoji}</Text>
-          <Text style={styles.heroTitle}>{recipe.title}</Text>
-          <Text style={styles.heroSubtitle}>{recipe.description}</Text>
+        <View style={dynamicStyles.hero}>
+          <Text style={dynamicStyles.heroEmoji}>{recipe.emoji}</Text>
+          <Text style={dynamicStyles.heroTitle}>{recipe.title}</Text>
+          <Text style={dynamicStyles.heroSubtitle}>{recipe.description}</Text>
         </View>
 
         {/* Quick Stats */}
-        <View style={styles.stats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{Math.round(recipe.totalTimeMinutes * ratio) >= 60 ? `${Math.round((recipe.totalTimeMinutes * ratio) / 60)}h` : `${Math.round(recipe.totalTimeMinutes * ratio)}m`}</Text>
-            <Text style={styles.statLabel}>Total</Text>
+        <View style={dynamicStyles.stats}>
+          <View style={dynamicStyles.statItem}>
+            <Text style={dynamicStyles.statValue}>{Math.round(recipe.totalTimeMinutes * ratio) >= 60 ? `${Math.round((recipe.totalTimeMinutes * ratio) / 60)}h` : `${Math.round(recipe.totalTimeMinutes * ratio)}m`}</Text>
+            <Text style={dynamicStyles.statLabel}>Total</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{Math.round(activeTime * ratio) >= 60 ? `${Math.round((activeTime * ratio) / 60)}h` : `${Math.round(activeTime * ratio)}m`}</Text>
-            <Text style={styles.statLabel}>Active</Text>
+          <View style={dynamicStyles.statDivider} />
+          <View style={dynamicStyles.statItem}>
+            <Text style={dynamicStyles.statValue}>{Math.round(activeTime * ratio) >= 60 ? `${Math.round((activeTime * ratio) / 60)}h` : `${Math.round(activeTime * ratio)}m`}</Text>
+            <Text style={dynamicStyles.statLabel}>Active</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{totalSteps}</Text>
-            <Text style={styles.statLabel}>Steps</Text>
+          <View style={dynamicStyles.statDivider} />
+          <View style={dynamicStyles.statItem}>
+            <Text style={dynamicStyles.statValue}>{totalSteps}</Text>
+            <Text style={dynamicStyles.statLabel}>Steps</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{totalIngredients}</Text>
-            <Text style={styles.statLabel}>Items</Text>
+          <View style={dynamicStyles.statDivider} />
+          <View style={dynamicStyles.statItem}>
+            <Text style={dynamicStyles.statValue}>{totalIngredients}</Text>
+            <Text style={dynamicStyles.statLabel}>Items</Text>
           </View>
         </View>
 
         {/* Serving & Units Controls */}
-        <View style={styles.controlsSection}>
+        <View style={dynamicStyles.controlsSection}>
           {/* Servings */}
-          <View style={styles.servingControl}>
-            <Text style={styles.controlLabel}>👥 Servings</Text>
-            <View style={styles.servingStepper}>
+          <View style={dynamicStyles.servingControl}>
+            <Text style={dynamicStyles.controlLabel}>👥 Servings</Text>
+            <View style={dynamicStyles.servingStepper}>
               <TouchableOpacity
-                style={styles.stepperButton}
+                style={dynamicStyles.stepperButton}
                 onPress={() => setServings(Math.max(1, servings - 1))}
               >
-                <Text style={styles.stepperButtonText}>−</Text>
+                <Text style={dynamicStyles.stepperButtonText}>−</Text>
               </TouchableOpacity>
-              <Text style={styles.servingValue}>{servings}</Text>
+              <Text style={dynamicStyles.servingValue}>{servings}</Text>
               <TouchableOpacity
-                style={styles.stepperButton}
+                style={dynamicStyles.stepperButton}
                 onPress={() => setServings(Math.min(20, servings + 1))}
               >
-                <Text style={styles.stepperButtonText}>+</Text>
+                <Text style={dynamicStyles.stepperButtonText}>+</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.servingRange}>1–20 people</Text>
+            <Text style={dynamicStyles.servingRange}>1–20 people</Text>
           </View>
 
           {/* Unit Presets */}
-          <View style={styles.unitControl}>
-            <Text style={styles.controlLabel}>⚖️ Units</Text>
-            <View style={styles.unitButtons}>
+          <View style={dynamicStyles.unitControl}>
+            <Text style={dynamicStyles.controlLabel}>⚖️ Units</Text>
+            <View style={dynamicStyles.unitButtons}>
               {(['metric', 'imperial', 'baker'] as const).map(preset => (
                 <TouchableOpacity
                   key={preset}
                   style={[
-                    styles.unitButton,
-                    unitPreset === preset && styles.unitButtonActive,
+                    dynamicStyles.unitButton,
+                    unitPreset === preset && dynamicStyles.unitButtonActive,
                   ]}
                   onPress={() => setUnitPreset(preset)}
                 >
                   <Text style={[
-                    styles.unitButtonText,
-                    unitPreset === preset && styles.unitButtonTextActive,
+                    dynamicStyles.unitButtonText,
+                    unitPreset === preset && dynamicStyles.unitButtonTextActive,
                   ]}>{preset.charAt(0).toUpperCase() + preset.slice(1)}</Text>
                 </TouchableOpacity>
               ))}
@@ -247,34 +260,34 @@ export default function RecipeScreen() {
         </View>
 
         {/* Ingredients Section */}
-        <View style={styles.section}>
+        <View style={dynamicStyles.section}>
           <TouchableOpacity 
-            style={styles.sectionHeader}
+            style={dynamicStyles.sectionHeader}
             onPress={() => setShowIngredients(!showIngredients)}
           >
-            <Text style={styles.sectionTitle}>📝 Ingredients</Text>
-            <Text style={styles.sectionToggle}>{showIngredients ? '▲' : '▼'}</Text>
+            <Text style={dynamicStyles.sectionTitle}>📝 Ingredients</Text>
+            <Text style={dynamicStyles.sectionToggle}>{showIngredients ? '▲' : '▼'}</Text>
           </TouchableOpacity>
           
           {showIngredients && (
-            <View style={styles.ingredientsList}>
+            <View style={dynamicStyles.ingredientsList}>
               {sectionKeys.map(sectionKey => {
                 const info = getSectionInfo(sectionKey, recipe);
                 if (info.ingredients.length === 0) return null;
                 
                 return (
-                  <View key={sectionKey} style={styles.ingredientGroup}>
-                    <Text style={styles.ingredientGroupTitle}>{info.emoji} For the {info.title}</Text>
+                  <View key={sectionKey} style={dynamicStyles.ingredientGroup}>
+                    <Text style={dynamicStyles.ingredientGroupTitle}>{info.emoji} For the {info.title}</Text>
                     {info.ingredients.map((ing: any, idx: number) => {
                       const scaled = scaleAmount(ing.amount, ratio);
                       const converted = convertIngredient(scaled, ing.item, unitPrefs);
                       console.log(`${ing.item}: ${ing.amount} -> scaled: ${scaled} -> converted: ${converted}`);
                       return (
-                        <View key={idx} style={styles.ingredientRow}>
-                          <Text style={styles.ingredientAmount}>
+                        <View key={idx} style={dynamicStyles.ingredientRow}>
+                          <Text style={dynamicStyles.ingredientAmount}>
                             {converted}
                           </Text>
-                          <Text style={styles.ingredientItem}>{ing.item}</Text>
+                          <Text style={dynamicStyles.ingredientItem}>{ing.item}</Text>
                         </View>
                       );
                     })}
@@ -286,8 +299,8 @@ export default function RecipeScreen() {
         </View>
 
         {/* What's Involved - Dynamic Sections */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>What's involved</Text>
+        <View style={dynamicStyles.section}>
+          <Text style={dynamicStyles.sectionTitle}>What's involved</Text>
           
           {sectionKeys.map(sectionKey => {
             const info = getSectionInfo(sectionKey, recipe);
@@ -296,39 +309,39 @@ export default function RecipeScreen() {
             return (
               <TouchableOpacity 
                 key={sectionKey}
-                style={styles.phaseCard}
+                style={dynamicStyles.phaseCard}
                 onPress={() => setShowSteps(isExpanded ? null : sectionKey)}
               >
-                <View style={styles.phaseHeader}>
-                  <Text style={styles.phaseEmoji}>{info.emoji}</Text>
-                  <View style={styles.phaseInfo}>
-                    <Text style={styles.phaseTitle}>{info.title}</Text>
-                    <Text style={styles.phaseMeta}>{info.steps.length} steps • {info.ingredients.length} ingredients</Text>
+                <View style={dynamicStyles.phaseHeader}>
+                  <Text style={dynamicStyles.phaseEmoji}>{info.emoji}</Text>
+                  <View style={dynamicStyles.phaseInfo}>
+                    <Text style={dynamicStyles.phaseTitle}>{info.title}</Text>
+                    <Text style={dynamicStyles.phaseMeta}>{info.steps.length} steps • {info.ingredients.length} ingredients</Text>
                   </View>
-                  <Text style={styles.phaseToggle}>{isExpanded ? '▲' : '▼'}</Text>
+                  <Text style={dynamicStyles.phaseToggle}>{isExpanded ? '▲' : '▼'}</Text>
                 </View>
                 
                 {/* Step Preview */}
                 {isExpanded && (
-                  <View style={styles.stepPreview}>
+                  <View style={dynamicStyles.stepPreview}>
                     {info.steps.map((step: any, idx: number) => (
-                      <View key={step.id} style={styles.stepPreviewItem}>
-                        <View style={styles.stepPreviewNumber}>
-                          <Text style={styles.stepPreviewNumberText}>{idx + 1}</Text>
+                      <View key={step.id} style={dynamicStyles.stepPreviewItem}>
+                        <View style={dynamicStyles.stepPreviewNumber}>
+                          <Text style={dynamicStyles.stepPreviewNumberText}>{idx + 1}</Text>
                         </View>
-                        <View style={styles.stepPreviewContent}>
-                          <Text style={styles.stepPreviewTitle}>{step.title}</Text>
-                          <View style={styles.stepPreviewMeta}>
+                        <View style={dynamicStyles.stepPreviewContent}>
+                          <Text style={dynamicStyles.stepPreviewTitle}>{step.title}</Text>
+                          <View style={dynamicStyles.stepPreviewMeta}>
                             {step.durationMinutes > 0 && (
-                              <Text style={styles.stepPreviewTime}>⏱️ {Math.round(step.durationMinutes * ratio)} min</Text>
+                              <Text style={dynamicStyles.stepPreviewTime}>⏱️ {Math.round(step.durationMinutes * ratio)} min</Text>
                             )}
                             {step.active ? (
-                              <Text style={styles.stepPreviewActive}>👨‍🍳 Active</Text>
+                              <Text style={dynamicStyles.stepPreviewActive}>👨‍🍳 Active</Text>
                             ) : (
-                              <Text style={styles.stepPreviewPassive}>😴 Hands-off</Text>
+                              <Text style={dynamicStyles.stepPreviewPassive}>😴 Hands-off</Text>
                             )}
                           </View>
-                          <Text style={styles.stepPreviewInstructions} numberOfLines={2}>
+                          <Text style={dynamicStyles.stepPreviewInstructions} numberOfLines={2}>
                             {step.instructions[0]}
                           </Text>
                         </View>
@@ -343,13 +356,13 @@ export default function RecipeScreen() {
 
         {/* Chef's Notes */}
         {recipe.chefNotes && recipe.chefNotes.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Chef's notes</Text>
-            <View style={styles.notesCard}>
+          <View style={dynamicStyles.section}>
+            <Text style={dynamicStyles.sectionTitle}>Chef's notes</Text>
+            <View style={dynamicStyles.notesCard}>
               {recipe.chefNotes.slice(0, 3).map((note: string, idx: number) => (
-                <View key={idx} style={styles.noteItem}>
-                  <Text style={styles.noteBullet}>💡</Text>
-                  <Text style={styles.noteText}>{note}</Text>
+                <View key={idx} style={dynamicStyles.noteItem}>
+                  <Text style={dynamicStyles.noteBullet}>💡</Text>
+                  <Text style={dynamicStyles.noteText}>{note}</Text>
                 </View>
               ))}
             </View>
@@ -357,11 +370,11 @@ export default function RecipeScreen() {
         )}
 
         {/* My Notes */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📝 My Notes</Text>
-          <View style={styles.myNotesCard}>
+        <View style={dynamicStyles.section}>
+          <Text style={dynamicStyles.sectionTitle}>📝 My Notes</Text>
+          <View style={dynamicStyles.myNotesCard}>
             <TextInput
-              style={styles.myNotesInput}
+              style={dynamicStyles.myNotesInput}
               multiline
               placeholder="Add your personal notes here..."
               placeholderTextColor="#999"
@@ -372,31 +385,47 @@ export default function RecipeScreen() {
           </View>
         </View>
 
-        {/* Bottom padding */}
-        <View style={{ height: 100 }} />
+        {/* Bottom padding for floating buttons */}
+        <View style={{ height: 180 }} />
       </ScrollView>
 
-      {/* Floating Start Button */}
-      <View style={styles.floatingButtonContainer}>
-        <TouchableOpacity style={styles.startButton} onPress={handleStartCooking}>
-          <Text style={styles.startButtonText}>Start Cooking</Text>
-          <Text style={styles.startButtonSub}>{servings} people • ~{Math.round(activeTime * ratio)} min active</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.addToPlanButton}
-          onPress={() => router.push(`/plan?addRecipe=${recipeId}&servings=${servings}`)}
+      {/* Floating Action Area (collapsible) */}
+      <View style={[dynamicStyles.floatingButtonContainer, buttonsCollapsed && dynamicStyles.floatingCollapsed]}>
+        <TouchableOpacity
+          style={dynamicStyles.collapseHandle}
+          onPress={() => setButtonsCollapsed(v => !v)}
+          activeOpacity={0.7}
         >
-          <Text style={styles.addToPlanText}>+ Add to Weekly Plan</Text>
+          <Text style={dynamicStyles.collapseHandleText}>
+            {buttonsCollapsed ? '▲ Show actions' : '▼ Hide actions'}
+          </Text>
         </TouchableOpacity>
+
+        {!buttonsCollapsed && (
+          <>
+            <TouchableOpacity style={dynamicStyles.startButton} onPress={handleStartCooking}>
+              <Text style={dynamicStyles.startButtonText}>Start Cooking</Text>
+              <Text style={dynamicStyles.startButtonSub}>{servings} people • ~{Math.round(activeTime * ratio)} min active</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={dynamicStyles.addToPlanButton}
+              onPress={() => router.push(`/plan?addRecipe=${recipeId}&servings=${servings}`)}
+              activeOpacity={0.85}
+            >
+              <Text style={dynamicStyles.addToPlanText}>Add to Weekly Plan</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
 }
 
-const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create({
+const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   scrollView: {
     flex: 1,
@@ -471,7 +500,7 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   },
   heroSubtitle: {
     fontSize: 16,
-    color: '#87CEEB',
+    color: colors.primary[500],
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -489,17 +518,17 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   statValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   statLabel: {
     fontSize: 12,
-    color: '#87CEEB',
+    color: colors.primary[500],
     marginTop: 2,
   },
   statDivider: {
     width: 1,
     height: 30,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: colors.neutral[300],
     marginHorizontal: 20,
   },
   controlsSection: {
@@ -508,14 +537,14 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
     gap: 16,
   },
   servingControl: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
   },
   controlLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 12,
   },
   servingButtons: {
@@ -530,12 +559,12 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
     alignItems: 'center',
   },
   servingButtonActive: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
   },
   servingButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: colors.neutral[700],
   },
   servingStepper: {
     flexDirection: 'row',
@@ -547,7 +576,7 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -559,18 +588,18 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   servingValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     minWidth: 50,
     textAlign: 'center',
   },
   servingRange: {
     fontSize: 12,
-    color: '#87CEEB',
+    color: colors.primary[500],
     textAlign: 'center',
     marginTop: 8,
   },
   unitControl: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
   },
@@ -591,7 +620,7 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   unitButtonText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: colors.neutral[700],
   },
   unitButtonTextActive: {
     color: '#FFF',
@@ -609,14 +638,14 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   sectionToggle: {
     fontSize: 16,
-    color: '#87CEEB',
+    color: colors.primary[500],
   },
   ingredientsList: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
   },
@@ -626,11 +655,11 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   ingredientGroupTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 8,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: colors.neutral[200],
   },
   ingredientRow: {
     flexDirection: 'row',
@@ -640,16 +669,16 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   ingredientAmount: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#FF8C42',
+    color: colors.primary[500],
     width: 80,
   },
   ingredientItem: {
     fontSize: 15,
-    color: '#5D4E37',
+    color: colors.neutral[900],
     flex: 1,
   },
   phaseCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -673,22 +702,22 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   phaseTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   phaseMeta: {
     fontSize: 13,
-    color: '#87CEEB',
+    color: colors.primary[500],
     marginTop: 2,
   },
   phaseToggle: {
     fontSize: 16,
-    color: '#87CEEB',
+    color: colors.primary[500],
   },
   stepPreview: {
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: colors.neutral[200],
   },
   stepPreviewItem: {
     flexDirection: 'row',
@@ -714,7 +743,7 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   stepPreviewTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 4,
   },
   stepPreviewMeta: {
@@ -724,23 +753,23 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   },
   stepPreviewTime: {
     fontSize: 12,
-    color: '#87CEEB',
+    color: colors.primary[500],
   },
   stepPreviewActive: {
     fontSize: 12,
-    color: '#FF8C42',
+    color: colors.primary[500],
   },
   stepPreviewPassive: {
     fontSize: 12,
-    color: '#999',
+    color: colors.neutral[500],
   },
   stepPreviewInstructions: {
     fontSize: 13,
-    color: '#666',
+    color: colors.neutral[700],
     lineHeight: 18,
   },
   notesCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
   },
@@ -754,19 +783,19 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
   },
   noteText: {
     fontSize: 14,
-    color: '#5D4E37',
+    color: colors.neutral[900],
     flex: 1,
     lineHeight: 20,
   },
   myNotesCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
     minHeight: 120,
   },
   myNotesInput: {
     fontSize: 15,
-    color: '#5D4E37',
+    color: colors.neutral[900],
     lineHeight: 22,
     minHeight: 100,
   },
@@ -775,14 +804,29 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: isMichelin ? colors.neutral[700] : colors.neutral[300],
+  },
+  floatingCollapsed: {
+    paddingVertical: 8,
+  },
+  collapseHandle: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  collapseHandleText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.neutral[700],
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   startButton: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
@@ -797,6 +841,22 @@ const getStyles = (colors: any, spacing: any, shadows: any) => StyleSheet.create
     color: '#FFF',
     opacity: 0.9,
     marginTop: 4,
+  },
+  addToPlanButton: {
+    backgroundColor: isMichelin ? colors.background?.secondary : colors.white,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    marginTop: 12,
+    borderWidth: 2,
+    borderColor: colors.primary[500],
+    minHeight: 56,
+  },
+  addToPlanText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary[500],
   },
 });
 

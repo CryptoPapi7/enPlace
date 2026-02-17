@@ -35,6 +35,10 @@ qrencode -o qr.png "exp://TUNNEL-URL.exp.direct"
 - Dev server runs on port 8081
 - Tunnel URL: `https://knyrmhy-anonymous-8081.exp.direct` (rotates each restart)
 - QR server on port 8082
+- **CRITICAL:** Expo runs as **system service** — not interactive terminal
+  - User **cannot** press "R" or run `expo start` directly
+  - User reloads via service restart or their own mechanism
+  - I should NEVER suggest "press R" or terminal commands
 
 ## Why Separate?
 

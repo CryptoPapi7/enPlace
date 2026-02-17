@@ -12,16 +12,19 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-
-// Get API key from environment or config
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || 'your-api-key-here';
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { parseAIRecipe, type Recipe } from '../schemas/recipe';
+import { useTheme } from '@/providers/ThemeProvider';
+
+// Get API key from environment or config
+const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || 'your-api-key-here';
 
 interface AIRecipe extends Recipe {}
 
 export default function CreateRecipeScreen() {
+  const { colors, isMichelin } = useTheme();
+  const dynamicStyles = createStyles(colors, isMichelin);
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -160,35 +163,35 @@ export default function CreateRecipeScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+        style={dynamicStyles.keyboardView}
       >
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={dynamicStyles.scrollView}>
           {/* Header */}
-          <View style={styles.header}>
+          <View style={dynamicStyles.header}>
             <TouchableOpacity 
-              style={styles.backButton}
+              style={dynamicStyles.backButton}
               onPress={() => router.back()}
             >
-              <Text style={styles.backButtonText}>←</Text>
+              <Text style={dynamicStyles.backButtonText}>←</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>Create Recipe</Text>
-            <View style={styles.placeholder} />
+            <Text style={dynamicStyles.title}>Create Recipe</Text>
+            <View style={dynamicStyles.placeholder} />
           </View>
 
           {/* AI Badge */}
-          <View style={styles.aiBadge}>
-            <Text style={styles.aiBadgeText}>✨ Powered by AI</Text>
+          <View style={dynamicStyles.aiBadge}>
+            <Text style={dynamicStyles.aiBadgeText}>✨ Powered by AI</Text>
           </View>
 
           {/* Prompt Input */}
-          <View style={styles.inputSection}>
-            <Text style={styles.label}>What do you want to cook?</Text>
+          <View style={dynamicStyles.inputSection}>
+            <Text style={dynamicStyles.label}>What do you want to cook?</Text>
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               placeholder="Describe your dish..."
               value={prompt}
               onChangeText={(text) => {
@@ -200,51 +203,51 @@ export default function CreateRecipeScreen() {
               textAlignVertical="top"
               maxLength={200}
             />
-            <Text style={styles.charCount}>{prompt.length}/200</Text>
+            <Text style={dynamicStyles.charCount}>{prompt.length}/200</Text>
             
             {error ? (
-              <Text style={styles.errorText}>{error}</Text>
+              <Text style={dynamicStyles.errorText}>{error}</Text>
             ) : null}
           </View>
 
           {/* Suggestions */}
-          <View style={styles.suggestionsSection}>
-            <Text style={styles.suggestionsTitle}>💡 Try asking for:</Text>
-            <View style={styles.suggestionsGrid}>
+          <View style={dynamicStyles.suggestionsSection}>
+            <Text style={dynamicStyles.suggestionsTitle}>💡 Try asking for:</Text>
+            <View style={dynamicStyles.suggestionsGrid}>
               {suggestions.map((suggestion, i) => (
                 <TouchableOpacity
                   key={i}
-                  style={styles.suggestionChip}
+                  style={dynamicStyles.suggestionChip}
                   onPress={() => setPrompt(suggestion.replace(/^[^\s]+\s/, ''))}
                 >
-                  <Text style={styles.suggestionText}>{suggestion}</Text>
+                  <Text style={dynamicStyles.suggestionText}>{suggestion}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
           {/* Tips */}
-          <View style={styles.tipsSection}>
-            <Text style={styles.tipsTitle}>📝 Tips for better results:</Text>
-            <Text style={styles.tip}>• Mention dietary preferences (vegetarian, gluten-free, etc.)</Text>
-            <Text style={styles.tip}>• Include cuisine type (Italian, Asian, Mexican...)</Text>
-            <Text style={styles.tip}>• Specify cooking time (quick, 30 min, slow-cook...)</Text>
-            <Text style={styles.tip}>• Describe flavors (spicy, sweet, savory, fresh...)</Text>
+          <View style={dynamicStyles.tipsSection}>
+            <Text style={dynamicStyles.tipsTitle}>📝 Tips for better results:</Text>
+            <Text style={dynamicStyles.tip}>• Mention dietary preferences (vegetarian, gluten-free, etc.)</Text>
+            <Text style={dynamicStyles.tip}>• Include cuisine type (Italian, Asian, Mexican...)</Text>
+            <Text style={dynamicStyles.tip}>• Specify cooking time (quick, 30 min, slow-cook...)</Text>
+            <Text style={dynamicStyles.tip}>• Describe flavors (spicy, sweet, savory, fresh...)</Text>
           </View>
 
           {/* Generate Button */}
           <TouchableOpacity 
-            style={[styles.generateBtn, loading && styles.generateBtnDisabled]}
+            style={[dynamicStyles.generateBtn, loading && dynamicStyles.generateBtnDisabled]}
             onPress={handleGenerate}
             disabled={loading}
           >
             {loading ? (
               <>
-                <ActivityIndicator color="#FFF" style={styles.loader} />
-                <Text style={styles.generateBtnText}>Creating your recipe...</Text>
+                <ActivityIndicator color="#FFF" style={dynamicStyles.loader} />
+                <Text style={dynamicStyles.generateBtnText}>Creating your recipe...</Text>
               </>
             ) : (
-              <Text style={styles.generateBtnText}>✨ Generate Recipe</Text>
+              <Text style={dynamicStyles.generateBtnText}>✨ Generate Recipe</Text>
             )}
           </TouchableOpacity>
 
@@ -255,10 +258,10 @@ export default function CreateRecipeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   keyboardView: {
     flex: 1,
@@ -277,7 +280,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -288,12 +291,12 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   placeholder: {
     width: 44,
@@ -307,7 +310,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   aiBadgeText: {
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : '#FFF',
     fontWeight: '700',
     fontSize: 13,
   },
@@ -317,15 +320,15 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 12,
   },
   input: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
     fontSize: 16,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     borderWidth: 2,
     borderColor: '#E8E8E8',
     minHeight: 120,
@@ -347,7 +350,7 @@ const styles = StyleSheet.create({
   suggestionsTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
     marginBottom: 12,
   },
   suggestionsGrid: {
@@ -356,7 +359,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   suggestionChip: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -365,10 +368,10 @@ const styles = StyleSheet.create({
   },
   suggestionText: {
     fontSize: 13,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   tipsSection: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
@@ -376,16 +379,16 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 12,
   },
   tip: {
     fontSize: 14,
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
     marginBottom: 8,
   },
   generateBtn: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     borderRadius: 16,
     padding: 18,
     alignItems: 'center',
@@ -398,7 +401,7 @@ const styles = StyleSheet.create({
   generateBtnText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : '#FFF',
   },
   loader: {
     marginRight: 10,

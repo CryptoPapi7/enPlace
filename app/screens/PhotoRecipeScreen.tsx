@@ -12,8 +12,11 @@ import {
   TextInput,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function PhotoRecipeScreen({ route, navigation }: any) {
+  const { colors, isMichelin } = useTheme();
+  const dynamicStyles = createStyles(colors, isMichelin);
   const { imageUri } = route.params;
   const [loading, setLoading] = useState(true);
   const [extractedText, setExtractedText] = useState('');
@@ -108,112 +111,112 @@ export default function PhotoRecipeScreen({ route, navigation }: any) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="dark" />
-        <View style={styles.loadingContainer}>
+      <SafeAreaView style={dynamicStyles.container}>
+        <StatusBar style={isMichelin ? 'light' : 'dark'} />
+        <View style={dynamicStyles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF8C42" />
-          <Text style={styles.loadingText}>Reading your recipe...</Text>
-          <Text style={styles.loadingSub}>This may take a few seconds</Text>
+          <Text style={dynamicStyles.loadingText}>Reading your recipe...</Text>
+          <Text style={dynamicStyles.loadingSub}>This may take a few seconds</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <ScrollView style={styles.scrollView}>
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <ScrollView style={dynamicStyles.scrollView}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={dynamicStyles.header}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={dynamicStyles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <Text style={dynamicStyles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Photo Recipe</Text>
+          <Text style={dynamicStyles.title}>Photo Recipe</Text>
           <TouchableOpacity 
-            style={styles.retryButton}
+            style={dynamicStyles.retryButton}
             onPress={handleRetry}
           >
-            <Text style={styles.retryText}>🔄</Text>
+            <Text style={dynamicStyles.retryText}>🔄</Text>
           </TouchableOpacity>
         </View>
 
         {/* Image Preview */}
-        <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+        <Image source={{ uri: imageUri }} style={dynamicStyles.imagePreview} />
 
         {editMode ? (
           // Manual Edit Mode
-          <View style={styles.editSection}>
-            <Text style={styles.sectionLabel}>Title</Text>
+          <View style={dynamicStyles.editSection}>
+            <Text style={dynamicStyles.sectionLabel}>Title</Text>
             <TextInput
-              style={styles.editInput}
+              style={dynamicStyles.editInput}
               value={parsedRecipe?.title}
               onChangeText={(text) => setParsedRecipe({...parsedRecipe, title: text})}
             />
             
-            <Text style={styles.sectionLabel}>Ingredients (one per line)</Text>
+            <Text style={dynamicStyles.sectionLabel}>Ingredients (one per line)</Text>
             <TextInput
-              style={[styles.editInput, styles.editTextArea]}
+              style={[dynamicStyles.editInput, dynamicStyles.editTextArea]}
               multiline
               value={parsedRecipe?.ingredients.join('\n')}
               onChangeText={(text) => setParsedRecipe({...parsedRecipe, ingredients: text.split('\n')})}
             />
             
-            <Text style={styles.sectionLabel}>Instructions (one per line)</Text>
+            <Text style={dynamicStyles.sectionLabel}>Instructions (one per line)</Text>
             <TextInput
-              style={[styles.editInput, styles.editTextArea]}
+              style={[dynamicStyles.editInput, dynamicStyles.editTextArea]}
               multiline
               value={parsedRecipe?.instructions.join('\n')}
               onChangeText={(text) => setParsedRecipe({...parsedRecipe, instructions: text.split('\n')})}
             />
 
             <TouchableOpacity 
-              style={styles.saveBtn}
+              style={dynamicStyles.saveBtn}
               onPress={() => setEditMode(false)}
             >
-              <Text style={styles.saveBtnText}>Done Editing</Text>
+              <Text style={dynamicStyles.saveBtnText}>Done Editing</Text>
             </TouchableOpacity>
           </View>
         ) : (
           // Preview Mode
           <>
             {/* Extracted Recipe Preview */}
-            <View style={styles.previewSection}>
-              <Text style={styles.recipeTitle}>{parsedRecipe?.title}</Text>
+            <View style={dynamicStyles.previewSection}>
+              <Text style={dynamicStyles.recipeTitle}>{parsedRecipe?.title}</Text>
               
-              <View style={styles.metaRow}>
-                <Text style={styles.meta}>⏱️ {parsedRecipe?.totalTime}</Text>
-                <Text style={styles.meta}>👥 {parsedRecipe?.servings}</Text>
-                <Text style={styles.meta}>📊 {parsedRecipe?.difficulty}</Text>
+              <View style={dynamicStyles.metaRow}>
+                <Text style={dynamicStyles.meta}>⏱️ {parsedRecipe?.totalTime}</Text>
+                <Text style={dynamicStyles.meta}>👥 {parsedRecipe?.servings}</Text>
+                <Text style={dynamicStyles.meta}>📊 {parsedRecipe?.difficulty}</Text>
               </View>
 
-              <Text style={styles.sectionTitle}>Ingredients</Text>
+              <Text style={dynamicStyles.sectionTitle}>Ingredients</Text>
               {parsedRecipe?.ingredients.map((ing: string, i: number) => (
-                <Text key={i} style={styles.listItem}>• {ing}</Text>
+                <Text key={i} style={dynamicStyles.listItem}>• {ing}</Text>
               ))}
 
-              <Text style={styles.sectionTitle}>Instructions</Text>
+              <Text style={dynamicStyles.sectionTitle}>Instructions</Text>
               {parsedRecipe?.instructions.map((step: string, i: number) => (
-                <Text key={i} style={styles.step}>{i + 1}. {step}</Text>
+                <Text key={i} style={dynamicStyles.step}>{i + 1}. {step}</Text>
               ))}
             </View>
 
             {/* Actions */}
-            <View style={styles.actions}>
+            <View style={dynamicStyles.actions}>
               <TouchableOpacity 
-                style={styles.editBtn}
+                style={dynamicStyles.editBtn}
                 onPress={handleManualEdit}
               >
-                <Text style={styles.editBtnText}>✏️ Edit Manually</Text>
+                <Text style={dynamicStyles.editBtnText}>✏️ Edit Manually</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={styles.saveBtn}
+                style={dynamicStyles.saveBtn}
                 onPress={handleSave}
               >
-                <Text style={styles.saveBtnText}>✓ Save Recipe</Text>
+                <Text style={dynamicStyles.saveBtnText}>✓ Save Recipe</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -223,10 +226,10 @@ export default function PhotoRecipeScreen({ route, navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   loadingContainer: {
     flex: 1,
@@ -236,12 +239,12 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginTop: 20,
   },
   loadingSub: {
     fontSize: 14,
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
     marginTop: 8,
   },
   scrollView: {
@@ -258,7 +261,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -269,18 +272,18 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   retryButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -299,7 +302,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   previewSection: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
@@ -307,7 +310,7 @@ const styles = StyleSheet.create({
   recipeTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 12,
   },
   metaRow: {
@@ -316,25 +319,25 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontSize: 14,
-    color: '#8B7355',
+    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
     marginRight: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginTop: 16,
     marginBottom: 12,
   },
   listItem: {
     fontSize: 15,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 6,
     lineHeight: 22,
   },
   step: {
     fontSize: 15,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 10,
     lineHeight: 22,
   },
@@ -353,11 +356,11 @@ const styles = StyleSheet.create({
   editBtnText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   saveBtn: {
     flex: 1,
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     padding: 16,
     borderRadius: 12,
     marginLeft: 8,
@@ -366,10 +369,10 @@ const styles = StyleSheet.create({
   saveBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : '#FFF',
   },
   editSection: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
@@ -377,7 +380,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
     marginBottom: 8,
     marginTop: 16,
   },
@@ -386,7 +389,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     fontSize: 15,
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
   },
   editTextArea: {
     minHeight: 120,

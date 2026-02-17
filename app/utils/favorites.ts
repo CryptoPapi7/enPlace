@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase, getCurrentUser } from '../lib/supabase';
+import { Alert } from 'react-native';
 
-// Favorites system - AsyncStorage persistence
+// Favorites system - Supabase for logged-in users, blocked for guests
 
 export interface FavoriteRecipe {
   id: string;
@@ -11,95 +13,185 @@ export interface FavoriteRecipe {
   addedAt: string;
 }
 
-const FAVORITES_KEY = '@enplace_favorites';
+const showLoginRequired = () => {
+  Alert.alert(
+    '🍽️ Chef\'s Privilege',
+    'Favorites are reserved for our valued guests. Sign in to curate your personal collection of culinary masterpieces.',
+    [
+      { text: 'Maybe Later', style: 'cancel' },
+      { text: 'Sign In', onPress: () => { /* Could navigate to auth */ } }
+    ]
+  );
+};
 
-// In-memory cache for quick access
-let favoritesCache: FavoriteRecipe[] | null = null;
+// Check if user is logged in
+async function isAuthenticated(): Promise<boolean> {
+  const user = await getCurrentUser();
+  return !!user;
+}
 
-// Load favorites from AsyncStorage
+// Get current user ID
+async function getUserId(): Promise<string | null> {
+  const user = await getCurrentUser();
+  return user?.id || null;
+}
+
+// Load favorites from Supabase (logged-in only)
 export async function loadFavorites(): Promise<FavoriteRecipe[]> {
-  if (favoritesCache !== null) {
-    return favoritesCache;
+  if (!await isAuthenticated()) {
+    return [];
   }
-  
+
+  const userId = await getUserId();
+  if (!userId) return [];
+
   try {
-    const json = await AsyncStorage.getItem(FAVORITES_KEY);
-    if (json) {
-      favoritesCache = JSON.parse(json);
-      return favoritesCache;
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase favorites error:', error);
+      return [];
     }
+
+    return data.map(f => ({
+      id: f.recipe_id,
+      title: f.title,
+      emoji: f.emoji,
+      cuisine: f.cuisine || '',
+      time: f.time,
+      addedAt: f.created_at,
+    }));
   } catch (e) {
     console.error('Failed to load favorites', e);
-  }
-  
-  favoritesCache = [];
-  return favoritesCache;
-}
-
-// Save favorites to AsyncStorage
-async function saveFavorites(): Promise<void> {
-  try {
-    if (favoritesCache !== null) {
-      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(favoritesCache));
-    }
-  } catch (e) {
-    console.error('Failed to save favorites', e);
+    return [];
   }
 }
 
-// Get favorites (load if not cached)
+// Get favorites
 export async function getFavorites(): Promise<FavoriteRecipe[]> {
   return loadFavorites();
 }
 
-// Synchronous version for components that already loaded
+// For backwards compatibility - returns empty if not logged in
 export function getFavoritesSync(): FavoriteRecipe[] {
-  return favoritesCache || [];
+  return []; // Can't do sync with Supabase
 }
 
+// Check if recipe is favorited
 export async function isFavorite(recipeId: string): Promise<boolean> {
-  const favorites = await loadFavorites();
-  return favorites.some(f => f.id === recipeId);
-}
-
-// Synchronous version for UI checks
-export function isFavoriteSync(recipeId: string): boolean {
-  return favoritesCache?.some(f => f.id === recipeId) || false;
-}
-
-export async function addFavorite(recipe: Omit<FavoriteRecipe, 'addedAt'>): Promise<void> {
-  const favorites = await loadFavorites();
-  if (!favorites.some(f => f.id === recipe.id)) {
-    favorites.push({
-      ...recipe,
-      addedAt: new Date().toISOString(),
-    });
-    await saveFavorites();
-  }
-}
-
-export async function removeFavorite(recipeId: string): Promise<void> {
-  await loadFavorites();
-  if (favoritesCache) {
-    favoritesCache = favoritesCache.filter(f => f.id !== recipeId);
-    await saveFavorites();
-  }
-}
-
-export async function toggleFavorite(recipe: Omit<FavoriteRecipe, 'addedAt'>): Promise<boolean> {
-  const favorites = await loadFavorites();
-  const exists = favorites.some(f => f.id === recipe.id);
-  
-  if (exists) {
-    await removeFavorite(recipe.id);
+  if (!await isAuthenticated()) {
     return false;
-  } else {
-    await addFavorite(recipe);
-    return true;
+  }
+
+  const userId = await getUserId();
+  if (!userId) return false;
+
+  try {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('recipe_id', recipeId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+      console.error('Error checking favorite:', error);
+    }
+
+    return !!data;
+  } catch (e) {
+    return false;
   }
 }
 
-// Initialize favorites on app start
+// Synchronous version - always returns false if can't check
+export function isFavoriteSync(recipeId: string): boolean {
+  return false; // Can't do sync with Supabase
+}
+
+// Add favorite (requires login)
+export async function addFavorite(recipe: Omit<FavoriteRecipe, 'addedAt'>): Promise<boolean> {
+  if (!await isAuthenticated()) {
+    showLoginRequired();
+    return false;
+  }
+
+  const userId = await getUserId();
+  if (!userId) {
+    showLoginRequired();
+    return false;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('favorites')
+      .upsert({
+        user_id: userId,
+        recipe_id: recipe.id,
+        title: recipe.title,
+        emoji: recipe.emoji,
+        cuisine: recipe.cuisine,
+        time: recipe.time,
+      }, {
+        onConflict: 'user_id,recipe_id'
+      });
+
+    if (error) {
+      console.error('Error adding favorite:', error);
+      return false;
+    }
+
+    return true;
+  } catch (e) {
+    console.error('Failed to add favorite', e);
+    return false;
+  }
+}
+
+// Remove favorite
+export async function removeFavorite(recipeId: string): Promise<boolean> {
+  if (!await isAuthenticated()) {
+    return false;
+  }
+
+  const userId = await getUserId();
+  if (!userId) return false;
+
+  try {
+    const { error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('user_id', userId)
+      .eq('recipe_id', recipeId);
+
+    if (error) {
+      console.error('Error removing favorite:', error);
+      return false;
+    }
+
+    return true;
+  } catch (e) {
+    console.error('Failed to remove favorite', e);
+    return false;
+  }
+}
+
+// Toggle favorite
+export async function toggleFavorite(recipe: Omit<FavoriteRecipe, 'addedAt'>): Promise<boolean> {
+  const isFav = await isFavorite(recipe.id);
+
+  if (isFav) {
+    return await removeFavorite(recipe.id);
+  } else {
+    return await addFavorite(recipe);
+  }
+}
+
+// Initialize (just checks auth status)
 export async function initFavorites(): Promise<void> {
-  await loadFavorites();
+  // Nothing to do - Supabase handles persistence
 }

@@ -4,24 +4,32 @@ import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { getMyLibraryRecipes, LibraryRecipe } from '../utils/library';
-import { toggleFavorite, isFavorite } from '../utils/favorites';
+import { toggleFavorite, isFavorite, getFavorites, FavoriteRecipe } from '../utils/favorites';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function MyLibraryScreen() {
+  const { colors, isMichelin } = useTheme();
+  const dynamicStyles = createStyles(colors, isMichelin);
   const [recipes, setRecipes] = useState<(LibraryRecipe & { isFav?: boolean })[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [favorites, setFavorites] = useState<FavoriteRecipe[]>([]);
 
   // Refresh library when screen is focused
   useFocusEffect(
     useCallback(() => {
       const load = async () => {
+        // Load library recipes
         const libRecipes = await getMyLibraryRecipes();
-        // Check favorite status for each
-        const withFavStatus = await Promise.all(
-          libRecipes.map(async (r) => ({
-            ...r,
-            isFav: await isFavorite(r.id)
-          }))
-        );
+        // Load favorites from Supabase
+        const favRecipes = await getFavorites();
+        setFavorites(favRecipes);
+        
+        // Mark library recipes that are favorites
+        const favIds = new Set(favRecipes.map(f => f.id));
+        const withFavStatus = libRecipes.map(r => ({
+          ...r,
+          isFav: favIds.has(r.id)
+        }));
         setRecipes(withFavStatus);
       };
       load();
@@ -29,16 +37,22 @@ export default function MyLibraryScreen() {
   );
 
   const handleToggleFavorite = async (recipe: any) => {
-    const newState = await toggleFavorite({
+    const success = await toggleFavorite({
       id: recipe.id,
       title: recipe.title,
       emoji: recipe.emoji,
       cuisine: recipe.cuisine,
       time: recipe.time,
     });
-    setRecipes(prev => 
-      prev.map(r => r.id === recipe.id ? { ...r, isFav: newState } : r)
-    );
+    if (success) {
+      // Refresh favorites from Supabase
+      const favRecipes = await getFavorites();
+      setFavorites(favRecipes);
+      // Update library recipe status
+      setRecipes(prev => 
+        prev.map(r => r.id === recipe.id ? { ...r, isFav: !r.isFav } : r)
+      );
+    }
   };
 
   const handleRecipePress = (recipeId: string) => {
@@ -54,25 +68,25 @@ export default function MyLibraryScreen() {
     : recipes;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <ScrollView style={dynamicStyles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={dynamicStyles.header}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={dynamicStyles.backButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <Text style={dynamicStyles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>My Library</Text>
-          <View style={styles.placeholder} />
+          <Text style={dynamicStyles.title}>My Library</Text>
+          <View style={dynamicStyles.placeholder} />
         </View>
 
         {/* Search */}
-        <View style={styles.searchContainer}>
+        <View style={dynamicStyles.searchContainer}>
           <TextInput
-            style={styles.searchInput}
+            style={dynamicStyles.searchInput}
             placeholder="Search your recipes..."
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -80,27 +94,33 @@ export default function MyLibraryScreen() {
           />
         </View>
 
-        {/* Favorites Section */}
-        {filtered.filter(r => r.isFav).length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>⭐ My Favorites</Text>
-              <Text style={styles.sectionCount}>
-                {filtered.filter(r => r.isFav).length}
+        {/* Favorites Section - From Supabase */}
+        {favorites.length > 0 && (
+          <View style={dynamicStyles.section}>
+            <View style={dynamicStyles.sectionHeader}>
+              <Text style={dynamicStyles.sectionTitle}>⭐ My Favorites</Text>
+              <Text style={dynamicStyles.sectionCount}>
+                {favorites.length}
               </Text>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-              {filtered.filter(r => r.isFav).map((recipe) => (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dynamicStyles.horizontalScroll}>
+              {favorites.map((recipe) => (
                 <TouchableOpacity 
                   key={`fav-${recipe.id}`}
-                  style={styles.horizontalCard}
+                  style={dynamicStyles.horizontalCard}
                   onPress={() => handleRecipePress(recipe.id)}
                 >
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.recipeEmoji}>{recipe.emoji}</Text>
+                  <View style={dynamicStyles.cardHeader}>
+                    <Text style={dynamicStyles.recipeEmoji}>{recipe.emoji}</Text>
+                    <TouchableOpacity 
+                      style={dynamicStyles.favButton}
+                      onPress={() => handleToggleFavorite(recipe)}
+                    >
+                      <Text style={dynamicStyles.favEmoji}>❤️</Text>
+                    </TouchableOpacity>
                   </View>
-                  <Text style={styles.recipeName} numberOfLines={2}>{recipe.title}</Text>
-                  <Text style={styles.recipeMeta}>{recipe.cuisine} • {recipe.time}</Text>
+                  <Text style={dynamicStyles.recipeName} numberOfLines={2}>{recipe.title}</Text>
+                  <Text style={dynamicStyles.recipeMeta}>{recipe.cuisine} • {recipe.time}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -109,33 +129,33 @@ export default function MyLibraryScreen() {
 
         {/* Saved Recipes Section */}
         {filtered.filter(r => !r.isFav).length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>📚 Saved Recipes</Text>
-              <Text style={styles.sectionCount}>
+          <View style={dynamicStyles.section}>
+            <View style={dynamicStyles.sectionHeader}>
+              <Text style={dynamicStyles.sectionTitle}>📚 Saved Recipes</Text>
+              <Text style={dynamicStyles.sectionCount}>
                 {filtered.filter(r => !r.isFav).length}
               </Text>
             </View>
-            <View style={styles.grid}>
+            <View style={dynamicStyles.grid}>
               {filtered.filter(r => !r.isFav).map((recipe) => (
                 <TouchableOpacity 
                   key={`saved-${recipe.id}`}
-                  style={styles.recipeCard}
+                  style={dynamicStyles.recipeCard}
                   onPress={() => handleRecipePress(recipe.id)}
                 >
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.recipeEmoji}>{recipe.emoji}</Text>
+                  <View style={dynamicStyles.cardHeader}>
+                    <Text style={dynamicStyles.recipeEmoji}>{recipe.emoji}</Text>
                     <TouchableOpacity 
-                      style={styles.favButton}
+                      style={dynamicStyles.favButton}
                       onPress={() => handleToggleFavorite(recipe)}
                   >
-                    <Text style={styles.favEmoji}>
+                    <Text style={dynamicStyles.favEmoji}>
                       {recipe.isFav ? '❤️' : '🤍'}
                     </Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.recipeName} numberOfLines={2}>{recipe.title}</Text>
-                <Text style={styles.recipeMeta}>{recipe.cuisine} • {recipe.time}</Text>
+                <Text style={dynamicStyles.recipeName} numberOfLines={2}>{recipe.title}</Text>
+                <Text style={dynamicStyles.recipeMeta}>{recipe.cuisine} • {recipe.time}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -143,32 +163,32 @@ export default function MyLibraryScreen() {
       )}
 
       {/* My Creations Section (Future) */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>✍️ My Creations</Text>
-          <Text style={styles.sectionCount}>0</Text>
+      <View style={dynamicStyles.section}>
+        <View style={dynamicStyles.sectionHeader}>
+          <Text style={dynamicStyles.sectionTitle}>✍️ My Creations</Text>
+          <Text style={dynamicStyles.sectionCount}>0</Text>
         </View>
-        <View style={styles.emptyCreations}>
-          <Text style={styles.emptyCreationsText}>
+        <View style={dynamicStyles.emptyCreations}>
+          <Text style={dynamicStyles.emptyCreationsText}>
             Create your own recipes to see them here
           </Text>
         </View>
       </View>
 
       {/* Total Count */}
-      <Text style={styles.totalCount}>
+      <Text style={dynamicStyles.totalCount}>
         {recipes.length} total recipe{recipes.length !== 1 ? 's' : ''} in your library
       </Text>
 
       {recipes.length === 0 && !searchQuery && (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyEmoji}>📚</Text>
-          <Text style={styles.emptyTitle}>Your library is empty</Text>
+        <View style={dynamicStyles.emptyState}>
+          <Text style={dynamicStyles.emptyEmoji}>📚</Text>
+          <Text style={dynamicStyles.emptyTitle}>Your library is empty</Text>
           <TouchableOpacity 
-            style={styles.browseButton}
+            style={dynamicStyles.browseButton}
             onPress={() => router.push('/(tabs)/library')}
           >
-            <Text style={styles.browseButtonText}>Browse All Recipes</Text>
+            <Text style={dynamicStyles.browseButtonText}>Browse All Recipes</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -177,10 +197,10 @@ export default function MyLibraryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   scrollView: {
     flex: 1,
@@ -196,7 +216,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -207,12 +227,12 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   placeholder: {
     width: 44,
@@ -221,17 +241,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   searchInput: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
-    color: '#5D4E37',
+    color: colors.neutral[900],
     borderWidth: 1,
     borderColor: '#E8E8E8',
   },
   countText: {
     fontSize: 14,
-    color: '#8B7355',
+    color: colors.neutral[700],
     marginBottom: 16,
   },
   grid: {
@@ -251,12 +271,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   sectionCount: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#8B7355',
+    color: colors.neutral[700],
     backgroundColor: '#E8E8E8',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -267,7 +287,7 @@ const styles = StyleSheet.create({
   },
   horizontalCard: {
     width: 120,
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 12,
     marginRight: 12,
@@ -279,25 +299,25 @@ const styles = StyleSheet.create({
   },
   totalCount: {
     fontSize: 14,
-    color: '#8B7355',
+    color: colors.neutral[700],
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 24,
   },
   emptyCreations: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
   },
   emptyCreationsText: {
     fontSize: 14,
-    color: '#999',
+    color: isMichelin ? colors.neutral[500] : colors.neutral[500],
     fontStyle: 'italic',
   },
   recipeCard: {
     width: '47%',
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -325,12 +345,12 @@ const styles = StyleSheet.create({
   recipeName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 4,
   },
   recipeMeta: {
     fontSize: 12,
-    color: '#8B7355',
+    color: colors.neutral[700],
   },
   emptyState: {
     alignItems: 'center',
@@ -343,24 +363,24 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#8B7355',
+    color: colors.neutral[700],
     textAlign: 'center',
     marginBottom: 24,
     paddingHorizontal: 32,
   },
   browseButton: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 24,
   },
   browseButtonText: {
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : '#FFF',
     fontSize: 16,
     fontWeight: '600',
   },

@@ -7,7 +7,8 @@ import { isFavorite, toggleFavorite, getFavorites, initFavorites } from '../util
 import { getAllRecipes, deleteRecipe } from '../database/db';
 import { migrateFromAsyncStorage } from '../database/migrate';
 import type { Recipe } from '../schemas/recipe';
-import { colors, spacing, typography, shadows } from '../theme';
+import { spacing, typography, shadows } from '../theme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 // Filter categories
 const FILTERS = [
@@ -19,6 +20,7 @@ const FILTERS = [
 ];
 
 export default function RecipeLibraryScreen() {
+  const { colors, isMichelin } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -123,32 +125,34 @@ export default function RecipeLibraryScreen() {
     );
   };
 
+  const dynamicStyles = createStyles(colors, isMichelin);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backButton}>←</Text>
+          <Text style={dynamicStyles.backButton}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Recipe Library</Text>
+        <Text style={dynamicStyles.title}>Recipe Library</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {/* Search */}
-      <View style={styles.searchContainer}>
-        <Text style={styles.searchIcon}>🔍</Text>
+      <View style={dynamicStyles.searchContainer}>
+        <Text style={dynamicStyles.searchIcon}>🔍</Text>
         <TextInput
-          style={styles.searchInput}
+          style={dynamicStyles.searchInput}
           placeholder="Search recipes, cuisines..."
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.neutral[500]}
         />
         {searchQuery && (
           <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Text style={styles.clearButton}>✕</Text>
+            <Text style={dynamicStyles.clearButton}>✕</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -157,21 +161,21 @@ export default function RecipeLibraryScreen() {
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
-        style={styles.filterScroll}
-        contentContainerStyle={styles.filterContent}
+        style={dynamicStyles.filterScroll}
+        contentContainerStyle={dynamicStyles.filterContent}
       >
         {FILTERS.map(filter => (
           <TouchableOpacity
             key={filter.id}
             style={[
-              styles.filterPill,
-              activeFilter === filter.id && styles.filterPillActive,
+              dynamicStyles.filterPill,
+              activeFilter === filter.id && dynamicStyles.filterPillActive,
             ]}
             onPress={() => setActiveFilter(filter.id)}
           >
             <Text style={[
-              styles.filterText,
-              activeFilter === filter.id && styles.filterTextActive,
+              dynamicStyles.filterText,
+              activeFilter === filter.id && dynamicStyles.filterTextActive,
             ]}>
               {filter.label}
             </Text>
@@ -180,71 +184,71 @@ export default function RecipeLibraryScreen() {
       </ScrollView>
 
       <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={styles.grid}
+        style={dynamicStyles.scrollView} 
+        contentContainerStyle={dynamicStyles.grid}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={loadMyRecipes} />}
       >
         {/* Migration Status */}
         {migrationStatus ? (
-          <View style={styles.migrationBanner}>
-            <Text style={styles.migrationText}>✅ {migrationStatus}</Text>
+          <View style={dynamicStyles.migrationBanner}>
+            <Text style={dynamicStyles.migrationText}>✅ {migrationStatus}</Text>
           </View>
         ) : null}
 
         {/* Built-in Recipes */}
-        <View style={styles.sectionHeaderFullWidth}>
-          <Text style={styles.sectionTitle}>📚 Recipe Library</Text>
+        <View style={dynamicStyles.sectionHeaderFullWidth}>
+          <Text style={dynamicStyles.sectionTitle}>📚 Recipe Library</Text>
         </View>
         {filtered.map(recipe => (
           <View
             key={recipe.id}
-            style={[styles.recipeCard, !recipe.available && styles.recipeCardDisabled]}
+            style={[dynamicStyles.recipeCard, !recipe.available && dynamicStyles.recipeCardDisabled]}
           >
             {/* Favorite Heart */}
             <TouchableOpacity 
-              style={styles.heartButton}
+              style={dynamicStyles.heartButton}
               onPress={() => handleToggleFavorite(recipe)}
             >
-              <Text style={styles.heartEmoji}>
+              <Text style={dynamicStyles.heartEmoji}>
                 {favorites.includes(recipe.id) ? '❤️' : '🤍'}
               </Text>
             </TouchableOpacity>
             
             <TouchableOpacity onPress={() => handleRecipePress(recipe)}>
-              <Text style={styles.recipeEmoji}>{recipe.emoji}</Text>
-              <Text style={styles.recipeTitle} numberOfLines={2}>{recipe.title}</Text>
+              <Text style={dynamicStyles.recipeEmoji}>{recipe.emoji}</Text>
+              <Text style={dynamicStyles.recipeTitle} numberOfLines={2}>{recipe.title}</Text>
             </TouchableOpacity>
-            <Text style={styles.recipeCuisine}>{recipe.cuisine}</Text>
-            <View style={styles.recipeMeta}>
-              <Text style={styles.recipeTime}>⏱️ {recipe.timeDisplay || recipe.time}</Text>
-              <Text style={styles.recipeDifficulty}>{recipe.difficulty}</Text>
+            <Text style={dynamicStyles.recipeCuisine}>{recipe.cuisine}</Text>
+            <View style={dynamicStyles.recipeMeta}>
+              <Text style={dynamicStyles.recipeTime}>⏱️ {recipe.timeDisplay || recipe.time}</Text>
+              <Text style={dynamicStyles.recipeDifficulty}>{recipe.difficulty}</Text>
             </View>
             
             {/* Action Buttons */}
             {recipe.available && (
-              <View style={styles.cardActions}>
+              <View style={dynamicStyles.cardActions}>
                 <TouchableOpacity 
-                  style={styles.addToPlanButton}
+                  style={dynamicStyles.addToPlanButton}
                   onPress={() => router.push(`/plan?addRecipe=${recipe.id}`)}
                 >
-                  <Text style={styles.addToPlanText}>➕ Add to Plan</Text>
+                  <Text style={dynamicStyles.addToPlanText}>➕ Add to Plan</Text>
                 </TouchableOpacity>
               </View>
             )}
             
             {!recipe.available && (
-              <View style={styles.comingSoonBadge}>
-                <Text style={styles.comingSoonText}>Soon</Text>
+              <View style={dynamicStyles.comingSoonBadge}>
+                <Text style={dynamicStyles.comingSoonText}>Soon</Text>
               </View>
             )}
           </View>
         ))}
         
         {filtered.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🔍</Text>
-            <Text style={styles.emptyText}>No recipes found</Text>
-            <Text style={styles.emptySub}>Try a different search</Text>
+          <View style={dynamicStyles.emptyState}>
+            <Text style={dynamicStyles.emptyEmoji}>🔍</Text>
+            <Text style={dynamicStyles.emptyText}>No recipes found</Text>
+            <Text style={dynamicStyles.emptySub}>Try a different search</Text>
           </View>
         )}
         
@@ -254,10 +258,10 @@ export default function RecipeLibraryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.cream[50],
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   header: {
     flexDirection: 'row',
@@ -268,18 +272,18 @@ const styles = StyleSheet.create({
   },
   backButton: {
     fontSize: 24,
-    color: '#5D4E37',
+    color: colors.neutral[700],
     padding: 8,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     marginHorizontal: 20,
     marginBottom: 16,
     borderRadius: 12,
@@ -298,11 +302,11 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   clearButton: {
     fontSize: 16,
-    color: '#999',
+    color: colors.neutral[500],
     padding: 4,
   },
   filterScroll: {
@@ -317,19 +321,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.neutral[300],
   },
   filterPillActive: {
-    backgroundColor: '#87CEEB',
-    borderColor: '#87CEEB',
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
   },
   filterText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: colors.neutral[700],
   },
   filterTextActive: {
     color: '#FFF',
@@ -353,17 +357,17 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   sectionCount: {
     fontSize: 14,
-    color: '#87CEEB',
+    color: colors.primary[500],
     marginLeft: 8,
     fontWeight: '600',
   },
   migrationBanner: {
     width: '100%',
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
@@ -386,7 +390,7 @@ const styles = StyleSheet.create({
   },
   recipeCard: {
     width: '47%',
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -416,13 +420,13 @@ const styles = StyleSheet.create({
   recipeTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 4,
     textAlign: 'center',
   },
   recipeCuisine: {
     fontSize: 12,
-    color: '#87CEEB',
+    color: colors.primary[500],
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -433,18 +437,18 @@ const styles = StyleSheet.create({
   },
   recipeTime: {
     fontSize: 11,
-    color: '#666',
+    color: colors.neutral[500],
   },
   recipeDifficulty: {
     fontSize: 11,
-    color: '#FF8C42',
+    color: colors.primary[500],
     fontWeight: '500',
   },
   comingSoonBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: '#999',
+    backgroundColor: colors.neutral[500],
     borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -458,7 +462,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   addToPlanButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -481,10 +485,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   emptySub: {
     fontSize: 14,
-    color: '#87CEEB',
+    color: colors.primary[500],
   },
 });

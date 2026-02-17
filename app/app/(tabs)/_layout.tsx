@@ -3,21 +3,22 @@ import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
+import { useTheme } from '@/providers/ThemeProvider';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { colors, isMichelin } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#FF8C42',
-        tabBarInactiveTintColor: '#8B7355',
+        tabBarActiveTintColor: colors.primary[500],
+        tabBarInactiveTintColor: colors.neutral[500],
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: '#FFF8E7',
+          backgroundColor: isMichelin ? colors.background?.secondary : colors.cream[50],
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,

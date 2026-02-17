@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ALL_RECIPES, beefRendangRecipe, chickenCurryRecipe, freshPastaRecipe, sourdoughRecipe } from '../data/recipes';
 import { saveWeeklyPlan, getWeeklyPlan } from '../utils/weeklyPlan';
+import { useTheme } from '@/providers/ThemeProvider';
 
 // Recipe lookup for ingredient data
 const RECIPE_DATA: Record<string, any> = {
@@ -48,6 +49,8 @@ function generateWeekDays(): DayPlan[] {
 }
 
 export default function PlanWeekScreen() {
+  const { colors, isMichelin } = useTheme();
+  const dynamicStyles = createStyles(colors, isMichelin);
   const { selectedRecipe: selectedRecipeParam, addRecipe, servings: servingsParam, moveRecipe } = useLocalSearchParams<{
     selectedRecipe?: string;
     addRecipe?: string;
@@ -191,56 +194,56 @@ export default function PlanWeekScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backButton}>←</Text>
+          <Text style={dynamicStyles.backButton}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>🗓️ Plan This Week</Text>
+        <Text style={dynamicStyles.title}>🗓️ Plan This Week</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {/* Add Recipe CTA */}
       <TouchableOpacity 
-        style={styles.addButton}
-        onPress={() => navigation.navigate('RecipeLibrary', { selectingForPlan: true })}
+        style={dynamicStyles.addButton}
+        onPress={() => router.push({ pathname: '/(tabs)/library', params: { selectingForPlan: 'true' } })}
       >
-        <Text style={styles.addButtonEmoji}>➕</Text>
-        <Text style={styles.addButtonText}>Add Recipe to Plan</Text>
+        <Text style={dynamicStyles.addButtonEmoji}>➕</Text>
+        <Text style={dynamicStyles.addButtonText}>Add Recipe to Plan</Text>
       </TouchableOpacity>
 
       {/* Week View */}
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={dynamicStyles.scrollView}>
         {weekPlan.map((day, dayIndex) => (
-          <View key={dayIndex} style={styles.dayCard}>
-            <View style={styles.dayHeader}>
-              <Text style={styles.dayName}>{day.dayName}</Text>
-              <Text style={styles.dayDate}>{day.date}</Text>
+          <View key={dayIndex} style={dynamicStyles.dayCard}>
+            <View style={dynamicStyles.dayHeader}>
+              <Text style={dynamicStyles.dayName}>{day.dayName}</Text>
+              <Text style={dynamicStyles.dayDate}>{day.date}</Text>
             </View>
             
             {/* Meals (up to 3) */}
             {day.meals.map((meal, mealIndex) => (
               <TouchableOpacity 
                 key={mealIndex} 
-                style={styles.mealCard}
+                style={dynamicStyles.mealCard}
                 onLongPress={() => {
                   setMealToMove({ dayIndex, mealIndex });
                   setShowMoveMenu(true);
                 }}
                 delayLongPress={500}
               >
-                <Text style={styles.mealEmoji}>{meal.emoji}</Text>
-                <View style={styles.mealInfo}>
-                  <Text style={styles.mealName}>{meal.recipeName}</Text>
-                  <Text style={styles.mealTime}>
+                <Text style={dynamicStyles.mealEmoji}>{meal.emoji}</Text>
+                <View style={dynamicStyles.mealInfo}>
+                  <Text style={dynamicStyles.mealName}>{meal.recipeName}</Text>
+                  <Text style={dynamicStyles.mealTime}>
                     Serve at {meal.serveTime}
                   </Text>
                 </View>
                 <TouchableOpacity onPress={() => removeMeal(dayIndex, mealIndex)}>
-                  <Text style={styles.removeButton}>✕</Text>
+                  <Text style={dynamicStyles.removeButton}>✕</Text>
                 </TouchableOpacity>
               </TouchableOpacity>
             ))}
@@ -248,13 +251,13 @@ export default function PlanWeekScreen() {
             {/* Add another meal slot (if < 3 meals) */}
             {day.meals.length < 3 && (
               <TouchableOpacity 
-                style={[styles.emptySlot, day.meals.length > 0 && styles.emptySlotCompact]}
+                style={[dynamicStyles.emptySlot, day.meals.length > 0 && dynamicStyles.emptySlotCompact]}
                 onPress={() => {
                   setSelectedDayForRecipe(dayIndex);
                   setShowRecipePicker(true);
                 }}
               >
-                <Text style={styles.emptySlotText}>
+                <Text style={dynamicStyles.emptySlotText}>
                   {day.meals.length === 0 ? 'Tap to add meal' : '+ Add another meal'}
                 </Text>
               </TouchableOpacity>
@@ -273,34 +276,34 @@ export default function PlanWeekScreen() {
         onRequestClose={() => setShowDayPicker(false)}
       >
         <TouchableOpacity 
-          style={styles.modalOverlay}
+          style={dynamicStyles.modalOverlay}
           onPress={() => setShowDayPicker(false)}
           activeOpacity={1}
         >
           <TouchableOpacity 
-            style={styles.modalContent}
+            style={dynamicStyles.modalContent}
             onPress={(e) => e.stopPropagation()}
             activeOpacity={1}
           >
-            <Text style={styles.modalTitle}>Add to which day?</Text>
+            <Text style={dynamicStyles.modalTitle}>Add to which day?</Text>
             {weekPlan.map((day, idx) => (
               <TouchableOpacity
                 key={idx}
-                style={styles.dayOption}
+                style={dynamicStyles.dayOption}
                 onPress={() => handleDaySelected(idx)}
               >
-                <Text style={styles.dayOptionEmoji}>📅</Text>
+                <Text style={dynamicStyles.dayOptionEmoji}>📅</Text>
                 <View>
-                  <Text style={styles.dayOptionName}>{day.dayName}</Text>
-                  <Text style={styles.dayOptionDate}>{day.date}</Text>
+                  <Text style={dynamicStyles.dayOptionName}>{day.dayName}</Text>
+                  <Text style={dynamicStyles.dayOptionDate}>{day.date}</Text>
                 </View>
               </TouchableOpacity>
             ))}
             <TouchableOpacity 
-              style={styles.cancelButton}
+              style={dynamicStyles.cancelButton}
               onPress={() => setShowDayPicker(false)}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={dynamicStyles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -314,46 +317,54 @@ export default function PlanWeekScreen() {
         onRequestClose={() => setShowServingsPicker(false)}
       >
         <TouchableOpacity 
-          style={styles.modalOverlay}
+          style={dynamicStyles.modalOverlay}
           onPress={() => setShowServingsPicker(false)}
           activeOpacity={1}
         >
           <TouchableOpacity 
-            style={styles.modalContent}
+            style={dynamicStyles.modalContent}
             onPress={(e) => e.stopPropagation()}
             activeOpacity={1}
           >
-            <Text style={styles.modalTitle}>How many servings?</Text>
-            <Text style={styles.servingsSubtitle}>{selectedRecipe?.title}</Text>
-            <View style={styles.servingsRow}>
+            <Text style={dynamicStyles.modalTitle}>How many servings?</Text>
+            <Text style={dynamicStyles.servingsSubtitle}>{selectedRecipe?.title}</Text>
+            <View style={dynamicStyles.servingsRow}>
               <TouchableOpacity
-                style={styles.servingsButton}
+                style={dynamicStyles.servingsButton}
                 onPress={() => setPendingServings(Math.max(1, pendingServings - 1))}
               >
-                <Text style={styles.servingsButtonText}>−</Text>
+                <Text style={dynamicStyles.servingsButtonText}>−</Text>
               </TouchableOpacity>
-              <Text style={styles.servingsValue}>{pendingServings}</Text>
+              <Text style={dynamicStyles.servingsValue}>{pendingServings}</Text>
               <TouchableOpacity
-                style={styles.servingsButton}
+                style={dynamicStyles.servingsButton}
                 onPress={() => setPendingServings(Math.min(20, pendingServings + 1))}
               >
-                <Text style={styles.servingsButtonText}>+</Text>
+                <Text style={dynamicStyles.servingsButtonText}>+</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity 
-              style={styles.confirmButton}
-              onPress={() => addMealToDay(selectedDayForRecipe!)}
+              style={dynamicStyles.confirmButton}
+              onPress={() => {
+                if (selectedDayForRecipe !== null) {
+                  addMealToDay(selectedDayForRecipe);
+                } else {
+                  // Fallback: close modal and reset
+                  setShowServingsPicker(false);
+                  setSelectedRecipe(null);
+                }
+              }}
             >
-              <Text style={styles.confirmButtonText}>Add to Plan</Text>
+              <Text style={dynamicStyles.confirmButtonText}>Add to Plan</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.cancelButton}
+              style={dynamicStyles.cancelButton}
               onPress={() => {
                 setShowServingsPicker(false);
                 setShowDayPicker(true);
               }}
             >
-              <Text style={styles.cancelText}>Back</Text>
+              <Text style={dynamicStyles.cancelText}>Back</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -367,16 +378,16 @@ export default function PlanWeekScreen() {
         onRequestClose={() => setShowRecipePicker(false)}
       >
         <TouchableOpacity 
-          style={styles.modalOverlay}
+          style={dynamicStyles.modalOverlay}
           onPress={() => setShowRecipePicker(false)}
           activeOpacity={1}
         >
           <TouchableOpacity 
-            style={styles.modalContent}
+            style={dynamicStyles.modalContent}
             onPress={(e) => e.stopPropagation()}
             activeOpacity={1}
           >
-            <Text style={styles.modalTitle}>
+            <Text style={dynamicStyles.modalTitle}>
               {selectedDayForRecipe !== null 
                 ? `Add to ${weekPlan[selectedDayForRecipe]?.dayName}` 
                 : 'Select a recipe'}
@@ -385,25 +396,25 @@ export default function PlanWeekScreen() {
               {ALL_RECIPES.filter(r => r.available).map((recipe) => (
                 <TouchableOpacity
                   key={recipe.id}
-                  style={styles.recipeOption}
+                  style={dynamicStyles.recipeOption}
                   onPress={() => addRecipeToSelectedDay(recipe)}
                 >
-                  <Text style={styles.recipeOptionEmoji}>{recipe.emoji}</Text>
-                  <View style={styles.recipeOptionInfo}>
-                    <Text style={styles.recipeOptionName}>{recipe.title}</Text>
-                    <Text style={styles.recipeOptionMeta}>{recipe.timeDisplay} • {recipe.difficulty}</Text>
+                  <Text style={dynamicStyles.recipeOptionEmoji}>{recipe.emoji}</Text>
+                  <View style={dynamicStyles.recipeOptionInfo}>
+                    <Text style={dynamicStyles.recipeOptionName}>{recipe.title}</Text>
+                    <Text style={dynamicStyles.recipeOptionMeta}>{recipe.timeDisplay} • {recipe.difficulty}</Text>
                   </View>
                 </TouchableOpacity>
               ))}
             </ScrollView>
             <TouchableOpacity 
-              style={styles.cancelButton}
+              style={dynamicStyles.cancelButton}
               onPress={() => {
                 setShowRecipePicker(false);
                 setSelectedDayForRecipe(null);
               }}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={dynamicStyles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -417,51 +428,51 @@ export default function PlanWeekScreen() {
         onRequestClose={() => setShowMoveMenu(false)}
       >
         <TouchableOpacity 
-          style={styles.modalOverlay}
+          style={dynamicStyles.modalOverlay}
           onPress={() => setShowMoveMenu(false)}
           activeOpacity={1}
         >
-          <View style={styles.moveMenuContent}>
-            <Text style={styles.moveMenuTitle}>Move to...</Text>
+          <View style={dynamicStyles.moveMenuContent}>
+            <Text style={dynamicStyles.moveMenuTitle}>Move to...</Text>
             {mealToMove && weekPlan.map((day, idx) => (
               <TouchableOpacity
                 key={idx}
                 style={[
-                  styles.moveOption,
-                  idx === mealToMove.dayIndex && styles.moveOptionDisabled
+                  dynamicStyles.moveOption,
+                  idx === mealToMove.dayIndex && dynamicStyles.moveOptionDisabled
                 ]}
                 onPress={() => moveMeal(mealToMove.dayIndex, mealToMove.mealIndex, idx)}
                 disabled={idx === mealToMove.dayIndex || day.meals.length >= 3}
               >
-                <Text style={styles.moveOptionEmoji}>
+                <Text style={dynamicStyles.moveOptionEmoji}>
                   {idx === mealToMove.dayIndex ? '📍' : day.meals.length >= 3 ? '❌' : '📅'}
                 </Text>
-                <View style={styles.moveOptionInfo}>
+                <View style={dynamicStyles.moveOptionInfo}>
                   <Text style={[
-                    styles.moveOptionName,
-                    (idx === mealToMove.dayIndex || day.meals.length >= 3) && styles.moveOptionNameDisabled
+                    dynamicStyles.moveOptionName,
+                    (idx === mealToMove.dayIndex || day.meals.length >= 3) && dynamicStyles.moveOptionNameDisabled
                   ]}>
                     {day.dayName}
                   </Text>
-                  <Text style={styles.moveOptionDate}>{day.date}</Text>
+                  <Text style={dynamicStyles.moveOptionDate}>{day.date}</Text>
                 </View>
-                {day.meals.length >= 3 && <Text style={styles.moveOptionFull}>Full</Text>}
+                {day.meals.length >= 3 && <Text style={dynamicStyles.moveOptionFull}>Full</Text>}
               </TouchableOpacity>
             ))}
             <TouchableOpacity 
-              style={styles.cancelButton}
+              style={dynamicStyles.cancelButton}
               onPress={() => setShowMoveMenu(false)}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={dynamicStyles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
 
       {/* Generate Shopping List */}
-      <View style={styles.footer}>
+      <View style={dynamicStyles.footer}>
         <TouchableOpacity 
-          style={styles.shoppingButton}
+          style={dynamicStyles.shoppingButton}
           onPress={() => {
             // Build weekly plan with actual ingredients from recipes
             const allRecipes = weekPlan.flatMap((day) => 
@@ -501,7 +512,7 @@ export default function PlanWeekScreen() {
             });
           }}
         >
-          <Text style={styles.shoppingButtonText}>
+          <Text style={dynamicStyles.shoppingButtonText}>
             🛒 Generate Shopping List ({weekPlan.flatMap(d => d.meals).length} meals)
           </Text>
         </TouchableOpacity>
@@ -510,10 +521,10 @@ export default function PlanWeekScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   header: {
     flexDirection: 'row',
@@ -524,13 +535,13 @@ const styles = StyleSheet.create({
   },
   backButton: {
     fontSize: 24,
-    color: '#5D4E37',
+    color: colors.neutral[900],
     padding: 8,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[700] : colors.neutral[900],
   },
   addButton: {
     flexDirection: 'row',
@@ -548,14 +559,14 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : '#FFF',
   },
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
   },
   dayCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -568,29 +579,29 @@ const styles = StyleSheet.create({
   dayName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[700] : colors.neutral[900],
   },
   dayDate: {
     fontSize: 14,
     color: '#87CEEB',
   },
   emptySlot: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: isMichelin ? colors.background?.tertiary : '#F5F5F5',
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
     borderStyle: 'dashed',
     borderWidth: 2,
-    borderColor: '#DDD',
+    borderColor: isMichelin ? colors.neutral[700] : '#DDD',
   },
   emptySlotText: {
     fontSize: 14,
-    color: '#999',
+    color: isMichelin ? colors.neutral[500] : colors.neutral[500],
   },
   mealCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -607,7 +618,7 @@ const styles = StyleSheet.create({
   mealName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: isMichelin ? colors.neutral[700] : colors.neutral[900],
   },
   mealTime: {
     fontSize: 12,
@@ -620,7 +631,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   moveMenuContent: {
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -630,14 +641,14 @@ const styles = StyleSheet.create({
   moveMenuTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 16,
     textAlign: 'center',
   },
   moveOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -655,10 +666,10 @@ const styles = StyleSheet.create({
   moveOptionName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   moveOptionNameDisabled: {
-    color: '#999',
+    color: isMichelin ? colors.neutral[500] : colors.neutral[500],
   },
   moveOptionDate: {
     fontSize: 13,
@@ -675,7 +686,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -684,14 +695,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 16,
     textAlign: 'center',
   },
   dayOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -703,7 +714,7 @@ const styles = StyleSheet.create({
   dayOptionName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   dayOptionDate: {
     fontSize: 13,
@@ -712,7 +723,7 @@ const styles = StyleSheet.create({
   recipeOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -727,7 +738,7 @@ const styles = StyleSheet.create({
   recipeOptionName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   recipeOptionMeta: {
     fontSize: 13,
@@ -743,13 +754,13 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: colors.neutral[700],
   },
   footer: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    backgroundColor: '#FFF8E7',
+    borderTopColor: colors.neutral[200],
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   shoppingButton: {
     backgroundColor: '#FF8C42',
@@ -760,12 +771,12 @@ const styles = StyleSheet.create({
   shoppingButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : '#FFF',
   },
   // Servings picker styles
   servingsSubtitle: {
     fontSize: 16,
-    color: '#666',
+    color: colors.neutral[700],
     textAlign: 'center',
     marginBottom: 24,
     paddingHorizontal: 20,
@@ -793,12 +804,12 @@ const styles = StyleSheet.create({
   servingsButtonText: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : '#FFF',
   },
   servingsValue: {
     fontSize: 48,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     minWidth: 60,
     textAlign: 'center',
   },
@@ -814,6 +825,6 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFF',
+    color: isMichelin ? colors.background?.secondary : '#FFF',
   },
 });

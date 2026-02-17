@@ -5,6 +5,8 @@ import { ConsolidatedItem, consolidateShoppingList, getNeedToBuy, getShoppingSta
 import { getWeeklyPlan } from "../utils/weeklyPlan";
 import { ALL_RECIPES } from "../data/recipes";
 import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '@/providers/ThemeProvider';
+import { getUnitSystem, UnitSystem } from "../utils/settings";
 
 // Fallback mock data if no plan passed
 const MOCK_WEEKLY_PLAN = {
@@ -58,17 +60,22 @@ const CATEGORY_NAMES: Record<string, string> = {
 };
 
 export default function ShoppingScreen() {
+  const { colors, isMichelin } = useTheme();
   const { weeklyPlan: weeklyPlanParam } = useLocalSearchParams<{ weeklyPlan?: string }>();
   const weeklyPlan = weeklyPlanParam ? JSON.parse(weeklyPlanParam) : null;
   const [items, setItems] = useState<ConsolidatedItem[]>([]);
   const [showBreakdown, setShowBreakdown] = useState<string | null>(null);
   const [activeRecipes, setActiveRecipes] = useState<any[]>(weeklyPlan?.recipes || MOCK_WEEKLY_PLAN.recipes);
-  const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>('imperial'); // Default: US shopping
-  const [recipesExpanded, setRecipesExpanded] = useState(true);
+  const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric'); // Will load from profile settings
+  const [recipesExpanded, setRecipesExpanded] = useState(false);
   const [editingRecipeServings, setEditingRecipeServings] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPlan = async () => {
+      // Load user's preferred unit system from profile settings
+      const savedUnitSystem = await getUnitSystem();
+      setUnitSystem(savedUnitSystem);
+      
       // First try passed navigation params, then AsyncStorage, then mock
       if (weeklyPlan?.recipes) {
         setActiveRecipes(weeklyPlan.recipes);
@@ -190,78 +197,86 @@ export default function ShoppingScreen() {
     return acc;
   }, {} as Record<string, ConsolidatedItem[]>);
 
+  const dynamicStyles = createStyles(colors, isMichelin);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
       
-      <View style={styles.header}>
-        <Text style={styles.title}>Weekly Shopping</Text>
+      <View style={dynamicStyles.header}>
+        <Text style={dynamicStyles.title}>Weekly Shopping</Text>
         
         {/* Unit System Toggle */}
-        <View style={styles.unitToggle}>
+        <View style={dynamicStyles.unitToggle}>
           <TouchableOpacity
-            style={[styles.unitOption, unitSystem === 'imperial' && styles.unitOptionActive]}
+            style={[dynamicStyles.unitOption, unitSystem === 'imperial' && dynamicStyles.unitOptionActive]}
             onPress={() => setUnitSystem('imperial')}
           >
-            <Text style={[styles.unitOptionText, unitSystem === 'imperial' && styles.unitOptionTextActive]}>US</Text>
+            <Text style={[dynamicStyles.unitOptionText, unitSystem === 'imperial' && dynamicStyles.unitOptionTextActive]}>US</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.unitOption, unitSystem === 'metric' && styles.unitOptionActive]}
+            style={[dynamicStyles.unitOption, unitSystem === 'metric' && dynamicStyles.unitOptionActive]}
             onPress={() => setUnitSystem('metric')}
           >
-            <Text style={[styles.unitOptionText, unitSystem === 'metric' && styles.unitOptionTextActive]}>Metric</Text>
+            <Text style={[dynamicStyles.unitOptionText, unitSystem === 'metric' && dynamicStyles.unitOptionTextActive]}>Metric</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[dynamicStyles.unitOption, unitSystem === 'baker' && dynamicStyles.unitOptionActive]}
+            onPress={() => setUnitSystem('baker')}
+          >
+            <Text style={[dynamicStyles.unitOptionText, unitSystem === 'baker' && dynamicStyles.unitOptionTextActive]}>Baker</Text>
           </TouchableOpacity>
         </View>
         
         {/* Collapsible Recipes */}
         <TouchableOpacity 
-          style={styles.recipesHeader}
+          style={dynamicStyles.recipesHeader}
           onPress={() => setRecipesExpanded(!recipesExpanded)}
         >
-          <Text style={styles.recipesHeaderText}>
+          <Text style={dynamicStyles.recipesHeaderText}>
             Recipes ({activeRecipes.length})
           </Text>
-          <Text style={styles.recipesToggle}>
+          <Text style={dynamicStyles.recipesToggle}>
             {recipesExpanded ? '▼' : '▶'}
           </Text>
         </TouchableOpacity>
         
         {recipesExpanded && (
-          <View style={styles.recipePills}>
+          <View style={dynamicStyles.recipePills}>
             {activeRecipes.map((r: any, index: number) => (
-              <View key={`${r.recipeId}-${index}`} style={styles.recipePillContainer}>
+              <View key={`${r.recipeId}-${index}`} style={dynamicStyles.recipePillContainer}>
                 {editingRecipeServings === r.recipeId ? (
-                  <View style={styles.servingsEditRow}>
+                  <View style={dynamicStyles.servingsEditRow}>
                     <TouchableOpacity 
-                      style={styles.servingsEditButton}
+                      style={dynamicStyles.servingsEditButton}
                       onPress={() => updateRecipeServings(r.recipeId, Math.max(1, r.servings - 1))}
                     >
-                      <Text style={styles.servingsEditText}>−</Text>
+                      <Text style={dynamicStyles.servingsEditText}>−</Text>
                     </TouchableOpacity>
-                    <Text style={styles.servingsEditValue}>{r.servings}</Text>
+                    <Text style={dynamicStyles.servingsEditValue}>{r.servings}</Text>
                     <TouchableOpacity 
-                      style={styles.servingsEditButton}
+                      style={dynamicStyles.servingsEditButton}
                       onPress={() => updateRecipeServings(r.recipeId, Math.min(20, r.servings + 1))}
                     >
-                      <Text style={styles.servingsEditText}>+</Text>
+                      <Text style={dynamicStyles.servingsEditText}>+</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
-                      style={styles.servingsDoneButton}
+                      style={dynamicStyles.servingsDoneButton}
                       onPress={() => setEditingRecipeServings(null)}
                     >
-                      <Text style={styles.servingsDoneText}>Done</Text>
+                      <Text style={dynamicStyles.servingsDoneText}>Done</Text>
                     </TouchableOpacity>
                   </View>
                 ) : (
                   <TouchableOpacity 
-                    style={styles.recipePill}
+                    style={dynamicStyles.recipePill}
                     onLongPress={() => setEditingRecipeServings(r.recipeId)}
                     onPress={() => removeRecipe(r.recipeId)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.recipePillText}>{r.recipeName}</Text>
-                    <Text style={styles.servingsBadge}>Serves {r.servings || 4}</Text>
-                    <Text style={styles.removePillText}> ✕</Text>
+                    <Text style={dynamicStyles.recipePillText}>{r.recipeName}</Text>
+                    <Text style={dynamicStyles.servingsBadge}>Serves {r.servings || 4}</Text>
+                    <Text style={dynamicStyles.removePillText}> ✕</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -271,51 +286,51 @@ export default function ShoppingScreen() {
       </View>
 
       {/* Progress */}
-      <View style={styles.progressCard}>
-        <View style={styles.progressRow}>
-          <Text style={styles.progressText}>{needToBuy.length} items to buy</Text>
-          <Text style={styles.progressPercent}>{Math.round(stats.progress * 100)}%</Text>
+      <View style={dynamicStyles.progressCard}>
+        <View style={dynamicStyles.progressRow}>
+          <Text style={dynamicStyles.progressText}>{needToBuy.length} items to buy</Text>
+          <Text style={dynamicStyles.progressPercent}>{Math.round(stats.progress * 100)}%</Text>
         </View>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${stats.progress * 100}%` }]} />
+        <View style={dynamicStyles.progressBar}>
+          <View style={[dynamicStyles.progressFill, { width: `${stats.progress * 100}%` }]} />
         </View>
       </View>
 
-      <ScrollView style={styles.list}>
+      <ScrollView style={dynamicStyles.list}>
         {Object.entries(byCategory).map(([category, catItems]) => (
-          <View key={category} style={styles.categorySection}>
-            <Text style={styles.categoryHeader}>
+          <View key={category} style={dynamicStyles.categorySection}>
+            <Text style={dynamicStyles.categoryHeader}>
               {CATEGORY_EMOJIS[category]} {CATEGORY_NAMES[category]}
-              <Text style={styles.categoryCount}> ({catItems.length})</Text>
+              <Text style={dynamicStyles.categoryCount}> ({catItems.length})</Text>
             </Text>
             
             {catItems.map(item => (
               <View key={item.id}>
                 <View style={[
-                  styles.itemRow,
-                  item.hasAtHome && styles.itemRowHome,
-                  item.checked && styles.itemRowChecked
+                  dynamicStyles.itemRow,
+                  item.hasAtHome && dynamicStyles.itemRowHome,
+                  item.checked && dynamicStyles.itemRowChecked
                 ]}>
                   {/* Checkbox */}
                   <TouchableOpacity 
-                    style={[styles.checkbox, item.checked && styles.checkboxChecked]}
+                    style={[dynamicStyles.checkbox, item.checked && dynamicStyles.checkboxChecked]}
                     onPress={() => toggleChecked(item.id)}
                   >
-                    {item.checked && <Text style={styles.checkmark}>✓</Text>}
+                    {item.checked && <Text style={dynamicStyles.checkmark}>✓</Text>}
                   </TouchableOpacity>
                   
-                  <View style={styles.itemContent}>
+                  <View style={dynamicStyles.itemContent}>
                     <Text style={[
-                      styles.itemName,
-                      (item.checked || item.hasAtHome) && styles.itemNameDimmed
+                      dynamicStyles.itemName,
+                      (item.checked || item.hasAtHome) && dynamicStyles.itemNameDimmed
                     ]}>
                       {item.item}
                     </Text>
-                    <Text style={styles.itemAmount}>{convertToSystem(item.totalAmount)}</Text>
+                    <Text style={dynamicStyles.itemAmount}>{convertToSystem(item.totalAmount)}</Text>
                     
                     {/* Show which recipes need this */}
                     <TouchableOpacity onPress={() => setShowBreakdown(showBreakdown === item.id ? null : item.id)}>
-                      <Text style={styles.breakdownToggle}>
+                      <Text style={dynamicStyles.breakdownToggle}>
                         Used in {item.breakdown.length} recipe{item.breakdown.length > 1 ? 's' : ''} 
                         {showBreakdown === item.id ? '▲' : '▼'}
                       </Text>
@@ -324,10 +339,10 @@ export default function ShoppingScreen() {
                   
                   {/* Have at home toggle */}
                   <TouchableOpacity 
-                    style={[styles.homeButton, item.hasAtHome && styles.homeButtonActive]}
+                    style={[dynamicStyles.homeButton, item.hasAtHome && dynamicStyles.homeButtonActive]}
                     onPress={() => toggleHasAtHome(item.id)}
                   >
-                    <Text style={styles.homeButtonText}>
+                    <Text style={dynamicStyles.homeButtonText}>
                       {item.hasAtHome ? '🏠' : '🛒'}
                     </Text>
                   </TouchableOpacity>
@@ -335,11 +350,11 @@ export default function ShoppingScreen() {
                 
                 {/* Breakdown by recipe */}
                 {showBreakdown === item.id && (
-                  <View style={styles.breakdown}>
+                  <View style={dynamicStyles.breakdown}>
                     {item.breakdown.map((use, idx) => (
-                      <View key={idx} style={styles.breakdownRow}>
-                        <Text style={styles.breakdownBullet}>•</Text>
-                        <Text style={styles.breakdownText}>
+                      <View key={idx} style={dynamicStyles.breakdownRow}>
+                        <Text style={dynamicStyles.breakdownBullet}>•</Text>
+                        <Text style={dynamicStyles.breakdownText}>
                           {use.amount} for {use.recipeName}
                         </Text>
                       </View>
@@ -357,10 +372,10 @@ export default function ShoppingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   header: {
     padding: 24,
@@ -369,21 +384,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 12,
   },
   unitToggle: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 20,
     padding: 4,
     marginBottom: 12,
     alignSelf: 'flex-start',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   unitOption: {
     paddingHorizontal: 16,
@@ -391,12 +401,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   unitOptionActive: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
   },
   unitOptionText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: colors.neutral[700],
   },
   unitOptionTextActive: {
     color: '#FFF',
@@ -411,29 +421,11 @@ const styles = StyleSheet.create({
   recipesHeaderText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: colors.neutral[700],
   },
   recipesToggle: {
     fontSize: 12,
-    color: '#999',
-  },
-  recipesHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 16,
-  },
-  recipesHeaderText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#5D4E37',
-  },
-  recipesToggle: {
-    fontSize: 14,
-    color: '#87CEEB',
+    color: colors.neutral[500],
   },
   recipePills: {
     flexDirection: 'row',
@@ -442,7 +434,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   recipePill: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -458,40 +450,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 4,
   },
-  unitToggle: {
-    flexDirection: 'row',
-    backgroundColor: '#F0F0F0',
-    borderRadius: 20,
-    padding: 4,
-    marginBottom: 12,
-    alignSelf: 'flex-start',
-  },
-  unitOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  unitOptionActive: {
-    backgroundColor: '#FFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  unitOptionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
-  },
-  unitOptionTextActive: {
-    color: '#5D4E37',
-    fontWeight: '600',
-  },
   progressCard: {
     marginHorizontal: 24,
     marginBottom: 16,
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
   },
@@ -503,21 +465,21 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   progressPercent: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FF8C42',
+    color: colors.primary[500],
   },
   progressBar: {
     height: 8,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: colors.neutral[300],
     borderRadius: 4,
   },
   progressFill: {
     height: 8,
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     borderRadius: 4,
   },
   list: {
@@ -530,42 +492,42 @@ const styles = StyleSheet.create({
   categoryHeader: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 12,
     paddingVertical: 8,
   },
   categoryCount: {
-    color: '#87CEEB',
+    color: colors.primary[500],
     fontWeight: '400',
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
   },
   itemRowHome: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: colors.success + '20',
     opacity: 0.7,
   },
   itemRowChecked: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.neutral[300],
   },
   checkbox: {
     width: 28,
     height: 28,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#87CEEB',
+    borderColor: colors.primary[500],
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   checkboxChecked: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: colors.success,
+    borderColor: colors.success,
   },
   checkmark: {
     color: '#FFF',
@@ -578,41 +540,41 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   itemNameDimmed: {
     textDecorationLine: 'line-through',
-    color: '#999',
+    color: colors.neutral[500],
   },
   itemAmount: {
     fontSize: 13,
-    color: '#87CEEB',
+    color: colors.primary[500],
     marginTop: 2,
   },
   breakdownToggle: {
     fontSize: 12,
-    color: '#FF8C42',
+    color: colors.primary[500],
     marginTop: 4,
   },
   homeButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#DDD',
+    borderColor: colors.neutral[300],
   },
   homeButtonActive: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#4CAF50',
+    backgroundColor: colors.success + '20',
+    borderColor: colors.success,
   },
   homeButtonText: {
     fontSize: 20,
   },
   breakdown: {
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
     borderRadius: 8,
     padding: 12,
     marginLeft: 40,
@@ -624,12 +586,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   breakdownBullet: {
-    color: '#87CEEB',
+    color: colors.primary[500],
     marginRight: 8,
   },
   breakdownText: {
     fontSize: 13,
-    color: '#666',
+    color: colors.neutral[700],
   },
   recipePillContainer: {
     marginRight: 8,
@@ -637,24 +599,24 @@ const styles = StyleSheet.create({
   },
   servingsBadge: {
     fontSize: 11,
-    color: '#FF8C42',
+    color: colors.primary[400],
     fontWeight: '600',
     marginLeft: 4,
   },
   servingsEditRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
     borderRadius: 16,
     padding: 4,
     borderWidth: 1,
-    borderColor: '#FF8C42',
+    borderColor: colors.primary[500],
   },
   servingsEditButton: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -666,13 +628,13 @@ const styles = StyleSheet.create({
   servingsEditValue: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginHorizontal: 12,
     minWidth: 20,
     textAlign: 'center',
   },
   servingsDoneButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,

@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { getActiveCooking, ActiveCooking, clearActiveCooking } from '../utils/activeCooking';
 import { getWeeklyPlan } from '../utils/weeklyPlan';
 import { getFavorites, initFavorites } from '../utils/favorites';
+import { useTheme } from '@/providers/ThemeProvider';
 
 // Recipe validation map (ids that exist in the app)
 const VALID_RECIPE_IDS = [
@@ -24,8 +25,9 @@ const VALID_RECIPE_IDS = [
 ];
 
 // Smart empty state component for when not actively cooking
-function NoActiveCookingCard() {
+function NoActiveCookingCard({ colors, isMichelin }: { colors: any; isMichelin: boolean }) {
   const [plannedMeal, setPlannedMeal] = useState<{recipeId: string; recipeName: string; emoji: string; serveTime?: string} | null>(null);
+  const dynamicStyles = createNoCookingStyles(colors, isMichelin);
   
   // Re-check plan whenever screen comes into focus
   useFocusEffect(
@@ -65,43 +67,43 @@ function NoActiveCookingCard() {
 
   if (plannedMeal) {
     return (
-      <TouchableOpacity style={styles.readyCard} onPress={startCooking}>
-        <View style={styles.readyHeader}>
-          <Text style={styles.readyEmoji}>🍳</Text>
-          <Text style={styles.readyLabel}>READY TO COOK</Text>
+      <TouchableOpacity style={dynamicStyles.readyCard} onPress={startCooking}>
+        <View style={dynamicStyles.readyHeader}>
+          <Text style={dynamicStyles.readyEmoji}>🍳</Text>
+          <Text style={dynamicStyles.readyLabel}>READY TO COOK</Text>
         </View>
-        <Text style={styles.readyTitle}>Ready to start cooking?</Text>
-        <View style={styles.recipePreview}>
-          <Text style={styles.readyRecipeEmoji}>{plannedMeal.emoji}</Text>
-          <Text style={styles.readyRecipeName}>{plannedMeal.recipeName}</Text>
+        <Text style={dynamicStyles.readyTitle}>Ready to start cooking?</Text>
+        <View style={dynamicStyles.recipePreview}>
+          <Text style={dynamicStyles.readyRecipeEmoji}>{plannedMeal.emoji}</Text>
+          <Text style={dynamicStyles.readyRecipeName}>{plannedMeal.recipeName}</Text>
         </View>
         {plannedMeal.serveTime && (
-          <Text style={styles.readyTime}>Planned for {plannedMeal.serveTime}</Text>
+          <Text style={dynamicStyles.readyTime}>Planned for {plannedMeal.serveTime}</Text>
         )}
-        <View style={styles.startCookingBtn}>
-          <Text style={styles.startCookingText}>START COOKING →</Text>
+        <View style={dynamicStyles.startCookingBtn}>
+          <Text style={dynamicStyles.startCookingText}>START COOKING →</Text>
         </View>
       </TouchableOpacity>
     );
   }
 
   return (
-    <View style={styles.startCard}>
-      <Text style={styles.startEmoji}>👨‍🍳</Text>
-      <Text style={styles.startTitle}>Not cooking today?</Text>
-      <Text style={styles.startSub}>Pick a recipe or plan your week</Text>
-      <View style={styles.emptyActions}>
+    <View style={dynamicStyles.startCard}>
+      <Text style={dynamicStyles.startEmoji}>👨‍🍳</Text>
+      <Text style={dynamicStyles.startTitle}>Not cooking today?</Text>
+      <Text style={dynamicStyles.startSub}>Pick a recipe or plan your week</Text>
+      <View style={dynamicStyles.emptyActions}>
         <TouchableOpacity 
-          style={styles.smallBtn}
+          style={dynamicStyles.smallBtn}
           onPress={() => router.push('/(tabs)/library')}
         >
-          <Text style={styles.smallBtnText}>Browse</Text>
+          <Text style={dynamicStyles.smallBtnText}>Browse</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={styles.smallBtn}
+          style={dynamicStyles.smallBtn}
           onPress={() => router.push('/(tabs)/plan')}
         >
-          <Text style={styles.smallBtnText}>Plan</Text>
+          <Text style={dynamicStyles.smallBtnText}>Plan</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -109,6 +111,7 @@ function NoActiveCookingCard() {
 }
 
 export default function CookLauncherScreen() {
+  const { colors, isMichelin } = useTheme();
   const [activeCooking, setActiveCooking] = useState<ActiveCooking | null>(null);
   const [favorites, setFavorites] = useState<any[]>([]);
 
@@ -145,94 +148,96 @@ export default function CookLauncherScreen() {
     setActiveCooking(null);
   };
 
+  const dynamicStyles = createStyles(colors, isMichelin);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}>My Kitchen</Text>
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <ScrollView style={dynamicStyles.scrollView}>
+        <Text style={dynamicStyles.title}>My Kitchen</Text>
         
         {/* Active Cooking */}
         {activeCooking ? (
-          <View style={styles.activeCard}>
-            <TouchableOpacity onPress={resume} style={styles.activeCardContent}>
-              <View style={styles.activeHeader}>
-                <Text style={styles.fireEmoji}>🔥</Text>
-                <Text style={styles.cookingNow}>COOKING NOW</Text>
+          <View style={dynamicStyles.activeCard}>
+            <TouchableOpacity onPress={resume} style={dynamicStyles.activeCardContent}>
+              <View style={dynamicStyles.activeHeader}>
+                <Text style={dynamicStyles.fireEmoji}>🔥</Text>
+                <Text style={dynamicStyles.cookingNow}>COOKING NOW</Text>
               </View>
-              <Text style={styles.recipeName}>{activeCooking.recipeName}</Text>
-              <Text style={styles.stepText}>
+              <Text style={dynamicStyles.recipeName}>{activeCooking.recipeName}</Text>
+              <Text style={dynamicStyles.stepText}>
                 Step {activeCooking.currentStep + 1} of {activeCooking.totalSteps}
               </Text>
-              <View style={styles.resumeBtn}>
-                <Text style={styles.resumeText}>RESUME →</Text>
+              <View style={dynamicStyles.resumeBtn}>
+                <Text style={dynamicStyles.resumeText}>RESUME →</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.clearBtn} onPress={handleClearProgress}>
-              <Text style={styles.clearText}>✕ Clear Progress</Text>
+            <TouchableOpacity style={dynamicStyles.clearBtn} onPress={handleClearProgress}>
+              <Text style={dynamicStyles.clearText}>✕ Clear Progress</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <NoActiveCookingCard />
+          <NoActiveCookingCard colors={colors} isMichelin={isMichelin} />
         )}
 
         {/* My Favorites */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>❤️ My Favorites</Text>
+        <View style={dynamicStyles.section}>
+          <Text style={dynamicStyles.sectionTitle}>❤️ My Favorites</Text>
           {favorites.length > 0 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {favorites.map((fav) => (
                 <TouchableOpacity 
                   key={fav.id}
-                  style={styles.favCard}
+                  style={dynamicStyles.favCard}
                   onPress={() => router.push(`/recipe/${fav.id}`)}
                 >
-                  <Text style={styles.favEmoji}>{fav.emoji}</Text>
-                  <Text style={styles.favName} numberOfLines={2}>{fav.title}</Text>
+                  <Text style={dynamicStyles.favEmoji}>{fav.emoji}</Text>
+                  <Text style={dynamicStyles.favName} numberOfLines={2}>{fav.title}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           ) : (
             <TouchableOpacity 
-              style={styles.emptyFavs}
+              style={dynamicStyles.emptyFavs}
               onPress={() => router.replace('/(tabs)/library')}
             >
-              <Text style={styles.emptyText}>No favorites yet</Text>
-              <Text style={styles.emptySub}>Browse recipes and save the ones you love</Text>
+              <Text style={dynamicStyles.emptyText}>No favorites yet</Text>
+              <Text style={dynamicStyles.emptySub}>Browse recipes and save the ones you love</Text>
             </TouchableOpacity>
           )}
         </View>
 
         {/* Quick Access */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚡ Quick Access</Text>
-          <View style={styles.quickGrid2x2}>
+        <View style={dynamicStyles.section}>
+          <Text style={dynamicStyles.sectionTitle}>⚡ Quick Access</Text>
+          <View style={dynamicStyles.quickGrid2x2}>
             <TouchableOpacity 
-              style={styles.quickBtn}
+              style={dynamicStyles.quickBtn}
               onPress={() => router.push('/my-library')}
             >
-              <Text style={styles.quickEmoji}>📚</Text>
-              <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">My Library</Text>
+              <Text style={dynamicStyles.quickEmoji}>📚</Text>
+              <Text style={dynamicStyles.quickLabel} numberOfLines={2} ellipsizeMode="tail">My Library</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.quickBtn}
+              style={dynamicStyles.quickBtn}
               onPress={() => router.push('/(tabs)/plan')}
             >
-              <Text style={styles.quickEmoji}>📅</Text>
-              <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">This Week</Text>
+              <Text style={dynamicStyles.quickEmoji}>📅</Text>
+              <Text style={dynamicStyles.quickLabel} numberOfLines={2} ellipsizeMode="tail">This Week</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.quickBtn}
+              style={dynamicStyles.quickBtn}
               onPress={() => router.push('/create-recipe')}
             >
-              <Text style={styles.quickEmoji}>✍️</Text>
-              <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Create Recipe</Text>
+              <Text style={dynamicStyles.quickEmoji}>✍️</Text>
+              <Text style={dynamicStyles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Create Recipe</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.quickBtn}
+              style={dynamicStyles.quickBtn}
               onPress={() => router.push('/import-recipe')}
             >
-              <Text style={styles.quickEmoji}>📥</Text>
-              <Text style={styles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Import Recipe</Text>
+              <Text style={dynamicStyles.quickEmoji}>📥</Text>
+              <Text style={dynamicStyles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Import Recipe</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -243,10 +248,10 @@ export default function CookLauncherScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
   },
   scrollView: {
     flex: 1,
@@ -255,17 +260,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 24,
   },
   
   // Active Cooking
   activeCard: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     borderRadius: 20,
     padding: 24,
     marginBottom: 32,
-    shadowColor: '#FF8C42',
+    shadowColor: colors.primary[500],
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -312,7 +317,7 @@ const styles = StyleSheet.create({
   resumeText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FF8C42',
+    color: colors.primary[500],
   },
   clearBtn: {
     marginTop: 12,
@@ -326,15 +331,99 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   
+  // Sections
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.neutral[900],
+    marginBottom: 16,
+  },
+  
+  // Favorites
+  favCard: {
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    borderRadius: 16,
+    padding: 16,
+    marginRight: 12,
+    width: 120,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  favEmoji: {
+    fontSize: 40,
+    marginBottom: 8,
+  },
+  favName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.neutral[900],
+    textAlign: 'center',
+  },
+  emptyFavs: {
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.neutral[900],
+    marginBottom: 4,
+  },
+  emptySub: {
+    fontSize: 14,
+    color: colors.neutral[500],
+  },
+  
+  // Quick Access
+  quickGrid2x2: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  quickBtn: {
+    width: '47%',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 100,
+    borderWidth: 2,
+    borderColor: isMichelin ? colors.neutral[300] : '#E8E8E8',
+    marginBottom: 12,
+  },
+  quickEmoji: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  quickLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.neutral[900],
+    textAlign: 'center',
+  },
+});
+
+const createNoCookingStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   // Start Card (no active cooking, no plan)
   startCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 20,
     padding: 32,
     alignItems: 'center',
     marginBottom: 32,
     borderWidth: 2,
-    borderColor: '#E8E8E8',
+    borderColor: isMichelin ? colors.neutral[300] : '#E8E8E8',
     borderStyle: 'dashed',
   },
   startEmoji: {
@@ -344,32 +433,15 @@ const styles = StyleSheet.create({
   startTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
     marginBottom: 8,
   },
   startSub: {
     fontSize: 14,
-    color: '#8B7355',
-  },
-  startSubSmall: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 4,
-  },
-  browseBtn: {
-    marginTop: 16,
-    backgroundColor: '#FF8C42',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  browseBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFF',
+    color: colors.neutral[500],
   },
   smallBtn: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: isMichelin ? colors.background?.tertiary : '#F5F5F5',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -378,7 +450,7 @@ const styles = StyleSheet.create({
   smallBtnText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#5D4E37',
+    color: colors.neutral[900],
   },
   emptyActions: {
     flexDirection: 'row',
@@ -387,11 +459,11 @@ const styles = StyleSheet.create({
   
   // Ready to Cook Card (has planned recipe for today)
   readyCard: {
-    backgroundColor: '#7CB342',
+    backgroundColor: colors.success,
     borderRadius: 20,
     padding: 24,
     marginBottom: 32,
-    shadowColor: '#7CB342',
+    shadowColor: colors.success,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -454,88 +526,6 @@ const styles = StyleSheet.create({
   startCookingText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#7CB342',
-  },
-  
-  // Sections
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#5D4E37',
-    marginBottom: 16,
-  },
-  
-  // Favorites
-  favCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    marginRight: 12,
-    width: 120,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  favEmoji: {
-    fontSize: 40,
-    marginBottom: 8,
-  },
-  favName: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#5D4E37',
-    textAlign: 'center',
-  },
-  emptyFavs: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#5D4E37',
-    marginBottom: 4,
-  },
-  emptySub: {
-    fontSize: 14,
-    color: '#8B7355',
-  },
-  
-  // Quick Access
-  quickGrid2x2: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  quickBtn: {
-    width: '47%',
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 100,
-    borderWidth: 2,
-    borderColor: '#E8E8E8',
-    marginBottom: 12,
-  },
-  quickEmoji: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  quickLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#5D4E37',
-    textAlign: 'center',
+    color: colors.success,
   },
 });

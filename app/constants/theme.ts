@@ -1,27 +1,32 @@
 /**
  * EnPlace Theme - Global Color Constants
- * Warm, premium, calm cooking experience
+ * Supports multiple themes: default and michelin (fine dining)
  */
 
-import { colors } from '../theme/colors';
+import { getThemeColors, ThemeMode } from '../theme';
 
+// These are kept for backwards compatibility
+// New code should use useTheme() and getThemeColors() directly
 export const Colors = {
   light: {
-    text: colors.neutral[900],
-    background: colors.cream[50],
-    tint: colors.primary[500],
-    icon: colors.neutral[500],
-    tabIconDefault: colors.neutral[500],
-    tabIconSelected: colors.primary[500],
+    text: '#1F1F1F',
+    background: '#FFF8E7',
+    tint: '#FF8C42',
+    icon: '#8A8A8A',
+    tabIconDefault: '#8A8A8A',
+    tabIconSelected: '#FF8C42',
   },
   dark: {
-    text: colors.neutral[100],
-    background: colors.neutral[900],
-    tint: colors.primary[500],
-    icon: colors.neutral[500],
-    tabIconDefault: colors.neutral[500],
-    tabIconSelected: colors.primary[500],
+    text: '#F1F1F1',
+    background: '#1F1F1F',
+    tint: '#FF8C42',
+    icon: '#8A8A8A',
+    tabIconDefault: '#8A8A8A',
+    tabIconSelected: '#FF8C42',
   },
 };
 
 export type ColorTheme = typeof Colors.light;
+
+// Export helper to get colors for a specific theme mode
+export { getThemeColors, ThemeMode };

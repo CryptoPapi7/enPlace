@@ -1,55 +1,45 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
+import { AuthProvider } from '@/providers/AuthProvider';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '../constants/theme';
+import { getNavigationTheme } from '@/theme';
+import { ThemeProvider, useTheme } from '@/providers/ThemeProvider';
 
-// Custom navigation theme based on EnPlace colors
-const EnPlaceLightTheme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: Colors.light.tint,
-    background: Colors.light.background,
-    card: Colors.light.background,
-    text: Colors.light.text,
-    border: Colors.light.tint,
-  },
-};
+// Wrapper component to access theme context
+function ThemedNavigation() {
+  const { themeMode, isLoading } = useTheme();
+  const colorScheme = useColorScheme();
 
-const EnPlaceDarkTheme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    primary: Colors.dark.tint,
-    background: Colors.dark.background,
-    card: Colors.dark.background,
-    text: Colors.dark.text,
-    border: Colors.dark.tint,
-  },
-};
+  if (isLoading) {
+    return null;
+  }
+
+  const navigationTheme = getNavigationTheme(themeMode);
+
+  return (
+    <NavigationThemeProvider value={navigationTheme}>
+      <AuthProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        </Stack>
+        <StatusBar style={navigationTheme.dark ? 'light' : 'dark'} />
+      </AuthProvider>
+    </NavigationThemeProvider>
+  );
+}
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? EnPlaceDarkTheme : EnPlaceLightTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="recipe/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="cooking" options={{ headerShown: false }} />
-        <Stack.Screen name="my-library" options={{ headerShown: false }} />
-        <Stack.Screen name="create-recipe" options={{ headerShown: false }} />
-        <Stack.Screen name="import-recipe" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
+    <ThemeProvider>
+      <ThemedNavigation />
     </ThemeProvider>
   );
 }

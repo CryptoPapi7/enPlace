@@ -1,50 +1,140 @@
-# Welcome to your Expo app 👋
+# enPlace 🍳
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**enPlace** is a calm, offline‑first cooking app designed to help you cook one dish end‑to‑end without distraction.
 
-## Get started
+No feeds. No noise. Just you and the recipe.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## ✨ Core Principles
 
-2. Start the app
+- **Offline‑first** – your recipes work without an internet connection
+- **Single‑recipe focus** – cook one dish, step by step
+- **Calm UX** – no discovery, no social layer, no pressure
+- **User‑owned data** – authenticated, private, portable
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 🧱 Architecture Overview
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+enPlace uses a **hybrid offline‑first architecture** combining local SQLite storage with Supabase for authentication and cloud persistence.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### High‑level Flow
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+Supabase (Auth + DB)
+        ↓
+  Hydration / Sync
+        ↓
+     SQLite (local)
+        ↓
+        UI
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- **Supabase** is the canonical cloud backend
+- **SQLite** is the local source for fast reads and offline use
+- **Schemas** define a single contract shared across layers
 
-## Learn more
+---
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🔐 Authentication (Supabase)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Email / password authentication via Supabase Auth
+- Session is managed globally in the app
+- Recipes are scoped to the authenticated user
 
-## Join the community
+Environment variables are required (see setup below).
 
-Join our community of developers creating universal apps.
+---
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 💾 Data Layer
+
+### Supabase
+- Stores user accounts and recipes
+- Recipes are tied to `user_id`
+- Acts as the long‑term, cross‑device source of truth
+
+### SQLite (Offline)
+- Lives locally on device
+- Mirrors the recipes schema
+- Used for:
+  - Offline access
+  - Fast reads
+  - App resilience
+
+> Sync logic is intentionally simple in v0.x and will evolve.
+
+---
+
+## 📐 Schemas
+
+All core data structures live in the `schemas/` directory and are shared across:
+
+- Supabase queries
+- SQLite table definitions
+- UI components and screens
+
+This ensures consistency and reduces drift between layers.
+
+---
+
+## 🎨 Theme System
+
+- Global theme manager
+- Two built‑in themes:
+  - **Classic** – warm, cozy, everyday cooking
+  - **Michelin Star** – dark, refined, fine‑dining feel
+- Theme selection is persisted locally
+- All screens are fully theme‑aware
+
+---
+
+## 🚀 Local Development
+
+### Prerequisites
+
+- Node.js
+- Expo CLI
+- Supabase project
+
+### Environment Variables
+
+Create a `.env` file with:
+
+```
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+```
+
+### Run the App
+
+```bash
+npm install
+npx expo start
+```
+
+---
+
+## 📦 Tech Stack
+
+- **Expo / React Native**
+- **Supabase** (Auth + Postgres)
+- **SQLite** (offline storage)
+- **TypeScript**
+
+---
+
+## 🛣 Roadmap (High Level)
+
+- Improved sync conflict handling
+- Recipe versioning
+- Multi‑device polish
+- Export / backup options
+
+---
+
+## Philosophy
+
+enPlace is intentionally small.
+
+If it doesn’t help you cook *this* dish, *right now*, it doesn’t belong here.

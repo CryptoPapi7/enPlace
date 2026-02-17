@@ -20,6 +20,11 @@
   - **Import Recipe**: Web scraping (JSON-LD parsing) + Photo/Camera import with simulated OCR
   - **AI Recipe Generation**: GPT-powered recipe creation from text prompts
   - New screens: ImportRecipeScreen, PhotoRecipeScreen, RecipePreviewScreen, CreateRecipeScreen
+- **v0.3 Features - Theme System (2026-02-16):**
+  - **Multi-Theme System**: Global theme manager supporting "Classic" (warm cream/orange) and "Michelin Star" (fine dining burgundy/gold/dark) themes
+  - Theme toggle in Profile screen with AsyncStorage persistence
+  - Unified color structure for easy addition of new themes
+  - **COMPLETE: All screens updated** - RecipeScreen, CookScreen, PlanWeekScreen, CreateRecipeScreen, ImportRecipeScreen, MyLibraryScreen, PhotoRecipeScreen, RecipePreviewScreen, Profile screen
 - **Repo location on server:** `/home/azureuser/.openclaw/workspace/app/`
 - **Expo dev server:** runs on port 8081 with ngrok tunnel
 - **QR code server:** runs on port 8082 for easy phone access
@@ -37,6 +42,9 @@
   - Config: `gateway.tailscale.mode: "on"` in `/home/azureuser/.openclaw/openclaw.json`
 
 ## Key Files
+
+## Runtime Setup
+- **Expo runs as a systemd service** (`sudo systemctl restart expo`). Never ask again.
 
 - `TOOLS.md` — local setup notes, URLs, workflows
 - `MEMORY.md` — this file, curated long-term memory

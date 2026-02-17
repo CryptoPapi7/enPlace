@@ -45,15 +45,14 @@
 
 ---
 
-### Task 4: Card Component
-**Files to create:**
-- `app/components/Card.tsx`
+### ✅ Task 4: Card Component
+**Files created:**
+- `app/components/Card.tsx` ✓
 
-**Styles:**
+**Features:**
 - Border radius 16
-- Shadow md (subtle)
-- Padding 16-20
-- Cream-100 background
+- Three variants: default (shadow-sm), elevated (shadow-md), outlined
+- Uses theme colors
 
 **Test:** Cards look consistent across Home/Library
 
@@ -140,3 +139,14 @@
 ## Summary
 10 tasks total. Estimated: 2-3 hours of work.
 Each tested individually before moving on.
+
+---
+
+## 📝 Known Issues
+
+### Voice Button Glow (Task 3)
+- **Issue:** Orange glow/halo not visible when voice button is active
+- **Attempts:** Shadow styles, wrapper with background glow, padding trick — none rendered on iOS
+- **Likely cause:** iOS shadow rendering limitations with circular buttons on cream background
+- **Priority:** Low (button still works, visual polish only)
+- **Future fix:** Consider platform-specific blur effect or custom glow border

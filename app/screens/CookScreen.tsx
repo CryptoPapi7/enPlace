@@ -7,7 +7,8 @@ import LottieView from 'lottie-react-native';
 import { Step } from "../data/recipe";
 import { StatusBar } from 'expo-status-bar';
 import { setActiveCooking, updateCurrentStep, clearActiveCooking } from '../utils/activeCooking';
-import { colors, spacing, typography, shadows } from '../theme';
+import { spacing, typography, shadows } from '../theme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 // Configure audio session for iOS speech
 async function setupAudio() {
@@ -96,6 +97,8 @@ function buildSteps(recipe: any): Step[] {
 }
 
 export default function CookScreen() {
+  const { colors, isMichelin } = useTheme();
+  const dynamicStyles = createStyles(colors, isMichelin);
   const { recipeId, servings, resumeStep } = useLocalSearchParams<{ recipeId?: string; servings?: string; resumeStep?: string }>();
   const recipe = recipeId ? RECIPE_MAP[recipeId] : null;
 
@@ -104,7 +107,7 @@ export default function CookScreen() {
     clearActiveCooking();
     
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={dynamicStyles.container}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <Text style={{ fontSize: 48, marginBottom: 16 }}>🍳</Text>
           <Text style={{ fontSize: 20, fontWeight: '700', color: '#5D4E37', marginBottom: 8 }}>Recipe not found</Text>
@@ -278,35 +281,35 @@ export default function CookScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={dynamicStyles.container}>
+      <StatusBar style={isMichelin ? 'light' : 'dark'} />
 
       {/* Header with Exit and Voice */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.exitButton} onPress={exitCooking}>
-          <Text style={styles.exitButtonText}>✕</Text>
+      <View style={dynamicStyles.header}>
+        <TouchableOpacity style={dynamicStyles.exitButton} onPress={exitCooking}>
+          <Text style={dynamicStyles.exitButtonText}>✕</Text>
         </TouchableOpacity>
         
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
+        <View style={dynamicStyles.progressContainer}>
+          <View style={dynamicStyles.progressBar}>
             <View 
               style={[
-                styles.progressFill, 
+                dynamicStyles.progressFill, 
                 { width: `${((stepIndex + 1) / allSteps.length) * 100}%` }
               ]} 
             />
           </View>
-          <Text style={styles.progressText}>
+          <Text style={dynamicStyles.progressText}>
             Step {stepIndex + 1} of {allSteps.length}
           </Text>
         </View>
         
-        <View style={[styles.voiceGlow, isSpeaking && styles.voiceGlowActive]}>
+        <View style={[dynamicStyles.voiceGlow, isSpeaking && dynamicStyles.voiceGlowActive]}>
           <TouchableOpacity 
-            style={[styles.voiceButton, isSpeaking && styles.voiceButtonActive]} 
+            style={[dynamicStyles.voiceButton, isSpeaking && dynamicStyles.voiceButtonActive]} 
             onPress={speakStep}
           >
-            <Text style={styles.voiceButtonText}>
+            <Text style={dynamicStyles.voiceButtonText}>
               {isSpeaking ? '⏹' : '🔊'}
             </Text>
           </TouchableOpacity>
@@ -314,50 +317,50 @@ export default function CookScreen() {
       </View>
 
       {/* Main Content */}
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.stepTitle}>{step.title}</Text>
+      <ScrollView style={dynamicStyles.scrollView} contentContainerStyle={dynamicStyles.scrollContent}>
+        <Text style={dynamicStyles.stepTitle}>{step.title}</Text>
         
         {step.instructions.map((instruction, idx) => (
-          <View key={idx} style={styles.instructionRow}>
-            <Text style={styles.bullet}>•</Text>
-            <Text style={styles.stepInstruction}>{instruction}</Text>
+          <View key={idx} style={dynamicStyles.instructionRow}>
+            <Text style={dynamicStyles.bullet}>•</Text>
+            <Text style={dynamicStyles.stepInstruction}>{instruction}</Text>
           </View>
         ))}
 
         {step.durationMinutes > 0 && (
-          <View style={styles.durationBadge}>
-            <Text style={styles.durationText}>⏱️ {step.durationMinutes} min</Text>
+          <View style={dynamicStyles.durationBadge}>
+            <Text style={dynamicStyles.durationText}>⏱️ {step.durationMinutes} min</Text>
           </View>
         )}
       </ScrollView>
 
       {/* Navigation Bar */}
-      <View style={styles.navBar}>
+      <View style={dynamicStyles.navBar}>
         <TouchableOpacity 
-          style={[styles.navButton, stepIndex === 0 && styles.navButtonDisabled]} 
+          style={[dynamicStyles.navButton, stepIndex === 0 && dynamicStyles.navButtonDisabled]} 
           onPress={goBack}
           disabled={stepIndex === 0}
         >
-          <Text style={[styles.navButtonText, stepIndex === 0 && styles.navButtonTextDisabled]}>
+          <Text style={[dynamicStyles.navButtonText, stepIndex === 0 && dynamicStyles.navButtonTextDisabled]}>
             ← Back
           </Text>
         </TouchableOpacity>
         
-        <View style={styles.stepDots}>
+        <View style={dynamicStyles.stepDots}>
           {allSteps.map((_, idx) => (
             <View 
               key={idx} 
               style={[
-                styles.dot, 
-                idx === stepIndex && styles.dotActive,
-                idx < stepIndex && styles.dotCompleted
+                dynamicStyles.dot, 
+                idx === stepIndex && dynamicStyles.dotActive,
+                idx < stepIndex && dynamicStyles.dotCompleted
               ]} 
             />
           ))}
         </View>
         
-        <TouchableOpacity style={styles.navButton} onPress={goNext}>
-          <Text style={styles.navButtonText}>
+        <TouchableOpacity style={dynamicStyles.navButton} onPress={goNext}>
+          <Text style={dynamicStyles.navButtonText}>
             {stepIndex === allSteps.length - 1 ? 'Finish ✓' : 'Next →'}
           </Text>
         </TouchableOpacity>
@@ -366,24 +369,24 @@ export default function CookScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   stepTitle: {
     fontSize: 28,
     fontWeight: '700',
     lineHeight: 34,
-    color: colors.neutral[900],
+    color: isMichelin ? colors.white : colors.neutral[900],
     marginBottom: spacing.md,
   },
   stepInstruction: {
     fontSize: 18,
     lineHeight: 26,
-    color: colors.neutral[800],
+    color: isMichelin ? '#E5E5E5' : colors.neutral[800],
     marginBottom: spacing.lg,
   },
 
   container: { 
     flex: 1, 
-    backgroundColor: colors.cream[50]
+    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50]
   },
   
   // Header
@@ -508,9 +511,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: colors.white,
+    backgroundColor: isMichelin ? colors.background?.primary : colors.white,
     borderTopWidth: 1,
-    borderTopColor: colors.neutral[200],
+    borderTopColor: isMichelin ? colors.neutral[700] : colors.neutral[200],
   },
   navButton: {
     paddingHorizontal: 16,
