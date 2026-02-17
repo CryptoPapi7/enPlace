@@ -4,6 +4,7 @@ export const phoBoRecipe: Recipe = {
   id: 'pho-bo',
   title: 'Pho Bo (Vietnamese Beef Noodle Soup)',
   emoji: '🍜',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Vietnamese%20Pho%20Bo.avif',
   description: 'Aromatic beef noodle soup with star anise, cinnamon, and fresh herbs',
   cuisine: 'Vietnamese',
   difficulty: 'hard',

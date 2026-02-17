@@ -4,6 +4,7 @@ export const jerkChickenRecipe: Recipe = {
   id: 'jerk-chicken',
   title: 'Jamaican Jerk Chicken',
   emoji: '🍗',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Jamaican%20Jerk%20Chicken.avif',
   description: 'Spicy, smoky grilled chicken with authentic Jamaican jerk marinade',
   cuisine: 'Jamaican',
   difficulty: 'medium',

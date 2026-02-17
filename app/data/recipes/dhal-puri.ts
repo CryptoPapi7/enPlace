@@ -4,6 +4,7 @@ export const dhalPuriRecipe: Recipe = {
   id: 'dhal-puri',
   title: 'Dhal Puri Roti',
   emoji: '🫓',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Dhal%20Puri%20Roti.avif',
   description: 'Soft, thin flatbread stuffed with seasoned ground lentils',
   cuisine: 'Guyanese',
   difficulty: 'hard',

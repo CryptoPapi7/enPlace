@@ -4,6 +4,7 @@ export const pepperpotRecipe: Recipe = {
   id: 'pepperpot',
   title: 'Guyanese Pepperpot',
   emoji: '🍖',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Guayanese%20Pepperpot.avif',
   description: 'Aromatic Guyanese beef stew simmered in cinnamon and cassareep',
   cuisine: 'Guyanese',
   difficulty: 'medium',

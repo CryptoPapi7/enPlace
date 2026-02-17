@@ -4,6 +4,7 @@ export const fishCurryRecipe: Recipe = {
   id: 'fish-curry',
   title: 'Caribbean Fish Curry',
   emoji: '🐟',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Caribbean%20Fish%20Curry.avif',
   description: 'Spiced white fish in creamy coconut curry sauce',
   cuisine: 'Trinidadian',
   difficulty: 'easy',

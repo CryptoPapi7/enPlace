@@ -5,6 +5,7 @@ export const sourdoughRecipe = {
   cuisine: 'Artisan Bread',
   vibe: 'mindful',
   emoji: '🍞',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Sourdough%20Bread.avif',
   servings: 1,
   totalTimeMinutes: 1440,
   prepTimeMinutes: 30,

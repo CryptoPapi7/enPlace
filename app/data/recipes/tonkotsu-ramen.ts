@@ -5,7 +5,7 @@ export const tonkotsuRamenRecipe = {
   cuisine: 'Japanese',
   vibe: 'project',
   emoji: '🍜',
-  imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&q=80',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Tonkotsu-Ramen.avif',
   servings: 4,
   totalTimeMinutes: 480,
   prepTimeMinutes: 60,

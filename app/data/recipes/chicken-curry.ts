@@ -5,6 +5,7 @@ export const chickenCurryRecipe = {
   cuisine: 'Trinidadian / Guyanese',
   vibe: 'comfort',
   emoji: '🍛',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Chicken%20Curry%20Roti.avif',
   servings: 4,
   totalTimeMinutes: 120,
   prepTimeMinutes: 30,

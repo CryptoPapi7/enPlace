@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, TextInput, Image } from "react-native";
 import { spacing, shadows, typography } from '../theme';
 import { useState, useCallback, useEffect } from "react";
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
-import { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe, valentineDinnerRecipe } from "../data/recipes";
+import { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe, valentineDinnerRecipe, cacioEPepeRecipe, tonkotsuRamenRecipe, birriaTacosRecipe } from "../data/recipes";
 import { StatusBar } from 'expo-status-bar';
 import { scaleAmount, scaleServings, scaleTime } from "../utils/scaling";
 import { convertIngredient, DEFAULT_PREFERENCES, UNIT_PRESETS, UnitPreference } from "../utils/units";
@@ -26,6 +26,9 @@ const RECIPE_MAP: Record<string, any> = {
   'pho-bo': phoBoRecipe,
   'jerk-chicken': jerkChickenRecipe,
   'valentine-dinner': valentineDinnerRecipe,
+  'cacio-e-pepe': cacioEPepeRecipe,
+  'tonkotsu-ramen': tonkotsuRamenRecipe,
+  'birria-tacos': birriaTacosRecipe,
 };
 
 // Section metadata (emoji, display name)
@@ -185,9 +188,19 @@ export default function RecipeScreen() {
 
         {/* Hero Section */}
         <View style={dynamicStyles.hero}>
-          <Text style={dynamicStyles.heroEmoji}>{recipe.emoji}</Text>
+          {recipe.imageUrl ? (
+            <View style={dynamicStyles.heroImageContainer}>
+              <Image source={{ uri: recipe.imageUrl }} style={dynamicStyles.heroImage} />
+            </View>
+          ) : (
+            <View style={dynamicStyles.heroEmojiContainer}>
+              <Text style={dynamicStyles.heroEmoji}>{recipe.emoji}</Text>
+            </View>
+          )}
+
           <Text style={dynamicStyles.heroTitle}>{recipe.title}</Text>
-          <Text style={dynamicStyles.heroSubtitle}>{recipe.description}</Text>
+          <Text style={dynamicStyles.heroSubtitle}>{recipe.cuisine}</Text>
+          <Text style={dynamicStyles.heroDescription}>{recipe.description}</Text>
         </View>
 
         {/* Quick Stats */}
@@ -482,8 +495,23 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
   },
   hero: {
     alignItems: 'center',
-    paddingTop: spacing.xl,
+    paddingTop: spacing.lg,
     paddingHorizontal: spacing.lg,
+  },
+  heroImageContainer: {
+    width: '100%',
+    aspectRatio: 4/3,
+    borderRadius: 16,
+    overflow: 'hidden',
+    ...shadows.md,
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroEmojiContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
   },
   heroEmoji: {
     fontSize: 100,
@@ -495,14 +523,25 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     fontWeight: typography.display.fontWeight,
     color: colors.neutral[900],
     textAlign: 'center',
-    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
+    marginBottom: spacing.xs,
     lineHeight: typography.display.lineHeight,
   },
   heroSubtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.primary[500],
     textAlign: 'center',
-    lineHeight: 22,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: spacing.md,
+  },
+  heroDescription: {
+    fontSize: 16,
+    color: colors.neutral[600],
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: spacing.lg,
   },
   stats: {
     flexDirection: 'row',

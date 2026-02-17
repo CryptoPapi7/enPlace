@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, RefreshControl } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, RefreshControl, Image } from "react-native";
 import { useState, useCallback, useEffect } from "react";
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
@@ -215,10 +215,22 @@ export default function RecipeLibraryScreen() {
             </TouchableOpacity>
             
             <TouchableOpacity onPress={() => handleRecipePress(recipe)}>
-              <Text style={dynamicStyles.recipeEmoji}>{recipe.emoji}</Text>
-              <Text style={dynamicStyles.recipeTitle} numberOfLines={2}>{recipe.title}</Text>
+              {recipe.imageUrl ? (
+                <View style={dynamicStyles.recipeImageContainer}>
+                  <Image source={{ uri: recipe.imageUrl }} style={dynamicStyles.recipeImage} />
+                  <View style={dynamicStyles.recipeOverlay}>
+                    <Text style={dynamicStyles.recipeImageTitle} numberOfLines={2}>{recipe.title}</Text>
+                    <Text style={dynamicStyles.recipeOverlayCuisine}>{recipe.cuisine}</Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={dynamicStyles.recipeEmojiContainer}>
+                  <Text style={dynamicStyles.recipeEmoji}>{recipe.emoji}</Text>
+                  <Text style={dynamicStyles.recipeTitle} numberOfLines={2}>{recipe.title}</Text>
+                  <Text style={dynamicStyles.recipeCuisine}>{recipe.cuisine}</Text>
+                </View>
+              )}
             </TouchableOpacity>
-            <Text style={dynamicStyles.recipeCuisine}>{recipe.cuisine}</Text>
             <View style={dynamicStyles.recipeMeta}>
               <Text style={dynamicStyles.recipeTime}>⏱️ {recipe.timeDisplay || recipe.time}</Text>
               <Text style={dynamicStyles.recipeDifficulty}>{recipe.difficulty}</Text>
@@ -416,6 +428,12 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     fontSize: 48,
     marginBottom: 8,
     textAlign: 'center',
+  },
+  recipeImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 12,
+    marginBottom: 8,
   },
   recipeTitle: {
     fontSize: 14,

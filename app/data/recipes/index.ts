@@ -1,18 +1,19 @@
 import { chickenCurryRecipe } from './chicken-curry';
 import { beefRendangRecipe } from './beef-rendang';
-import { freshPastaRecipe } from './fresh-pasta';
 import { sourdoughRecipe } from './sourdough';
 import { pepperpotRecipe } from './pepperpot';
 import { doublesRecipe } from './doubles';
 import { fishCurryRecipe } from './fish-curry';
 import { dhalPuriRecipe } from './dhal-puri';
 import { pastaPomodoroRecipe } from './pasta-pomodoro';
-import { rotiCurryChannaRecipe } from './roti-curry-channa';
 import { phoBoRecipe } from './pho-bo';
 import { jerkChickenRecipe } from './jerk-chicken';
 import { valentineDinnerRecipe } from './valentine-dinner';
+import { cacioEPepeRecipe } from './cacio-e-pepe';
+import { tonkotsuRamenRecipe } from './tonkotsu-ramen';
+import { birriaTacosRecipe } from './birria-tacos';
 
-export { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe, valentineDinnerRecipe };
+export { chickenCurryRecipe, beefRendangRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, phoBoRecipe, jerkChickenRecipe, valentineDinnerRecipe, cacioEPepeRecipe, tonkotsuRamenRecipe, birriaTacosRecipe };
 
 // Full recipe database for v0.1
 export const ALL_RECIPES = [
@@ -25,6 +26,7 @@ export const ALL_RECIPES = [
     difficulty: chickenCurryRecipe.difficulty,
     vibe: chickenCurryRecipe.vibe,
     emoji: chickenCurryRecipe.emoji,
+    imageUrl: chickenCurryRecipe.imageUrl,
     available: true,
     data: chickenCurryRecipe,
   },
@@ -37,20 +39,9 @@ export const ALL_RECIPES = [
     difficulty: beefRendangRecipe.difficulty,
     vibe: beefRendangRecipe.vibe,
     emoji: beefRendangRecipe.emoji,
+    imageUrl: beefRendangRecipe.imageUrl,
     available: true,
     data: beefRendangRecipe,
-  },
-  {
-    id: freshPastaRecipe.id,
-    title: freshPastaRecipe.title,
-    cuisine: freshPastaRecipe.cuisine,
-    time: freshPastaRecipe.totalTimeMinutes,
-    timeDisplay: '45 min',
-    difficulty: freshPastaRecipe.difficulty,
-    vibe: freshPastaRecipe.vibe,
-    emoji: freshPastaRecipe.emoji,
-    available: true,
-    data: freshPastaRecipe,
   },
   {
     id: sourdoughRecipe.id,
@@ -61,6 +52,7 @@ export const ALL_RECIPES = [
     difficulty: sourdoughRecipe.difficulty,
     vibe: sourdoughRecipe.vibe,
     emoji: sourdoughRecipe.emoji,
+    imageUrl: sourdoughRecipe.imageUrl,
     available: true,
     data: sourdoughRecipe,
   },
@@ -74,6 +66,7 @@ export const ALL_RECIPES = [
     difficulty: pepperpotRecipe.difficulty,
     vibe: 'comfort',
     emoji: pepperpotRecipe.emoji,
+    imageUrl: pepperpotRecipe.imageUrl,
     available: true,
     data: pepperpotRecipe,
   },
@@ -86,6 +79,7 @@ export const ALL_RECIPES = [
     difficulty: doublesRecipe.difficulty,
     vibe: 'showoff',
     emoji: doublesRecipe.emoji,
+    imageUrl: doublesRecipe.imageUrl,
     available: true,
     data: doublesRecipe,
   },
@@ -98,6 +92,7 @@ export const ALL_RECIPES = [
     difficulty: fishCurryRecipe.difficulty,
     vibe: 'quick',
     emoji: fishCurryRecipe.emoji,
+    imageUrl: fishCurryRecipe.imageUrl,
     available: true,
     data: fishCurryRecipe,
   },
@@ -110,6 +105,7 @@ export const ALL_RECIPES = [
     difficulty: dhalPuriRecipe.difficulty,
     vibe: 'showoff',
     emoji: dhalPuriRecipe.emoji,
+    imageUrl: dhalPuriRecipe.imageUrl,
     available: true,
     data: dhalPuriRecipe,
   },
@@ -122,20 +118,9 @@ export const ALL_RECIPES = [
     difficulty: pastaPomodoroRecipe.difficulty,
     vibe: 'quick',
     emoji: pastaPomodoroRecipe.emoji,
+    imageUrl: pastaPomodoroRecipe.imageUrl,
     available: true,
     data: pastaPomodoroRecipe,
-  },
-  {
-    id: rotiCurryChannaRecipe.id,
-    title: rotiCurryChannaRecipe.title,
-    cuisine: rotiCurryChannaRecipe.cuisine,
-    time: rotiCurryChannaRecipe.totalTimeMinutes,
-    timeDisplay: '1.5 hrs',
-    difficulty: rotiCurryChannaRecipe.difficulty,
-    vibe: 'comfort',
-    emoji: rotiCurryChannaRecipe.emoji,
-    available: true,
-    data: rotiCurryChannaRecipe,
   },
   {
     id: phoBoRecipe.id,
@@ -146,6 +131,7 @@ export const ALL_RECIPES = [
     difficulty: phoBoRecipe.difficulty,
     vibe: 'showoff',
     emoji: phoBoRecipe.emoji,
+    imageUrl: phoBoRecipe.imageUrl,
     available: true,
     data: phoBoRecipe,
   },
@@ -158,6 +144,7 @@ export const ALL_RECIPES = [
     difficulty: jerkChickenRecipe.difficulty,
     vibe: 'showoff',
     emoji: jerkChickenRecipe.emoji,
+    imageUrl: jerkChickenRecipe.imageUrl,
     available: true,
     data: jerkChickenRecipe,
   },
@@ -170,20 +157,56 @@ export const ALL_RECIPES = [
     difficulty: valentineDinnerRecipe.difficulty,
     vibe: 'special',
     emoji: valentineDinnerRecipe.emoji,
+    imageUrl: valentineDinnerRecipe.imageUrl,
     available: true,
     data: valentineDinnerRecipe,
   },
+  // 🆕 NEW: Cacio e Pepe — Roman classic now available
   {
-    id: 'tacos',
-    title: 'Street Tacos',
-    cuisine: 'Mexican',
-    time: 30,
-    timeDisplay: '30 min',
-    difficulty: 'Easy',
-    vibe: 'quick',
-    emoji: '🌮',
-    available: false,
+    id: cacioEPepeRecipe.id,
+    title: cacioEPepeRecipe.title,
+    cuisine: cacioEPepeRecipe.cuisine,
+    time: cacioEPepeRecipe.totalTimeMinutes,
+    timeDisplay: '20 min',
+    difficulty: cacioEPepeRecipe.difficulty,
+    vibe: cacioEPepeRecipe.vibe,
+    emoji: cacioEPepeRecipe.emoji,
+    imageUrl: cacioEPepeRecipe.imageUrl,
+    available: true,
+    isNew: true,
+    data: cacioEPepeRecipe,
+  },
+  // 🆕 NEW: Tonkotsu Ramen — Rich, creamy Japanese comfort
+  {
+    id: tonkotsuRamenRecipe.id,
+    title: tonkotsuRamenRecipe.title,
+    cuisine: tonkotsuRamenRecipe.cuisine,
+    time: tonkotsuRamenRecipe.totalTimeMinutes,
+    timeDisplay: '8 hrs',
+    difficulty: tonkotsuRamenRecipe.difficulty,
+    vibe: tonkotsuRamenRecipe.vibe,
+    emoji: tonkotsuRamenRecipe.emoji,
+    imageUrl: tonkotsuRamenRecipe.imageUrl,
+    available: true,
+    isNew: true,
+    featured: true,
+    data: tonkotsuRamenRecipe,
+  },
+  // 🆕 NEW: Birria Tacos — Crispy, cheesy, consommé-dipped
+  {
+    id: birriaTacosRecipe.id,
+    title: birriaTacosRecipe.title,
+    cuisine: birriaTacosRecipe.cuisine,
+    time: birriaTacosRecipe.totalTimeMinutes,
+    timeDisplay: '5 hrs',
+    difficulty: birriaTacosRecipe.difficulty,
+    vibe: birriaTacosRecipe.vibe,
+    emoji: birriaTacosRecipe.emoji,
+    imageUrl: birriaTacosRecipe.imageUrl,
+    available: true,
+    isNew: true,
+    data: birriaTacosRecipe,
   },
 ];
 
-export type Recipe = typeof ALL_RECIPES[0];
+export type Recipe = typeof ALL_RECIPES[0] & { imageUrl?: string | null };

@@ -94,17 +94,17 @@ export default function MyLibraryScreen() {
           />
         </View>
 
-        {/* Favorites Section - From Supabase */}
-        {favorites.length > 0 && (
+        {/* Filtered Favorites Section - From Supabase */}
+        {favorites.filter(r => searchQuery === '' || r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())).length > 0 && (
           <View style={dynamicStyles.section}>
             <View style={dynamicStyles.sectionHeader}>
               <Text style={dynamicStyles.sectionTitle}>⭐ My Favorites</Text>
               <Text style={dynamicStyles.sectionCount}>
-                {favorites.length}
+                {favorites.filter(r => searchQuery === '' || r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())).length}
               </Text>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dynamicStyles.horizontalScroll}>
-              {favorites.map((recipe) => (
+              {favorites.filter(r => searchQuery === '' || r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())).map((recipe) => (
                 <TouchableOpacity 
                   key={`fav-${recipe.id}`}
                   style={dynamicStyles.horizontalCard}
@@ -177,10 +177,10 @@ export default function MyLibraryScreen() {
 
       {/* Total Count */}
       <Text style={dynamicStyles.totalCount}>
-        {recipes.length} total recipe{recipes.length !== 1 ? 's' : ''} in your library
+        {filtered.length + favorites.filter(r => searchQuery === '' || r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())).length} total recipe{(filtered.length + favorites.filter(r => searchQuery === '' || r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())).length) !== 1 ? 's' : ''} in your library
       </Text>
 
-      {recipes.length === 0 && !searchQuery && (
+      {filtered.length === 0 && favorites.filter(r => searchQuery === '' || r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
         <View style={dynamicStyles.emptyState}>
           <Text style={dynamicStyles.emptyEmoji}>📚</Text>
           <Text style={dynamicStyles.emptyTitle}>Your library is empty</Text>

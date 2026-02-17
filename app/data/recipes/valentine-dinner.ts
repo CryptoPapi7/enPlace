@@ -5,6 +5,7 @@ export const valentineDinnerRecipe = {
   cuisine: 'Italian-American',
   vibe: 'special',
   emoji: '🥂',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Valentines%20Cod%20and%20Papardelle.avif',
   servings: 4,
   totalTimeMinutes: 120,
   prepTimeMinutes: 45,

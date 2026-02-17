@@ -17,15 +17,17 @@ const VIBES = [
 ];
 
 const TRENDING_RECIPES = [
-  { id: 'ramen', name: 'Tonkotsu Ramen', emoji: '🍜', saves: '12.4k' },
-  { id: 'tacos', name: 'Birria Tacos', emoji: '🌮', saves: '8.7k' },
-  { id: 'pasta', name: 'Cacio e Pepe', emoji: '🍝', saves: '6.2k' },
+  { id: 'tonkotsu-ramen', name: 'Tonkotsu Ramen', emoji: '🍜', saves: '12.4k' },
+  { id: 'birria-tacos', name: 'Birria Tacos', emoji: '🌮', saves: '8.7k', isNew: true },
+  { id: 'beef-rendang', name: 'Beef Rendang', emoji: '🥩', saves: '6.8k' },
+  { id: 'cacio-e-pepe', name: 'Cacio e Pepe', emoji: '🧀', saves: '6.2k' },
+  { id: 'chicken-curry', name: 'Chicken Curry with Paratha Roti', emoji: '🍛', saves: '5.9k' },
 ];
 
-const PEOPLE_YOU_FOLLOW = [
-  { id: 1, name: 'Chef Maria', avatar: '👩‍🍳', latestRecipe: 'Sunday Ragu' },
-  { id: 2, name: 'Kenji', avatar: '🧑‍🔬', latestRecipe: 'Crispy Chicken' },
-  { id: 3, name: 'Nana', avatar: '👵', latestRecipe: 'Sunday Roast' },
+const CHEFS_YOU_FOLLOW = [
+  { id: 1, name: 'Julia', avatarUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Avatar-images/Julia.avif', specialty: 'French Cuisine', latestRecipe: 'Coq au Vin' },
+  { id: 2, name: 'Charlotte', avatarUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Avatar-images/Charlotte.avif', specialty: 'Pastry & Baking', latestRecipe: 'Sourdough Tartine' },
+  { id: 3, name: 'Catherine', avatarUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Avatar-images/Catherine.avif', specialty: 'Caribbean Fusion', latestRecipe: 'Jerk Chicken Tacos' },
 ];
 
 export default function HomeScreen() {
@@ -122,30 +124,66 @@ export default function HomeScreen() {
         {/* Trending Now */}
         <View style={dynamicStyles.section}>
           <Text style={dynamicStyles.sectionTitle}>🔥 Trending Now</Text>
-          {TRENDING_RECIPES.map((recipe) => (
-            <TouchableOpacity key={recipe.id} style={dynamicStyles.trendingCard}>
-              <Text style={dynamicStyles.trendingEmoji}>{recipe.emoji}</Text>
-              <View style={dynamicStyles.trendingInfo}>
-                <Text style={dynamicStyles.trendingName}>{recipe.name}</Text>
-                <Text style={dynamicStyles.trendingSaves}>❤️ {recipe.saves} saves</Text>
-              </View>
-              <View style={dynamicStyles.ratingPreview}>
-                <Text style={dynamicStyles.stars}>★★★★☆</Text>
-                <Text style={dynamicStyles.ratingCount}>2.4k made it</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={dynamicStyles.horizontalScrollContainer}
+            snapToInterval={312} // Card width (300) + marginRight (12)
+            decelerationRate="fast"
+          >
+          {TRENDING_RECIPES.map((recipe) => {
+            // Get full recipe data to check for image
+            const fullRecipe = ALL_RECIPES.find(r => r.id === recipe.id);
+            return (
+              <TouchableOpacity 
+                key={recipe.id} 
+                style={dynamicStyles.trendingCardHorizontal}
+                onPress={() => router.push(`/recipe/${recipe.id}`)}
+              >
+                {fullRecipe?.imageUrl ? (
+                  <View style={dynamicStyles.trendingImageContainerHorizontal}>
+                    <Image source={{ uri: fullRecipe.imageUrl }} style={dynamicStyles.trendingImageHorizontal} />
+                    <View style={dynamicStyles.trendingOverlay}>
+                      <Text style={dynamicStyles.trendingImageTitle}>{recipe.name}</Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={dynamicStyles.trendingEmojiContainerHorizontal}>
+                    <Text style={dynamicStyles.trendingEmoji}>{recipe.emoji}</Text>
+                    <Text style={dynamicStyles.trendingEmojiTitle}>{recipe.name}</Text>
+                  </View>
+                )}
+                <View style={dynamicStyles.trendingInfoHorizontal}>
+                  <Text style={dynamicStyles.trendingSaves}>❤️ {recipe.saves} saves</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+          </ScrollView>
         </View>
 
-        {/* People You Follow */}
+        {/* Chefs You Follow */}
         <View style={dynamicStyles.section}>
           <Text style={dynamicStyles.sectionTitle}>👥 Chefs You Follow</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {PEOPLE_YOU_FOLLOW.map((person) => (
-              <TouchableOpacity key={person.id} style={dynamicStyles.personCard}>
-                <Text style={dynamicStyles.personAvatar}>{person.avatar}</Text>
-                <Text style={dynamicStyles.personName}>{person.name}</Text>
-                <Text style={dynamicStyles.personLatest} numberOfLines={1}>{person.latestRecipe}</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={dynamicStyles.horizontalScrollContainer}
+            snapToInterval={312} // Card width (300) + marginRight (12)
+            decelerationRate="fast"
+          >
+            {CHEFS_YOU_FOLLOW.map((chef) => (
+              <TouchableOpacity key={chef.id} style={dynamicStyles.chefCardHorizontal}>
+                <View style={dynamicStyles.chefImageContainer}>
+                  <Image source={{ uri: chef.avatarUrl }} style={dynamicStyles.chefImage} />
+                  <View style={dynamicStyles.chefOverlay}>
+                    <Text style={dynamicStyles.chefImageName}>{chef.name}</Text>
+                  </View>
+                </View>
+                <View style={dynamicStyles.chefInfo}>
+                  <Text style={dynamicStyles.chefSpecialtyTag}>{chef.specialty}</Text>
+                  <Text style={dynamicStyles.chefFollowers}>👥 {(chef.id * 12.4).toFixed(1)}k followers</Text>
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -154,19 +192,36 @@ export default function HomeScreen() {
         {/* Community Picks */}
         <View style={dynamicStyles.section}>
           <Text style={dynamicStyles.sectionTitle}>🌟 Community Picks</Text>
-          <View style={dynamicStyles.communityGrid}>
-            {ALL_RECIPES.filter(r => r.available).slice(0, 4).map((recipe) => (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={dynamicStyles.horizontalScrollContainer}
+            snapToInterval={312} // Card width (300) + marginRight (12)
+            decelerationRate="fast"
+          >
+            {ALL_RECIPES.filter(r => r.available).slice(0, 6).map((recipe) => (
               <TouchableOpacity
                 key={recipe.id}
-                style={dynamicStyles.communityCard}
+                style={dynamicStyles.communityCardHorizontal}
                 onPress={() => router.push(`/recipe/${recipe.id}`)}
               >
-                <Text style={dynamicStyles.communityEmoji}>{recipe.emoji}</Text>
-                <Text style={dynamicStyles.communityName} numberOfLines={2}>{recipe.title}</Text>
-                <Text style={dynamicStyles.communityTime}>{recipe.timeDisplay}</Text>
+                {recipe.imageUrl ? (
+                  <View style={dynamicStyles.communityImageContainerHorizontal}>
+                    <Image source={{ uri: recipe.imageUrl }} style={dynamicStyles.communityImageHorizontal} />
+                    <View style={dynamicStyles.communityOverlay}>
+                      <Text style={dynamicStyles.communityImageTitle} numberOfLines={2}>{recipe.title}</Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={dynamicStyles.communityEmojiContainerHorizontal}>
+                    <Text style={dynamicStyles.communityEmojiHorizontal}>{recipe.emoji}</Text>
+                    <Text style={dynamicStyles.communityNameHorizontal} numberOfLines={2}>{recipe.title}</Text>
+                  </View>
+                )}
+                <Text style={dynamicStyles.communityTimeHorizontal}>{recipe.timeDisplay}</Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         </View>
 
         <View style={{ height: 40 }} />
@@ -287,6 +342,9 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   section: {
     marginBottom: 32,
+    // paddingHorizontal: 24, // Remove default section padding for horizontal scrollviews
+  },
+  horizontalScrollContainer: {
     paddingHorizontal: 24,
   },
   sectionTitle: {
@@ -296,25 +354,87 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 16,
   },
   trendingCard: {
-    flexDirection: 'row',
     backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    marginBottom: 16,
+    overflow: 'hidden',
+    ...shadows.sm,
+  },
+  trendingCardHorizontal: {
+    width: 300,
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    borderRadius: 16,
+    marginRight: 12,
+    overflow: 'hidden',
+    ...shadows.sm,
+  },
+  trendingImageContainer: {
+    width: '100%',
+    aspectRatio: 4/3,
+    position: 'relative',
+  },
+  trendingImageContainerHorizontal: {
+    width: '100%',
+    aspectRatio: 4/3,
+    position: 'relative',
+  },
+  trendingImage: {
+    width: '100%',
+    height: '100%',
+  },
+  trendingImageHorizontal: {
+    width: '100%',
+    height: '100%',
+  },
+  trendingOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 50,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    justifyContent: 'flex-end',
+    padding: 12,
+  },
+  trendingImageTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  trendingEmojiContainer: {
+    width: '100%',
+    aspectRatio: 4/3,
+    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trendingEmojiContainerHorizontal: {
+    width: '100%',
+    aspectRatio: 4/3,
+    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    justifyContent: 'center',
     alignItems: 'center',
   },
   trendingEmoji: {
-    fontSize: 40,
-    marginRight: 16,
+    fontSize: 72,
+    marginBottom: 8,
+  },
+  trendingEmojiTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.neutral[700],
   },
   trendingInfo: {
-    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
   },
-  trendingName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.neutral[900],
-    marginBottom: 4,
+  trendingInfoHorizontal: {
+    padding: 12,
   },
   trendingSaves: {
     fontSize: 14,
@@ -322,6 +442,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   ratingPreview: {
     alignItems: 'flex-end',
+    flexDirection: 'row',
+    gap: 8,
   },
   stars: {
     fontSize: 16,
@@ -332,55 +454,171 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     fontSize: 12,
     color: colors.neutral[500],
   },
-  personCard: {
+  // Chef Follow Cards
+  chefCard: {
     backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
     padding: 16,
     marginRight: 12,
     width: 120,
     alignItems: 'center',
+    ...shadows.sm,
   },
-  personAvatar: {
-    fontSize: 40,
-    marginBottom: 8,
+  chefAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: isMichelin ? colors.neutral[300] : colors.cream[200],
   },
-  personName: {
+  chefName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.neutral[900],
     textAlign: 'center',
     marginBottom: 4,
   },
-  personLatest: {
-    fontSize: 12,
-    color: colors.neutral[500],
+  chefSpecialty: {
+    fontSize: 11,
+    color: colors.primary[500],
     textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  chefLatestContainer: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  chefLatestLabel: {
+    fontSize: 9,
+    color: colors.neutral[400],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  chefLatestRecipe: {
+    fontSize: 11,
+    color: colors.neutral[600],
+    textAlign: 'center',
+  },
+  chefCardHorizontal: {
+    width: 300,
+    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    borderRadius: 16,
+    marginRight: 12,
+    overflow: 'hidden',
+    ...shadows.sm,
+  },
+  chefImageContainer: {
+    width: '100%',
+    aspectRatio: 4/3,
+    position: 'relative',
+  },
+  chefImage: {
+    width: '100%',
+    height: '100%',
+  },
+  chefOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 50,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    justifyContent: 'flex-end',
+    padding: 12,
+  },
+  chefImageName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  chefInfo: {
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  chefSpecialtyTag: {
+    fontSize: 12,
+    color: colors.primary[500],
+    fontWeight: '600',
+    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  chefFollowers: {
+    fontSize: 13,
+    color: colors.neutral[500],
   },
   communityGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
   },
-  communityCard: {
+  communityCardHorizontal: {
+    width: 300,
     backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
     borderRadius: 16,
-    padding: 16,
-    width: '47%',
-    alignItems: 'center',
+    marginRight: 12,
+    overflow: 'hidden',
+    ...shadows.sm,
   },
-  communityEmoji: {
-    fontSize: 40,
-    marginBottom: 8,
+  communityImageContainerHorizontal: {
+    width: '100%',
+    aspectRatio: 4/3,
+    position: 'relative',
   },
-  communityName: {
+  communityImageHorizontal: {
+    width: '100%',
+    height: '100%',
+  },
+  communityOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'flex-end',
+    padding: 8,
+  },
+  communityImageTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.neutral[900],
-    textAlign: 'center',
+    color: '#FFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  communityEmojiContainerHorizontal: {
+    width: '100%',
+    aspectRatio: 4/3,
+    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 8,
+  },
+  communityEmojiHorizontal: {
+    fontSize: 48,
     marginBottom: 4,
   },
-  communityTime: {
+  communityNameHorizontal: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.neutral[700],
+    textAlign: 'center',
+    paddingHorizontal: 8,
+  },
+  communityTimeHorizontal: {
     fontSize: 12,
     color: colors.neutral[500],
+    padding: 12,
+    paddingTop: 8,
   },
 });

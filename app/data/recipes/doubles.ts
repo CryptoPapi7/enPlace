@@ -4,6 +4,7 @@ export const doublesRecipe: Recipe = {
   id: 'doubles',
   title: 'Trinidadian Doubles',
   emoji: '🫓',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Trinidadian%20Doubles.avif',
   description: 'Fried flatbread stuffed with curried chickpeas, tamarind chutney, and pepper sauce',
   cuisine: 'Trinidadian',
   difficulty: 'medium',

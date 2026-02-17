@@ -4,6 +4,7 @@ export const pastaPomodoroRecipe: Recipe = {
   id: 'pasta-pomodoro',
   title: 'Pasta al Pomodoro',
   emoji: '🍝',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Pasta%20Pomodoro.avif',
   description: 'Fresh pasta with simple, vibrant tomato sauce and basil',
   cuisine: 'Italian',
   difficulty: 'easy',

@@ -40,6 +40,8 @@ import {
   phoBoRecipe,
   jerkChickenRecipe,
   valentineDinnerRecipe,
+  cacioEPepeRecipe,
+  tonkotsuRamenRecipe,
 } from "../data/recipes";
 
 const RECIPE_MAP: Record<string, any> = {
@@ -56,19 +58,21 @@ const RECIPE_MAP: Record<string, any> = {
   'pho-bo': phoBoRecipe,
   'jerk-chicken': jerkChickenRecipe,
   'valentine-dinner': valentineDinnerRecipe,
+  'cacio-e-pepe': cacioEPepeRecipe,
+  'tonkotsu-ramen': tonkotsuRamenRecipe,
 };
 
 // Steps that benefit from stirring animation
 const STIRRING_STEPS = ['curry-2', 'curry-4', 'curry-5'];
 
 // ✅ Build cook steps dynamically from selected recipe
-function buildSteps(recipe: any): Step[] {
+function buildSteps(recipe: any, effectiveServings: number): Step[] {
   const steps: Step[] = [];
 
   steps.push({
     id: 'intro',
     title: 'Ready to cook?',
-    instructions: [recipe.title, `Total time: ${recipe.totalTimeMinutes} minutes`, `${recipe.servings} servings`],
+    instructions: [recipe.title, `Total time: ${recipe.totalTimeMinutes} minutes`, `${effectiveServings} servings`],
     durationMinutes: 0,
     active: false,
   });
@@ -126,7 +130,7 @@ export default function CookScreen() {
   }
 
   const effectiveServings = servings ? Number(servings) : recipe.servings;
-  const allSteps = useMemo(() => buildSteps(recipe), [recipeId]);
+  const allSteps = useMemo(() => buildSteps(recipe, effectiveServings), [recipeId, effectiveServings]);
 
   const [stepIndex, setStepIndex] = useState(resumeStep ? Number(resumeStep) : 0);
   const [isStirring, setIsStirring] = useState(false);

@@ -5,6 +5,7 @@ export const beefRendangRecipe = {
   cuisine: 'Indonesian',
   vibe: 'showoff',
   emoji: '🥩',
+  imageUrl: 'https://vsyibvjpwjjyvnsnyjmk.supabase.co/storage/v1/object/public/enPlace/Recipe-Images/Beef%20Rendang.avif',
   servings: 4,
   totalTimeMinutes: 180,
   prepTimeMinutes: 30,
