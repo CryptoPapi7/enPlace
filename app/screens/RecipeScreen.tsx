@@ -32,25 +32,25 @@ const RECIPE_MAP: Record<string, any> = {
 };
 
 // Section metadata (emoji, display name)
-const SECTION_META: Record<string, { emoji: string; title: string }> = {
-  'curry': { emoji: '🥘', title: 'Chicken Curry' },
-  'roti': { emoji: '🫓', title: 'Paratha Roti' },
-  'marinade': { emoji: '🧄', title: 'Spice Paste & Marinade' },
-  'cooking': { emoji: '🔥', title: 'Slow Cooking' },
-  'pasta': { emoji: '🍝', title: 'Fresh Pasta' },
-  'sauce': { emoji: '🍅', title: 'Pomodoro Sauce' },
-  'starter': { emoji: '🫧', title: 'Starter & Autolyse' },
+const SECTION_META: Record<string, { title: string }> = {
+  'curry': { title: 'Chicken Curry' },
+  'roti': { title: 'Paratha Roti' },
+  'marinade': { title: 'Spice Paste & Marinade' },
+  'cooking': { title: 'Slow Cooking' },
+  'pasta': { title: 'Fresh Pasta' },
+  'sauce': { title: 'Pomodoro Sauce' },
+  'starter': { title: 'Starter & Autolyse' },
   // Valentine's Dinner
-  'pasta-dough': { emoji: '🍝', title: 'Pasta Dough' },
-  'prep-mise': { emoji: '📋', title: 'Mise en Place' },
-  'pasta-roll-cut': { emoji: '🍜', title: 'Roll & Cut' },
-  'fish-sauce': { emoji: '🐟', title: 'Cod Piccata' },
-  'pasta-cook': { emoji: '🔥', title: 'Cook Pasta' },
-  'broccolini': { emoji: '🥬', title: 'Broccolini' },
-  'serve': { emoji: '🍽️', title: 'Plate & Serve' },
-  'bulk': { emoji: '💪', title: 'Bulk Fermentation' },
-  'shape': { emoji: '🌀', title: 'Shaping' },
-  'bake': { emoji: '🔥', title: 'Proofing & Baking' },
+  'pasta-dough': { title: 'Pasta Dough' },
+  'prep-mise': { title: 'Mise en Place' },
+  'pasta-roll-cut': { title: 'Roll & Cut' },
+  'fish-sauce': { title: 'Cod Piccata' },
+  'pasta-cook': { title: 'Cook Pasta' },
+  'broccolini': { title: 'Broccolini' },
+  'serve': { title: 'Plate & Serve' },
+  'bulk': { title: 'Bulk Fermentation' },
+  'shape': { title: 'Shaping' },
+  'bake': { title: 'Proofing & Baking' },
 };
 
 // Get section display info
@@ -689,32 +689,34 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     padding: 16,
   },
   ingredientGroup: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   ingredientGroupTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.neutral[900],
-    marginBottom: 8,
-    paddingBottom: 8,
+    marginBottom: 6,
+    paddingBottom: 4,
     borderBottomWidth: 1,
     borderBottomColor: colors.neutral[200],
   },
   ingredientRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   ingredientAmount: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: colors.primary[500],
-    width: 80,
+    width: 120,
+    lineHeight: 18,
   },
   ingredientItem: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.neutral[900],
     flex: 1,
+    lineHeight: 18,
   },
   phaseCard: {
     backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',

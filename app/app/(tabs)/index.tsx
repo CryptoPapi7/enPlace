@@ -10,10 +10,10 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { supabase } from '@/lib/supabase';
 
 const VIBES = [
-  { id: 'comfort', label: 'Comfort', emoji: '🛋️', color: '#FF8C42' },
-  { id: 'quick', label: 'Quick Win', emoji: '⚡', color: '#4CAF50' },
-  { id: 'impress', label: 'Show Off', emoji: '✨', color: '#9C27B0' },
-  { id: 'mindful', label: 'Mindful', emoji: '🧘', color: '#87CEEB' },
+  { id: 'comfort', label: 'Comfort', color: '#FF8C42' },
+  { id: 'quick', label: 'Quick Win', color: '#4CAF50' },
+  { id: 'impress', label: 'Show Off', color: '#9C27B0' },
+  { id: 'mindful', label: 'Mindful', color: '#87CEEB' },
 ];
 
 const TRENDING_RECIPES = [
@@ -115,7 +115,6 @@ export default function HomeScreen() {
               ]}
               onPress={() => setSelectedVibe(selectedVibe === vibe.id ? null : vibe.id)}
             >
-              <Text style={dynamicStyles.vibeEmoji}>{vibe.emoji}</Text>
               <Text style={dynamicStyles.vibeLabel}>{vibe.label}</Text>
             </TouchableOpacity>
           ))}
@@ -123,7 +122,7 @@ export default function HomeScreen() {
 
         {/* Trending Now */}
         <View style={dynamicStyles.section}>
-          <Text style={dynamicStyles.sectionTitle}>🔥 Trending Now</Text>
+          <Text style={dynamicStyles.sectionTitle}>Trending Now</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -164,7 +163,7 @@ export default function HomeScreen() {
 
         {/* Chefs You Follow */}
         <View style={dynamicStyles.section}>
-          <Text style={dynamicStyles.sectionTitle}>👥 Chefs You Follow</Text>
+          <Text style={dynamicStyles.sectionTitle}>Chefs You Follow</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -191,7 +190,7 @@ export default function HomeScreen() {
 
         {/* Community Picks */}
         <View style={dynamicStyles.section}>
-          <Text style={dynamicStyles.sectionTitle}>🌟 Community Picks</Text>
+          <Text style={dynamicStyles.sectionTitle}>Community Picks</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -316,20 +315,21 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     fontWeight: '600',
   },
   vibesScroll: {
-    paddingHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 24,
+    paddingHorizontal: 24,
+    marginBottom: 32,
   },
   vibeChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 22,
     marginRight: 12,
     borderWidth: 2,
     borderColor: isMichelin ? colors.neutral[300] : '#E8E8E8',
+    minHeight: 44,
   },
   vibeEmoji: {
     fontSize: 20,
@@ -341,8 +341,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     color: colors.neutral[900],
   },
   section: {
-    marginBottom: 32,
-    // paddingHorizontal: 24, // Remove default section padding for horizontal scrollviews
+    marginBottom: 40,
   },
   horizontalScrollContainer: {
     paddingHorizontal: 24,
@@ -351,6 +350,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     fontSize: 20,
     fontWeight: typography.h3.fontWeight,
     color: colors.neutral[900],
+    paddingHorizontal: 24,
     marginBottom: 16,
   },
   trendingCard: {

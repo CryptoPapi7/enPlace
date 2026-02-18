@@ -142,7 +142,6 @@ export default function RecipeLibraryScreen() {
 
       {/* Search */}
       <View style={dynamicStyles.searchContainer}>
-        <Text style={dynamicStyles.searchIcon}>🔍</Text>
         <TextInput
           style={dynamicStyles.searchInput}
           placeholder="Search recipes, cuisines..."
@@ -191,13 +190,13 @@ export default function RecipeLibraryScreen() {
         {/* Migration Status */}
         {migrationStatus ? (
           <View style={dynamicStyles.migrationBanner}>
-            <Text style={dynamicStyles.migrationText}>✅ {migrationStatus}</Text>
+            <Text style={dynamicStyles.migrationText}>{migrationStatus}</Text>
           </View>
         ) : null}
 
         {/* Built-in Recipes */}
         <View style={dynamicStyles.sectionHeaderFullWidth}>
-          <Text style={dynamicStyles.sectionTitle}>📚 Recipe Library</Text>
+          <Text style={dynamicStyles.sectionTitle}>Recipe Library</Text>
         </View>
         {filtered.map(recipe => (
           <View
@@ -258,7 +257,6 @@ export default function RecipeLibraryScreen() {
         
         {filtered.length === 0 && (
           <View style={dynamicStyles.emptyState}>
-            <Text style={dynamicStyles.emptyEmoji}>🔍</Text>
             <Text style={dynamicStyles.emptyText}>No recipes found</Text>
             <Text style={dynamicStyles.emptySub}>Try a different search</Text>
           </View>
@@ -306,10 +304,6 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
-  },
-  searchIcon: {
-    fontSize: 16,
-    marginRight: 12,
   },
   searchInput: {
     flex: 1,
@@ -495,10 +489,6 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     paddingVertical: 60,
-  },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: 16,
   },
   emptyText: {
     fontSize: 18,

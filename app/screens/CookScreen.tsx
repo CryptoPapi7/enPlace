@@ -29,69 +29,112 @@ async function setupAudio() {
 import {
   chickenCurryRecipe,
   beefRendangRecipe,
-  freshPastaRecipe,
   sourdoughRecipe,
   pepperpotRecipe,
   doublesRecipe,
   fishCurryRecipe,
   dhalPuriRecipe,
   pastaPomodoroRecipe,
-  rotiCurryChannaRecipe,
   phoBoRecipe,
   jerkChickenRecipe,
   valentineDinnerRecipe,
   cacioEPepeRecipe,
   tonkotsuRamenRecipe,
+  birriaTacosRecipe,
 } from "../data/recipes";
 
 const RECIPE_MAP: Record<string, any> = {
   'chicken-curry': chickenCurryRecipe,
   'beef-rendang': beefRendangRecipe,
-  'fresh-pasta': freshPastaRecipe,
   'sourdough': sourdoughRecipe,
   'pepperpot': pepperpotRecipe,
   'doubles': doublesRecipe,
   'fish-curry': fishCurryRecipe,
   'dhal-puri': dhalPuriRecipe,
   'pasta-pomodoro': pastaPomodoroRecipe,
-  'roti-curry-channa': rotiCurryChannaRecipe,
   'pho-bo': phoBoRecipe,
   'jerk-chicken': jerkChickenRecipe,
   'valentine-dinner': valentineDinnerRecipe,
   'cacio-e-pepe': cacioEPepeRecipe,
   'tonkotsu-ramen': tonkotsuRamenRecipe,
+  'birria-tacos': birriaTacosRecipe,
 };
 
 // Steps that benefit from stirring animation
 const STIRRING_STEPS = ['curry-2', 'curry-4', 'curry-5'];
 
+// ✅ Scale ingredient amount based on servings ratio
+function scaleIngredientAmount(amount: string | number, ratio: number): string {
+  if (typeof amount === 'number') {
+    const scaled = Math.round(amount * ratio * 10) / 10;
+    return scaled.toString();
+  }
+  // For "to taste" or other strings, return as-is
+  if (typeof amount === 'string') {
+    const num = parseFloat(amount);
+    if (isNaN(num)) return amount;
+    const scaled = Math.round(num * ratio * 10) / 10;
+    return amount.replace(num.toString(), scaled.toString());
+  }
+  return String(amount);
+}
+
 // ✅ Build cook steps dynamically from selected recipe
 function buildSteps(recipe: any, effectiveServings: number): Step[] {
   const steps: Step[] = [];
+  const ratio = effectiveServings / recipe.servings;
+
+  // 1. MASTER PREP LIST - All ingredients from all sections
+  const allIngredients: string[] = [];
+  Object.keys(recipe.ingredients || {}).forEach((sectionKey) => {
+    const sectionIngredients = recipe.ingredients[sectionKey] || [];
+    sectionIngredients.forEach((ing: any) => {
+      const scaledAmount = scaleIngredientAmount(ing.amount, ratio);
+      allIngredients.push(`${scaledAmount} ${ing.item}`);
+    });
+  });
 
   steps.push({
-    id: 'intro',
-    title: 'Ready to cook?',
-    instructions: [recipe.title, `Total time: ${recipe.totalTimeMinutes} minutes`, `${effectiveServings} servings`],
+    id: 'prep',
+    title: 'Ingredient Prep Checklist',
+    instructions: [
+      `Gather everything you'll need for ${effectiveServings} servings:`,
+      '',
+      ...allIngredients,
+      '',
+      'Tap Next when you\'re ready to start cooking!',
+    ],
     durationMinutes: 0,
     active: false,
   });
 
+  // 2. SECTIONS - Each with its ingredients, then cooking steps
   Object.keys(recipe.sections).forEach((sectionKey) => {
+    // Section ingredient list
+    const sectionIngredients = recipe.ingredients?.[sectionKey] || [];
+    const ingredientLines = sectionIngredients.map((ing: any) => {
+      const scaledAmount = scaleIngredientAmount(ing.amount, ratio);
+      return `• ${scaledAmount} ${ing.item}`;
+    });
+
     steps.push({
-      id: `section-${sectionKey}`,
-      title: sectionKey.toUpperCase(),
-      instructions: ['---'],
+      id: `section-${sectionKey}-ingredients`,
+      title: `For the ${sectionKey}`,
+      instructions: [
+        `Ingredients you'll need for this section:`,
+        ...ingredientLines,
+      ],
       durationMinutes: 0,
       active: false,
     });
 
+    // Cooking steps
     recipe.sections[sectionKey].forEach((s: Step) => steps.push(s));
   });
 
   steps.push({
     id: 'done',
-    title: 'Done!',
+    title: 'Done',
     instructions: ['Your dish is ready. Enjoy!'],
     durationMinutes: 0,
     active: false,
@@ -325,9 +368,8 @@ export default function CookScreen() {
         <Text style={dynamicStyles.stepTitle}>{step.title}</Text>
         
         {step.instructions.map((instruction, idx) => (
-          <View key={idx} style={dynamicStyles.instructionRow}>
-            <Text style={dynamicStyles.bullet}>•</Text>
-            <Text style={dynamicStyles.stepInstruction}>{instruction}</Text>
+          <View key={idx} style={dynamicStyles.prepRow}>
+            <Text style={dynamicStyles.prepText}>{instruction}</Text>
           </View>
         ))}
 
@@ -486,6 +528,17 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginRight: 12,
     marginTop: 2,
   },
+
+  // ✅ Medium-dense prep checklist (no bullets)
+  prepRow: {
+    marginBottom: 6,
+  },
+  prepText: {
+    fontSize: 17,
+    lineHeight: 22,
+    color: isMichelin ? '#E5E5E5' : colors.neutral[800],
+  },
+
   instruction: {
     fontSize: 22,
     color: '#5D4E37',
