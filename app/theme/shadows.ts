@@ -7,7 +7,7 @@
 export const shadows = {
   // Small - cards, buttons
   sm: {
-    shadowColor: '#000',
+    shadowColor: '#1A1A18',
     shadowOpacity: 0.06,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
@@ -16,7 +16,7 @@ export const shadows = {
 
   // Medium - elevated cards, modals
   md: {
-    shadowColor: '#000',
+    shadowColor: '#1A1A18',
     shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
@@ -25,7 +25,7 @@ export const shadows = {
 
   // Large - floating elements, sheets
   lg: {
-    shadowColor: '#000',
+    shadowColor: '#1A1A18',
     shadowOpacity: 0.12,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },

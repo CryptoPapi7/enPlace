@@ -4,34 +4,34 @@
  */
 
 export const colors = {
-  // Base - Cream backgrounds
+  // Base - Cream backgrounds (warmer whites)
   cream: {
-    50: '#FFF8E7',   // Main app background
-    100: '#F6EFDD',  // Card backgrounds
-    200: '#EDE6D3',  // Subtle sections
+    50: '#FAFAF7',    // Main app background (was #FFF8E7)
+    100: '#F5F4F0',   // Card backgrounds (was #F6EFDD)
+    200: '#ECEAE4',   // Subtle sections (was #EDE6D3)
   },
 
-  // Primary - Orange accent (softened)
+  // Primary - Bronze/taupe accent (was orange)
   primary: {
-    400: '#FFB37A',  // Hover/secondary
-    500: '#FF8C42',  // Primary actions
-    600: '#E6752F',  // Pressed states
+    400: '#A08B72',   // Hover/secondary (was #FFB37A)
+    500: '#8B7355',   // Primary actions (was #FF8C42)
+    600: '#74604A',   // Pressed states (was #E6752F)
   },
 
   // Neutrals - Critical for premium feel
   neutral: {
-    900: '#1F1F1F',  // Primary text
-    700: '#4A4A4A',  // Secondary text
-    500: '#8A8A8A',  // Meta text
-    300: '#C4C4C4',  // Disabled
-    200: '#E6E1D8',  // Dividers
-    100: '#F1ECE2',  // Outlined surfaces
+    900: '#1A1A18',   // Primary text (was #1F1F1F)
+    700: '#5A5A55',   // Secondary text (was #4A4A4A)
+    500: '#8A8A84',   // Meta text (was #8A8A8A)
+    300: '#C8C6C0',   // Disabled (was #C4C4C4)
+    200: '#E5E3DD',   // Dividers (was #E6E1D8)
+    100: '#F0EEE8',   // Outlined surfaces (was #F1ECE2)
   },
 
   // Functional
-  success: '#4CAF50',
-  error: '#E5533D',
-  warning: '#F2B705',
+  success: '#5C7A5C',   // Muted green (was #4CAF50)
+  error: '#9E4B4B',     // Muted red (was #E5533D)
+  warning: '#B8943D',   // Muted yellow (was #F2B705)
 
   // Pure
   white: '#FFFFFF',

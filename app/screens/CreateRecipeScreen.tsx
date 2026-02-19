@@ -16,6 +16,7 @@ import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { parseAIRecipe, type Recipe } from '../schemas/recipe';
 import { useTheme } from '@/providers/ThemeProvider';
+import { layout } from '../theme/spacing';
 
 // Get API key from environment or config
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || 'your-api-key-here';
@@ -268,7 +269,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: layout.screenGutter,
+    paddingVertical: 20,
   },
   header: {
     flexDirection: 'row',

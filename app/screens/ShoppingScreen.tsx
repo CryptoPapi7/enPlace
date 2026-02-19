@@ -6,6 +6,7 @@ import { getWeeklyPlan } from "../utils/weeklyPlan";
 import { ALL_RECIPES } from "../data/recipes";
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/providers/ThemeProvider';
+import { layout } from '../theme/spacing';
 import { getUnitSystem, UnitSystem } from "../utils/settings";
 
 // Fallback mock data if no plan passed
@@ -484,7 +485,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   list: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.screenGutter,
   },
   categorySection: {
     marginBottom: 24,

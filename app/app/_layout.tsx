@@ -3,10 +3,14 @@ import { AuthProvider } from '@/providers/AuthProvider';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getNavigationTheme } from '@/theme';
 import { ThemeProvider, useTheme } from '@/providers/ThemeProvider';
+
+SplashScreen.preventAutoHideAsync();
 
 // Wrapper component to access theme context
 function ThemedNavigation() {
@@ -37,6 +41,30 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  // Temporarily disable custom fonts to test
+  // const [fontsLoaded, fontError] = useFonts({
+  //   'Inter_18pt-Regular': require('../assets/fonts/Inter_18pt-Regular.ttf'),
+  //   'Inter_18pt-Medium': require('../assets/fonts/Inter_18pt-Medium.ttf'),
+  //   'Inter_18pt-SemiBold': require('../assets/fonts/Inter_18pt-SemiBold.ttf'),
+  //   'PlayfairDisplay-Regular': require('../assets/fonts/PlayfairDisplay-Regular.ttf'),
+  //   'PlayfairDisplay-Bold': require('../assets/fonts/PlayfairDisplay-Bold.ttf'),
+  //   'JetBrainsMono-Regular': require('../assets/fonts/JetBrainsMono-Regular.ttf'),
+  // });
+
+  // if (fontError) {
+  //   console.error('Font loading error:', fontError);
+  //   // Fallback to system fonts
+  //   return (
+  //     <ThemeProvider>
+  //       <ThemedNavigation />
+  //     </ThemeProvider>
+  //   );
+  // }
+
+  // if (!fontsLoaded) return null;
+
+  SplashScreen.hideAsync();
+
   return (
     <ThemeProvider>
       <ThemedNavigation />

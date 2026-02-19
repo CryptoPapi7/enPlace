@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { getMyLibraryRecipes, LibraryRecipe } from '../utils/library';
 import { toggleFavorite, isFavorite, getFavorites, FavoriteRecipe } from '../utils/favorites';
 import { useTheme } from '@/providers/ThemeProvider';
+import { layout } from '../theme/spacing';
 
 export default function MyLibraryScreen() {
   const { colors, isMichelin } = useTheme();
@@ -204,7 +205,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: layout.screenGutter,
+    paddingVertical: 20,
   },
   header: {
     flexDirection: 'row',

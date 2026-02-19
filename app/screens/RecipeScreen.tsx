@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, TextInput, Image } from "react-native";
-import { spacing, shadows, typography } from '../theme';
+import { spacing, layout, shadows, typography } from '../theme';
 import { useState, useCallback, useEffect } from "react";
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
 import { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe, valentineDinnerRecipe, cacioEPepeRecipe, tonkotsuRamenRecipe, birriaTacosRecipe } from "../data/recipes";
@@ -519,13 +519,11 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     marginBottom: spacing.md,
   },
   heroTitle: {
-    fontSize: typography.display.fontSize,
-    fontWeight: typography.display.fontWeight,
+    ...typography.display,
     color: colors.neutral[900],
     textAlign: 'center',
     marginTop: spacing.lg,
     marginBottom: spacing.xs,
-    lineHeight: typography.display.lineHeight,
   },
   heroSubtitle: {
     fontSize: 15,
@@ -541,13 +539,13 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     color: colors.neutral[600],
     textAlign: 'center',
     lineHeight: 24,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: layout.screenGutter,
   },
   stats: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.screenGutter,
     paddingVertical: 24,
   },
   statItem: {
@@ -556,7 +554,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
   },
   statValue: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: colors.neutral[900],
   },
   statLabel: {
@@ -621,12 +619,12 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
   },
   stepperButtonText: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#FFF',
   },
   servingValue: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: colors.neutral[900],
     minWidth: 50,
     textAlign: 'center',
@@ -665,7 +663,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     color: '#FFF',
   },
   section: {
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.screenGutter,
     marginBottom: 24,
   },
   sectionHeader: {
@@ -776,7 +774,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
   stepPreviewNumberText: {
     color: '#FFF',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   stepPreviewContent: {
     flex: 1,
@@ -846,7 +844,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     left: 0,
     right: 0,
     backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.screenGutter,
     paddingVertical: 16,
     borderTopWidth: 1,
     borderTopColor: isMichelin ? colors.neutral[700] : colors.neutral[300],
@@ -874,7 +872,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
   },
   startButtonText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#FFF',
   },
   startButtonSub: {
@@ -887,7 +885,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     backgroundColor: isMichelin ? colors.background?.secondary : colors.white,
     borderRadius: 16,
     paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.screenGutter,
     alignItems: 'center',
     marginTop: 12,
     borderWidth: 2,

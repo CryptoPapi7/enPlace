@@ -9,18 +9,19 @@ export const spacing = {
   md: 16,
   lg: 24,
   xl: 32,
-  xxl: 40,
-  xxxl: 48,
+  xxl: 48,      // was 40
+  xxxl: 64,     // was 48
+  section: 80,  // NEW
 } as const;
 
 // Common layout values
 export const layout = {
-  screenGutter: spacing.md,      // 16
-  cardPadding: spacing.md,       // 16
-  cardPaddingLarge: 20,          // 20
-  sectionGap: spacing.lg,        // 24
-  elementGap: spacing.sm,        // 8
-  elementGapLarge: spacing.md,   // 16
+  screenGutter: 24,         // was 16 — THE BIG ONE
+  cardPadding: 20,          // was 16
+  cardPaddingLarge: 24,     // was 20
+  sectionGap: 48,           // was 24
+  elementGap: 12,           // was 8
+  elementGapLarge: 20,      // was 16
 } as const;
 
 export type Spacing = typeof spacing;

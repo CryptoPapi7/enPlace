@@ -7,7 +7,7 @@ import LottieView from 'lottie-react-native';
 import { Step } from "../data/recipe";
 import { StatusBar } from 'expo-status-bar';
 import { setActiveCooking, updateCurrentStep, clearActiveCooking } from '../utils/activeCooking';
-import { spacing, typography, shadows } from '../theme';
+import { spacing, layout, typography, shadows } from '../theme';
 import { useTheme } from '@/providers/ThemeProvider';
 
 // Configure audio session for iOS speech
@@ -162,7 +162,7 @@ export default function CookScreen() {
             Please go back and select a recipe.
           </Text>
           <TouchableOpacity 
-            style={{ backgroundColor: '#FF8C42', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+            style={{ backgroundColor: '#FF8C42', paddingHorizontal: layout.screenGutter, paddingVertical: 12, borderRadius: 12 }}
             onPress={() => router.back()}
           >
             <Text style={{ color: '#FFF', fontWeight: '700' }}>Go Back →</Text>
@@ -426,7 +426,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   stepInstruction: {
     fontSize: 18,
     lineHeight: 26,
-    color: isMichelin ? '#E5E5E5' : colors.neutral[800],
+    color: isMichelin ? '#E5E5E5' : colors.neutral[900],
     marginBottom: spacing.lg,
   },
 
@@ -440,7 +440,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: layout.screenGutter,
     paddingTop: 16,
     paddingBottom: 12,
   },
@@ -536,7 +536,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   prepText: {
     fontSize: 17,
     lineHeight: 22,
-    color: isMichelin ? '#E5E5E5' : colors.neutral[800],
+    color: isMichelin ? '#E5E5E5' : colors.neutral[900],
   },
 
   instruction: {
@@ -566,16 +566,16 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: layout.screenGutter,
     paddingVertical: 12,
     backgroundColor: isMichelin ? colors.background?.primary : colors.white,
     borderTopWidth: 1,
     borderTopColor: isMichelin ? colors.neutral[700] : colors.neutral[200],
   },
   navButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: layout.screenGutter,
     paddingVertical: 12,
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     borderRadius: 12,
     minWidth: 90,
   },

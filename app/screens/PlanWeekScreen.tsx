@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ALL_RECIPES, beefRendangRecipe, chickenCurryRecipe, freshPastaRecipe, sourdoughRecipe } from '../data/recipes';
 import { saveWeeklyPlan, getWeeklyPlan } from '../utils/weeklyPlan';
 import { useTheme } from '@/providers/ThemeProvider';
+import { layout } from '../theme/spacing';
 
 // Recipe lookup for ingredient data
 const RECIPE_DATA: Record<string, any> = {
@@ -816,7 +817,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   confirmButton: {
     backgroundColor: '#4CAF50',
     paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.screenGutter,
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 12,

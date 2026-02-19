@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { parseImportedRecipe } from '../schemas/recipe';
 import { useTheme } from '@/providers/ThemeProvider';
+import { layout } from '../theme/spacing';
 
 export default function ImportRecipeScreen() {
   const { colors, isMichelin } = useTheme();
@@ -278,7 +279,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: layout.screenGutter,
+    paddingVertical: 20,
   },
   header: {
     flexDirection: 'row',

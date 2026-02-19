@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import { saveRecipe } from '../database/db';
 import { Alert } from 'react-native';
 import { useTheme } from '@/providers/ThemeProvider';
+import { layout } from '../theme/spacing';
 
 export default function RecipePreviewScreen({ route, navigation }: any) {
   const { colors, isMichelin } = useTheme();
@@ -231,7 +232,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: layout.screenGutter,
+    paddingVertical: 20,
   },
   header: {
     flexDirection: 'row',

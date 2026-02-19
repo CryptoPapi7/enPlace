@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/providers/ThemeProvider';
+import { layout } from '../theme/spacing';
 
 export default function PhotoRecipeScreen({ route, navigation }: any) {
   const { colors, isMichelin } = useTheme();
@@ -249,7 +250,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: layout.screenGutter,
+    paddingVertical: 20,
   },
   header: {
     flexDirection: 'row',

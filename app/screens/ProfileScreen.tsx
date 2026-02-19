@@ -27,6 +27,7 @@ interface Settings {
 }
 
 import { useTheme } from '../providers/ThemeProvider';
+import { layout } from '../theme/spacing';
 
 export default function ProfileScreen({ navigation }: any) {
   const { colors, isMichelin, setThemeMode } = useTheme();
@@ -428,7 +429,7 @@ const createStyles = (colors: any, isMichelin: boolean) => ({
     fontWeight: '500',
   },
   section: {
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.screenGutter,
     marginBottom: 32,
   },
   sectionTitle: {

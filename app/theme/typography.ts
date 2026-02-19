@@ -1,63 +1,72 @@
 /**
  * EnPlace Typography System
- * System font (SF Pro / Roboto) for now
- * Clean, intentional scale
+ * Custom fonts: Playfair Display (serif) + Inter (sans)
+ * Premium, editorial feel
  */
 
-export const typography = {
-  // Display - Largest
-  display: {
-    fontSize: 28,
-    fontWeight: '700' as const,
-    lineHeight: 34,
-  },
+export const fonts = {
+  serif: 'PlayfairDisplay-Regular',
+  serifBold: 'PlayfairDisplay-Bold',
+  sans: 'Inter_18pt-Regular',
+  sansMedium: 'Inter_18pt-Medium',
+  sansSemiBold: 'Inter_18pt-SemiBold',
+} as const;
 
-  // Headings
+export const typography = {
+  display: {
+    fontWeight: '700',
+    fontSize: 38,
+    lineHeight: 42,
+    letterSpacing: -0.5,
+  },
   h1: {
-    fontSize: 24,
-    fontWeight: '700' as const,
-    lineHeight: 30,
+    fontWeight: '700',
+    fontSize: 28,
+    lineHeight: 34,
+    letterSpacing: -0.3,
   },
   h2: {
-    fontSize: 20,
-    fontWeight: '600' as const,
-    lineHeight: 26,
+    fontWeight: '600',
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.1,
   },
   h3: {
-    fontSize: 17,
-    fontWeight: '600' as const,
-    lineHeight: 22,
+    fontWeight: '500',
+    fontSize: 18,
+    lineHeight: 24,
+    letterSpacing: 0,
   },
-
-  // Body
   body: {
-    fontSize: 15,
-    fontWeight: '400' as const,
-    lineHeight: 22,
+    fontWeight: '400',
+    fontSize: 16,
+    lineHeight: 25,
+    letterSpacing: 0,
   },
-  bodyBold: {
-    fontSize: 15,
-    fontWeight: '600' as const,
-    lineHeight: 22,
+  bodyMedium: {
+    fontWeight: '500',
+    fontSize: 16,
+    lineHeight: 25,
+    letterSpacing: 0,
   },
-
-  // Small
   caption: {
+    fontWeight: '400',
     fontSize: 13,
-    fontWeight: '400' as const,
     lineHeight: 18,
+    letterSpacing: 0.1,
   },
-  captionBold: {
-    fontSize: 13,
-    fontWeight: '600' as const,
-    lineHeight: 18,
-  },
-
-  // Micro
-  micro: {
+  label: {
+    fontWeight: '500',
     fontSize: 11,
-    fontWeight: '500' as const,
     lineHeight: 14,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase' as const,
+  },
+  micro: {
+    fontWeight: '400',
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 0.2,
   },
 } as const;
 

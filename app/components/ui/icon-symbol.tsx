@@ -20,6 +20,8 @@ const MAPPING = {
   'chevron.right': 'chevron-right',
   'calendar': 'calendar-today',
   'flame.fill': 'local-fire-department',
+  'books.vertical.fill': 'menu-book',
+  'cart.fill': 'shopping-cart',
 } as IconMapping;
 
 /**

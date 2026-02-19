@@ -4,16 +4,16 @@ import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect, router } from 'expo-router';
 import { ALL_RECIPES } from '../../data/recipes';
 import { getAvatar } from '../../utils/avatar';
-import { spacing, typography, shadows } from '../../theme';
+import { spacing, layout, typography, shadows, fonts } from '../../theme';
 import { useAuth } from '@/providers/AuthProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 import { supabase } from '@/lib/supabase';
 
 const VIBES = [
-  { id: 'comfort', label: 'Comfort', color: '#FF8C42' },
-  { id: 'quick', label: 'Quick Win', color: '#4CAF50' },
-  { id: 'impress', label: 'Show Off', color: '#9C27B0' },
-  { id: 'mindful', label: 'Mindful', color: '#87CEEB' },
+  { id: 'comfort', label: 'Comfort' },
+  { id: 'quick', label: 'Quick Win' },
+  { id: 'impress', label: 'Show Off' },
+  { id: 'mindful', label: 'Mindful' },
 ];
 
 const TRENDING_RECIPES = [
@@ -36,6 +36,11 @@ export default function HomeScreen() {
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [chefName, setChefName] = useState<string | null>(null);
+const getTimeBasedGreeting = (name: string) => {
+  const hour = new Date().getHours();
+  const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  return `Good ${timeOfDay}, ${name}`;
+};
 
   useFocusEffect(
     useCallback(() => {
@@ -69,11 +74,8 @@ export default function HomeScreen() {
           <View style={dynamicStyles.headerRow}>
             <View style={dynamicStyles.greetingContainer}>
               <Text style={dynamicStyles.greeting}>
-                {chefName ? `Hey Chef ${chefName}!` : "What's for dinner?"}
+                {chefName ? getTimeBasedGreeting(chefName) : "What's for dinner?"}
               </Text>
-              {chefName && (
-                <Text style={dynamicStyles.greetingSub}>Ready to cook something amazing?</Text>
-              )}
             </View>
             <TouchableOpacity
               style={dynamicStyles.avatarPlaceholder}
@@ -93,12 +95,12 @@ export default function HomeScreen() {
               )}
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={dynamicStyles.browseBtn}
+          <Text
+            style={dynamicStyles.browseLink}
             onPress={() => router.push('/(tabs)/library')}
           >
-            <Text style={dynamicStyles.browseBtnText}>Browse All Recipes →</Text>
-          </TouchableOpacity>
+            View all →
+          </Text>
         </View>
 
         {/* Vibes */}
@@ -109,8 +111,8 @@ export default function HomeScreen() {
               style={[
                 dynamicStyles.vibeChip,
                 selectedVibe === vibe.id && { 
-                  backgroundColor: vibe.color + '20', 
-                  borderColor: vibe.color 
+                  backgroundColor: colors.primary[500] + '1A', 
+                  borderColor: colors.primary[500] 
                 }
               ]}
               onPress={() => setSelectedVibe(selectedVibe === vibe.id ? null : vibe.id)}
@@ -122,7 +124,7 @@ export default function HomeScreen() {
 
         {/* Trending Now */}
         <View style={dynamicStyles.section}>
-          <Text style={dynamicStyles.sectionTitle}>Trending Now</Text>
+          <Text style={dynamicStyles.sectionLabel}>TRENDING NOW</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -163,7 +165,7 @@ export default function HomeScreen() {
 
         {/* Chefs You Follow */}
         <View style={dynamicStyles.section}>
-          <Text style={dynamicStyles.sectionTitle}>Chefs You Follow</Text>
+          <Text style={dynamicStyles.sectionLabel}>CHEFS YOU FOLLOW</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -181,7 +183,7 @@ export default function HomeScreen() {
                 </View>
                 <View style={dynamicStyles.chefInfo}>
                   <Text style={dynamicStyles.chefSpecialtyTag}>{chef.specialty}</Text>
-                  <Text style={dynamicStyles.chefFollowers}>👥 {(chef.id * 12.4).toFixed(1)}k followers</Text>
+                  <Text style={dynamicStyles.chefFollowers}>{(chef.id * 12.4).toFixed(1)}k followers</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -190,7 +192,7 @@ export default function HomeScreen() {
 
         {/* Community Picks */}
         <View style={dynamicStyles.section}>
-          <Text style={dynamicStyles.sectionTitle}>Community Picks</Text>
+          <Text style={dynamicStyles.sectionLabel}>COMMUNITY PICKS</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -250,16 +252,16 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 16,
   },
   greeting: {
-    fontSize: typography.h1.fontSize,
-    fontWeight: typography.h1.fontWeight,
-    color: colors.neutral[900],
+    ...typography.h2,
+    fontFamily: fonts.serifBold,
+    color: colors.neutral[700],
     flex: 1,
   },
   greetingContainer: {
     flex: 1,
   },
   greetingSub: {
-    fontSize: 14,
+    ...typography.caption,
     color: colors.neutral[500],
     marginTop: 4,
   },
@@ -290,9 +292,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     maxWidth: 70,
   },
   avatarBadgeText: {
-    fontSize: 10,
+    ...typography.micro,
     color: '#FFF',
-    fontWeight: '600',
   },
   avatarImage: {
     width: 48,
@@ -310,12 +311,15 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     alignSelf: 'flex-start',
   },
   browseBtnText: {
+    ...typography.bodyMedium,
     color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
+  },
+  browseLink: {
+    ...typography.caption,
+    color: colors.primary[500],
   },
   vibesScroll: {
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.screenGutter,
     marginBottom: 32,
   },
   vibeChip: {
@@ -328,7 +332,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     borderRadius: 22,
     marginRight: 12,
     borderWidth: 2,
-    borderColor: isMichelin ? colors.neutral[300] : '#E8E8E8',
+    borderColor: colors.neutral[200],
     minHeight: 44,
   },
   vibeEmoji: {
@@ -336,22 +340,20 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginRight: 8,
   },
   vibeLabel: {
-    fontSize: 15,
-    fontWeight: '600',
+    ...typography.bodyMedium,
     color: colors.neutral[900],
   },
   section: {
-    marginBottom: 40,
+    marginBottom: 48,
   },
   horizontalScrollContainer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.screenGutter,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: typography.h3.fontWeight,
-    color: colors.neutral[900],
-    paddingHorizontal: 24,
-    marginBottom: 16,
+  sectionLabel: {
+    ...typography.label,
+    color: colors.neutral[500],
+    marginBottom: 20,
+    paddingHorizontal: layout.screenGutter,
   },
   trendingCard: {
     backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
@@ -391,14 +393,13 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 50,
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    height: 80,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
     justifyContent: 'flex-end',
     padding: 12,
   },
   trendingImageTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    ...typography.h3,
     color: '#FFF',
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 1 },
@@ -473,8 +474,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     borderColor: isMichelin ? colors.neutral[300] : colors.cream[200],
   },
   chefName: {
-    fontSize: 14,
-    fontWeight: '700',
+    ...typography.bodyMedium,
     color: colors.neutral[900],
     textAlign: 'center',
     marginBottom: 4,
@@ -524,8 +524,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 50,
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    height: 80,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
     justifyContent: 'flex-end',
     padding: 12,
   },
@@ -544,16 +544,15 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     alignItems: 'center',
   },
   chefSpecialtyTag: {
-    fontSize: 12,
+    ...typography.micro,
     color: colors.primary[500],
-    fontWeight: '600',
     backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   chefFollowers: {
-    fontSize: 13,
+    ...typography.caption,
     color: colors.neutral[500],
   },
   communityGrid: {

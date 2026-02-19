@@ -19,9 +19,18 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarStyle: {
           backgroundColor: isMichelin ? colors.background?.secondary : colors.cream[50],
-          borderTopWidth: 0,
+          borderTopWidth: 1,
+          borderTopColor: colors.neutral[200],
           elevation: 0,
           shadowOpacity: 0,
+          paddingTop: 8,
+          paddingBottom: 8,
+          height: 60,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          letterSpacing: 0.8,
+          textTransform: 'uppercase',
         },
       }}>
       <Tabs.Screen

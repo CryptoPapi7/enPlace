@@ -1,0 +1,1 @@
+echo "## Important Rules\n- Never run 'npm start', 'expo start', or any dev server commands. The Expo dev server is already managed as a systemd service on port 8081." > ~/.openclaw/workspace/CLAUDE.md

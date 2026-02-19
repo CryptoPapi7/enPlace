@@ -7,7 +7,7 @@ import { isFavorite, toggleFavorite, getFavorites, initFavorites } from '../util
 import { getAllRecipes, deleteRecipe } from '../database/db';
 import { migrateFromAsyncStorage } from '../database/migrate';
 import type { Recipe } from '../schemas/recipe';
-import { spacing, typography, shadows } from '../theme';
+import { spacing, layout, typography, shadows } from '../theme';
 import { useTheme } from '@/providers/ThemeProvider';
 
 // Filter categories
@@ -320,7 +320,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 16,
   },
   filterContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: layout.screenGutter,
     gap: 8,
   },
   filterPill: {
@@ -350,7 +350,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 20,
+    paddingHorizontal: layout.screenGutter,
     gap: 12,
   },
   sectionHeaderFullWidth: {

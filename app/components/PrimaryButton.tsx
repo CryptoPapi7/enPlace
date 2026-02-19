@@ -1,6 +1,6 @@
-import { TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
-import { useRef } from 'react';
-import { colors, spacing, typography } from '../theme';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { colors, spacing, typography, fonts } from '../theme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 interface PrimaryButtonProps {
   title: string;
@@ -15,88 +15,64 @@ export function PrimaryButton({
   disabled = false,
   variant = 'primary'
 }: PrimaryButtonProps) {
-  const scale = useRef(new Animated.Value(1)).current;
+  const { colors } = useTheme();
 
-  const handlePressIn = () => {
-    if (!disabled) {
-      Animated.spring(scale, {
-        toValue: 0.97,
-        useNativeDriver: true,
-        friction: 8,
-      }).start();
-    }
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: true,
-      friction: 8,
-    }).start();
-  };
+  const styles = StyleSheet.create({
+    button: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: 14,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    primary: {
+      backgroundColor: colors.primary[500],
+    },
+    secondary: {
+      backgroundColor: colors.cream[100],
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+    },
+    disabled: {
+      backgroundColor: colors.neutral[200],
+    },
+    text: {
+      fontSize: typography.body.fontSize,
+      fontWeight: '600',
+    },
+    primaryText: {
+      color: colors.white,
+    },
+    secondaryText: {
+      color: colors.neutral[700],
+    },
+    ghostText: {
+      color: colors.primary[500],
+    },
+    disabledText: {
+      color: colors.neutral[300],
+    },
+  });
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <TouchableOpacity
-        style={[
-          styles.button,
-          styles[variant],
-          disabled && styles.disabled
-        ]}
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled}
-        activeOpacity={0.9}
-      >
-        <Text style={[
-          styles.text,
-          styles[`${variant}Text`],
-          disabled && styles.disabledText
-        ]}>
-          {title}
-        </Text>
-      </TouchableOpacity>
-    </Animated.View>
+    <TouchableOpacity
+      style={[
+        styles.button,
+        styles[variant],
+        disabled && styles.disabled
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.7}
+    >
+      <Text style={[
+        styles.text,
+        styles[`${variant}Text`],
+        disabled && styles.disabledText
+      ]}>
+        {title}
+      </Text>
+    </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primary: {
-    backgroundColor: colors.primary[500],
-  },
-  secondary: {
-    backgroundColor: colors.cream[100],
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
-  disabled: {
-    backgroundColor: colors.neutral[200],
-  },
-  text: {
-    fontSize: typography.body.fontSize,
-    fontWeight: '600',
-  },
-  primaryText: {
-    color: colors.white,
-  },
-  secondaryText: {
-    color: colors.neutral[700],
-  },
-  ghostText: {
-    color: colors.primary[500],
-  },
-  disabledText: {
-    color: colors.neutral[300],
-  },
-});
-
-export default PrimaryButton;
