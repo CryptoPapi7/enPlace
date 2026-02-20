@@ -8,19 +8,19 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { colors, isMichelin } = useTheme();
+  const { colors } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary[500],
-        tabBarInactiveTintColor: colors.neutral[500],
+        tabBarActiveTintColor: colors.accent.primary,
+        tabBarInactiveTintColor: colors.text.muted,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: isMichelin ? colors.background?.secondary : colors.cream[50],
+          backgroundColor: colors.surface.secondary,
           borderTopWidth: 1,
-          borderTopColor: colors.neutral[200],
+          borderTopColor: colors.border.subtle,
           elevation: 0,
           shadowOpacity: 0,
           paddingTop: 8,
@@ -31,7 +31,8 @@ export default function TabLayout() {
           fontSize: 10,
           letterSpacing: 0.8,
           textTransform: 'uppercase',
-        },
+          fontFamily: 'Inter-Medium',
+        }
       }}>
       <Tabs.Screen
         name="index"

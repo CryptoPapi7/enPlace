@@ -32,8 +32,7 @@ const CHEFS_YOU_FOLLOW = [
 
 export default function HomeScreen() {
   const { user } = useAuth();
-  const { colors, isMichelin } = useTheme();
-  const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
+  const { colors } = useTheme();
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [chefName, setChefName] = useState<string | null>(null);
 const getTimeBasedGreeting = (name: string) => {
@@ -63,11 +62,11 @@ const getTimeBasedGreeting = (name: string) => {
     setChefName(data?.display_name || null);
   };
 
-  const dynamicStyles = createStyles(colors, isMichelin);
+  const dynamicStyles = createStyles(colors);
 
   return (
     <SafeAreaView style={dynamicStyles.container}>
-      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       <ScrollView style={dynamicStyles.scrollView}>
         {/* Header */}
         <View style={dynamicStyles.header}>
@@ -84,7 +83,7 @@ const getTimeBasedGreeting = (name: string) => {
               {avatarUri ? (
                 <Image source={{ uri: avatarUri }} style={dynamicStyles.avatarImage} />
               ) : (
-                <Text style={dynamicStyles.avatarEmoji}>👤</Text>
+                <Text style={dynamicStyles.avatarEmoji}>{ }</Text>
               )}
               {chefName && (
                 <View style={dynamicStyles.avatarBadge}>
@@ -108,14 +107,8 @@ const getTimeBasedGreeting = (name: string) => {
           {VIBES.map((vibe) => (
             <TouchableOpacity
               key={vibe.id}
-              style={[
-                dynamicStyles.vibeChip,
-                selectedVibe === vibe.id && { 
-                  backgroundColor: colors.primary[500] + '1A', 
-                  borderColor: colors.primary[500] 
-                }
-              ]}
-              onPress={() => setSelectedVibe(selectedVibe === vibe.id ? null : vibe.id)}
+              style={dynamicStyles.vibeChip}
+              onPress={() => {}}
             >
               <Text style={dynamicStyles.vibeLabel}>{vibe.label}</Text>
             </TouchableOpacity>
@@ -136,26 +129,21 @@ const getTimeBasedGreeting = (name: string) => {
             // Get full recipe data to check for image
             const fullRecipe = ALL_RECIPES.find(r => r.id === recipe.id);
             return (
-              <TouchableOpacity 
-                key={recipe.id} 
+              <TouchableOpacity
+                key={recipe.id}
                 style={dynamicStyles.trendingCardHorizontal}
                 onPress={() => router.push(`/recipe/${recipe.id}`)}
               >
                 {fullRecipe?.imageUrl ? (
                   <View style={dynamicStyles.trendingImageContainerHorizontal}>
                     <Image source={{ uri: fullRecipe.imageUrl }} style={dynamicStyles.trendingImageHorizontal} />
-                    <View style={dynamicStyles.trendingOverlay}>
-                      <Text style={dynamicStyles.trendingImageTitle}>{recipe.name}</Text>
-                    </View>
                   </View>
                 ) : (
-                  <View style={dynamicStyles.trendingEmojiContainerHorizontal}>
-                    <Text style={dynamicStyles.trendingEmoji}>{recipe.emoji}</Text>
-                    <Text style={dynamicStyles.trendingEmojiTitle}>{recipe.name}</Text>
-                  </View>
+                  <View style={dynamicStyles.trendingEmojiContainerHorizontal} />
                 )}
                 <View style={dynamicStyles.trendingInfoHorizontal}>
-                  <Text style={dynamicStyles.trendingSaves}>❤️ {recipe.saves} saves</Text>
+                  <Text style={dynamicStyles.trendingCardTitle} numberOfLines={2}>{recipe.name}</Text>
+                  <Text style={dynamicStyles.trendingSaves}>{recipe.saves} saves</Text>
                 </View>
               </TouchableOpacity>
             );
@@ -177,13 +165,13 @@ const getTimeBasedGreeting = (name: string) => {
               <TouchableOpacity key={chef.id} style={dynamicStyles.chefCardHorizontal}>
                 <View style={dynamicStyles.chefImageContainer}>
                   <Image source={{ uri: chef.avatarUrl }} style={dynamicStyles.chefImage} />
-                  <View style={dynamicStyles.chefOverlay}>
-                    <Text style={dynamicStyles.chefImageName}>{chef.name}</Text>
-                  </View>
                 </View>
                 <View style={dynamicStyles.chefInfo}>
-                  <Text style={dynamicStyles.chefSpecialtyTag}>{chef.specialty}</Text>
-                  <Text style={dynamicStyles.chefFollowers}>{(chef.id * 12.4).toFixed(1)}k followers</Text>
+                  <Text style={dynamicStyles.chefCardName}>{chef.name}</Text>
+                  <View style={dynamicStyles.chefInfoRow}>
+                    <Text style={dynamicStyles.chefSpecialtyTag}>{chef.specialty}</Text>
+                    <Text style={dynamicStyles.chefFollowers}>{(chef.id * 12.4).toFixed(1)}k followers</Text>
+                  </View>
                 </View>
               </TouchableOpacity>
             ))}
@@ -209,17 +197,14 @@ const getTimeBasedGreeting = (name: string) => {
                 {recipe.imageUrl ? (
                   <View style={dynamicStyles.communityImageContainerHorizontal}>
                     <Image source={{ uri: recipe.imageUrl }} style={dynamicStyles.communityImageHorizontal} />
-                    <View style={dynamicStyles.communityOverlay}>
-                      <Text style={dynamicStyles.communityImageTitle} numberOfLines={2}>{recipe.title}</Text>
-                    </View>
                   </View>
                 ) : (
-                  <View style={dynamicStyles.communityEmojiContainerHorizontal}>
-                    <Text style={dynamicStyles.communityEmojiHorizontal}>{recipe.emoji}</Text>
-                    <Text style={dynamicStyles.communityNameHorizontal} numberOfLines={2}>{recipe.title}</Text>
-                  </View>
+                  <View style={dynamicStyles.communityEmojiContainerHorizontal} />
                 )}
-                <Text style={dynamicStyles.communityTimeHorizontal}>{recipe.timeDisplay}</Text>
+                <View style={dynamicStyles.communityInfoHorizontal}>
+                  <Text style={dynamicStyles.communityCardTitle} numberOfLines={2}>{recipe.title}</Text>
+                  <Text style={dynamicStyles.communityTimeHorizontal}>{recipe.timeDisplay}</Text>
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -232,10 +217,10 @@ const getTimeBasedGreeting = (name: string) => {
 }
 
 // Create styles function that accepts dynamic colors
-const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
   },
   scrollView: {
     flex: 1,
@@ -254,7 +239,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   greeting: {
     ...typography.h2,
     fontFamily: fonts.serifBold,
-    color: colors.neutral[700],
+    color: colors.text.secondary,
     flex: 1,
   },
   greetingContainer: {
@@ -262,14 +247,14 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   greetingSub: {
     ...typography.caption,
-    color: colors.neutral[500],
+    color: colors.text.muted,
     marginTop: 4,
   },
   avatarPlaceholder: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 16,
@@ -279,13 +264,13 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 2,
-    borderColor: isMichelin ? colors.neutral[300] : '#E8E8E8',
+    borderColor: colors.border.subtle,
     overflow: 'visible',
   },
   avatarBadge: {
     position: 'absolute',
     bottom: -8,
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
@@ -293,7 +278,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   avatarBadgeText: {
     ...typography.micro,
-    color: '#FFF',
+    color: colors.text.inverse,
   },
   avatarImage: {
     width: 48,
@@ -304,7 +289,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     fontSize: 28,
   },
   browseBtn: {
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
@@ -312,11 +297,11 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   browseBtnText: {
     ...typography.bodyMedium,
-    color: '#FFF',
+    color: colors.text.inverse,
   },
   browseLink: {
     ...typography.caption,
-    color: colors.primary[500],
+    color: colors.accent.primary,
   },
   vibesScroll: {
     paddingHorizontal: layout.screenGutter,
@@ -326,7 +311,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 22,
@@ -341,7 +326,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   vibeLabel: {
     ...typography.bodyMedium,
-    color: colors.neutral[900],
+    color: colors.text.primary,
   },
   section: {
     marginBottom: 48,
@@ -351,12 +336,12 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   sectionLabel: {
     ...typography.label,
-    color: colors.neutral[500],
+    color: colors.text.muted,
     marginBottom: 20,
     paddingHorizontal: layout.screenGutter,
   },
   trendingCard: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
@@ -364,7 +349,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   trendingCardHorizontal: {
     width: 300,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     marginRight: 12,
     overflow: 'hidden',
@@ -388,34 +373,22 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  trendingOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 80,
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-    justifyContent: 'flex-end',
-    padding: 12,
-  },
-  trendingImageTitle: {
-    ...typography.h3,
-    color: '#FFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+  trendingCardTitle: {
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+    marginBottom: 4,
   },
   trendingEmojiContainer: {
     width: '100%',
     aspectRatio: 4/3,
-    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    backgroundColor: colors.surface.raised,
     justifyContent: 'center',
     alignItems: 'center',
   },
   trendingEmojiContainerHorizontal: {
     width: '100%',
     aspectRatio: 4/3,
-    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    backgroundColor: colors.surface.raised,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -426,7 +399,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   trendingEmojiTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.neutral[700],
+    color: colors.text.secondary,
   },
   trendingInfo: {
     flexDirection: 'row',
@@ -436,10 +409,11 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   trendingInfoHorizontal: {
     padding: 12,
+    paddingTop: 10,
   },
   trendingSaves: {
     fontSize: 14,
-    color: colors.neutral[500],
+    color: colors.text.muted,
   },
   ratingPreview: {
     alignItems: 'flex-end',
@@ -448,16 +422,16 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   stars: {
     fontSize: 16,
-    color: isMichelin && colors.gold ? colors.gold[500] : '#FF8C42',
+    color: colors.accent.primary,
     marginBottom: 2,
   },
   ratingCount: {
     fontSize: 12,
-    color: colors.neutral[500],
+    color: colors.text.muted,
   },
   // Chef Follow Cards
   chefCard: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 16,
     marginRight: 12,
@@ -471,17 +445,17 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     borderRadius: 32,
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: isMichelin ? colors.neutral[300] : colors.cream[200],
+    borderColor: colors.border.subtle,
   },
   chefName: {
     ...typography.bodyMedium,
-    color: colors.neutral[900],
+    color: colors.text.primary,
     textAlign: 'center',
     marginBottom: 4,
   },
   chefSpecialty: {
     fontSize: 11,
-    color: colors.primary[500],
+    color: colors.accent.primary,
     textAlign: 'center',
     marginBottom: 8,
     fontWeight: '500',
@@ -504,7 +478,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   chefCardHorizontal: {
     width: 300,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     marginRight: 12,
     overflow: 'hidden',
@@ -519,41 +493,31 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  chefOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 80,
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-    justifyContent: 'flex-end',
-    padding: 12,
-  },
-  chefImageName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#FFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+  chefCardName: {
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+    marginBottom: 6,
   },
   chefInfo: {
     padding: 12,
+    paddingTop: 10,
+  },
+  chefInfoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   chefSpecialtyTag: {
     ...typography.micro,
-    color: colors.primary[500],
-    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    color: colors.accent.primary,
+    backgroundColor: colors.surface.raised,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   chefFollowers: {
     ...typography.caption,
-    color: colors.neutral[500],
+    color: colors.text.muted,
   },
   communityGrid: {
     flexDirection: 'row',
@@ -562,7 +526,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   communityCardHorizontal: {
     width: 300,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     marginRight: 12,
     overflow: 'hidden',
@@ -577,47 +541,27 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  communityOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 60,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'flex-end',
-    padding: 8,
+  communityInfoHorizontal: {
+    padding: 12,
+    paddingTop: 10,
   },
-  communityImageTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+  communityCardTitle: {
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+    marginBottom: 4,
   },
   communityEmojiContainerHorizontal: {
     width: '100%',
     aspectRatio: 4/3,
-    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    backgroundColor: colors.surface.raised,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 8,
   },
   communityEmojiHorizontal: {
     fontSize: 48,
-    marginBottom: 4,
-  },
-  communityNameHorizontal: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.neutral[700],
-    textAlign: 'center',
-    paddingHorizontal: 8,
   },
   communityTimeHorizontal: {
-    fontSize: 12,
-    color: colors.neutral[500],
-    padding: 12,
-    paddingTop: 8,
+    ...typography.caption,
+    color: colors.text.muted,
   },
 });

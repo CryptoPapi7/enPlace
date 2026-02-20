@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Modal } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Modal, Image } from "react-native";
 import { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -6,6 +6,7 @@ import { ALL_RECIPES, beefRendangRecipe, chickenCurryRecipe, freshPastaRecipe, s
 import { saveWeeklyPlan, getWeeklyPlan } from '../utils/weeklyPlan';
 import { useTheme } from '@/providers/ThemeProvider';
 import { layout } from '../theme/spacing';
+import { typography, fonts } from '@/theme';
 
 // Recipe lookup for ingredient data
 const RECIPE_DATA: Record<string, any> = {
@@ -50,8 +51,8 @@ function generateWeekDays(): DayPlan[] {
 }
 
 export default function PlanWeekScreen() {
-  const { colors, isMichelin } = useTheme();
-  const dynamicStyles = createStyles(colors, isMichelin);
+  const { colors } = useTheme();
+  const dynamicStyles = createStyles(colors);
   const { selectedRecipe: selectedRecipeParam, addRecipe, servings: servingsParam, moveRecipe } = useLocalSearchParams<{
     selectedRecipe?: string;
     addRecipe?: string;
@@ -196,15 +197,11 @@ export default function PlanWeekScreen() {
 
   return (
     <SafeAreaView style={dynamicStyles.container}>
-      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       
       {/* Header */}
       <View style={dynamicStyles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={dynamicStyles.backButton}>←</Text>
-        </TouchableOpacity>
-        <Text style={dynamicStyles.title}>🗓️ Plan This Week</Text>
-        <View style={{ width: 40 }} />
+        <Text style={dynamicStyles.title}>Plan This Week</Text>
       </View>
 
       {/* Add Recipe CTA */}
@@ -212,7 +209,6 @@ export default function PlanWeekScreen() {
         style={dynamicStyles.addButton}
         onPress={() => router.push({ pathname: '/(tabs)/library', params: { selectingForPlan: 'true' } })}
       >
-        <Text style={dynamicStyles.addButtonEmoji}>➕</Text>
         <Text style={dynamicStyles.addButtonText}>Add Recipe to Plan</Text>
       </TouchableOpacity>
 
@@ -226,28 +222,35 @@ export default function PlanWeekScreen() {
             </View>
             
             {/* Meals (up to 3) */}
-            {day.meals.map((meal, mealIndex) => (
-              <TouchableOpacity 
-                key={mealIndex} 
-                style={dynamicStyles.mealCard}
-                onLongPress={() => {
-                  setMealToMove({ dayIndex, mealIndex });
-                  setShowMoveMenu(true);
-                }}
-                delayLongPress={500}
-              >
-                <Text style={dynamicStyles.mealEmoji}>{meal.emoji}</Text>
-                <View style={dynamicStyles.mealInfo}>
-                  <Text style={dynamicStyles.mealName}>{meal.recipeName}</Text>
-                  <Text style={dynamicStyles.mealTime}>
-                    Serve at {meal.serveTime}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={() => removeMeal(dayIndex, mealIndex)}>
-                  <Text style={dynamicStyles.removeButton}>✕</Text>
+            {day.meals.map((meal, mealIndex) => {
+              const mealRecipe = ALL_RECIPES.find(r => r.id === meal.recipeId);
+              return (
+                <TouchableOpacity
+                  key={mealIndex}
+                  style={dynamicStyles.mealCard}
+                  onLongPress={() => {
+                    setMealToMove({ dayIndex, mealIndex });
+                    setShowMoveMenu(true);
+                  }}
+                  delayLongPress={500}
+                >
+                  {mealRecipe?.imageUrl ? (
+                    <Image source={{ uri: mealRecipe.imageUrl }} style={dynamicStyles.mealThumb} />
+                  ) : (
+                    <View style={dynamicStyles.mealThumbPlaceholder} />
+                  )}
+                  <View style={dynamicStyles.mealInfo}>
+                    <Text style={dynamicStyles.mealName}>{meal.recipeName}</Text>
+                    <Text style={dynamicStyles.mealTime}>
+                      Serve at {meal.serveTime}
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => removeMeal(dayIndex, mealIndex)}>
+                    <Text style={dynamicStyles.removeButton}>✕</Text>
+                  </TouchableOpacity>
                 </TouchableOpacity>
-              </TouchableOpacity>
-            ))}
+              );
+            })}
             
             {/* Add another meal slot (if < 3 meals) */}
             {day.meals.length < 3 && (
@@ -293,7 +296,6 @@ export default function PlanWeekScreen() {
                 style={dynamicStyles.dayOption}
                 onPress={() => handleDaySelected(idx)}
               >
-                <Text style={dynamicStyles.dayOptionEmoji}>📅</Text>
                 <View>
                   <Text style={dynamicStyles.dayOptionName}>{day.dayName}</Text>
                   <Text style={dynamicStyles.dayOptionDate}>{day.date}</Text>
@@ -400,7 +402,11 @@ export default function PlanWeekScreen() {
                   style={dynamicStyles.recipeOption}
                   onPress={() => addRecipeToSelectedDay(recipe)}
                 >
-                  <Text style={dynamicStyles.recipeOptionEmoji}>{recipe.emoji}</Text>
+                  {recipe.imageUrl ? (
+                    <Image source={{ uri: recipe.imageUrl }} style={dynamicStyles.recipeOptionThumb} />
+                  ) : (
+                    <View style={dynamicStyles.recipeOptionThumbPlaceholder} />
+                  )}
                   <View style={dynamicStyles.recipeOptionInfo}>
                     <Text style={dynamicStyles.recipeOptionName}>{recipe.title}</Text>
                     <Text style={dynamicStyles.recipeOptionMeta}>{recipe.timeDisplay} • {recipe.difficulty}</Text>
@@ -445,9 +451,6 @@ export default function PlanWeekScreen() {
                 onPress={() => moveMeal(mealToMove.dayIndex, mealToMove.mealIndex, idx)}
                 disabled={idx === mealToMove.dayIndex || day.meals.length >= 3}
               >
-                <Text style={dynamicStyles.moveOptionEmoji}>
-                  {idx === mealToMove.dayIndex ? '📍' : day.meals.length >= 3 ? '❌' : '📅'}
-                </Text>
                 <View style={dynamicStyles.moveOptionInfo}>
                   <Text style={[
                     dynamicStyles.moveOptionName,
@@ -514,7 +517,7 @@ export default function PlanWeekScreen() {
           }}
         >
           <Text style={dynamicStyles.shoppingButtonText}>
-            🛒 Generate Shopping List ({weekPlan.flatMap(d => d.meals).length} meals)
+            Generate Shopping List ({weekPlan.flatMap(d => d.meals).length} meals)
           </Text>
         </TouchableOpacity>
       </View>
@@ -522,32 +525,31 @@ export default function PlanWeekScreen() {
   );
 }
 
-const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
   backButton: {
     fontSize: 24,
-    color: colors.neutral[900],
+    color: colors.text.secondary,
     padding: 8,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: isMichelin ? colors.neutral[700] : colors.neutral[900],
+    ...typography.h2,
+    color: colors.text.primary,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.accent.success,
     marginHorizontal: 20,
     marginBottom: 16,
     padding: 16,
@@ -558,16 +560,15 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginRight: 12,
   },
   addButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: isMichelin ? colors.background?.secondary : '#FFF',
+    ...typography.bodyMedium,
+    color: colors.text.inverse,
   },
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
   },
   dayCard: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -578,61 +579,68 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 12,
   },
   dayName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: isMichelin ? colors.neutral[700] : colors.neutral[900],
+    ...typography.h3,
+    color: colors.text.primary,
   },
   dayDate: {
-    fontSize: 14,
-    color: '#87CEEB',
+    ...typography.caption,
+    color: colors.text.muted,
   },
   emptySlot: {
-    backgroundColor: isMichelin ? colors.background?.tertiary : '#F5F5F5',
+    backgroundColor: colors.surface.raised,
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
     borderStyle: 'dashed',
     borderWidth: 2,
-    borderColor: isMichelin ? colors.neutral[700] : '#DDD',
+    borderColor: colors.border.subtle,
   },
   emptySlotText: {
-    fontSize: 14,
-    color: isMichelin ? colors.neutral[500] : colors.neutral[500],
+    ...typography.caption,
+    color: colors.text.muted,
   },
   mealCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.secondary,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#87CEEB40',
+    borderColor: colors.border.subtle,
   },
-  mealEmoji: {
-    fontSize: 28,
+  mealThumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
     marginRight: 12,
+  },
+  mealThumbPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    marginRight: 12,
+    backgroundColor: colors.surface.raised,
   },
   mealInfo: {
     flex: 1,
   },
   mealName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: isMichelin ? colors.neutral[700] : colors.neutral[900],
+    ...typography.bodyMedium,
+    color: colors.text.primary,
   },
   mealTime: {
     fontSize: 12,
-    color: '#87CEEB',
+    color: colors.neutral[500],
     marginTop: 2,
   },
   removeButton: {
     fontSize: 18,
-    color: '#FF6B6B',
+    color: colors.accent.error,
     padding: 8,
   },
   moveMenuContent: {
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -640,8 +648,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 20,
   },
   moveMenuTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    ...typography.h3,
     color: colors.neutral[900],
     marginBottom: 16,
     textAlign: 'center',
@@ -649,7 +656,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   moveOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -665,45 +672,42 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     flex: 1,
   },
   moveOptionName: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyMedium,
     color: colors.neutral[900],
   },
   moveOptionNameDisabled: {
-    color: isMichelin ? colors.neutral[500] : colors.neutral[500],
+    color: colors.neutral[500],
   },
   moveOptionDate: {
     fontSize: 13,
-    color: '#87CEEB',
+    color: colors.neutral[500],
   },
   moveOptionFull: {
-    fontSize: 12,
-    color: '#FF6B6B',
-    fontWeight: '600',
+    ...typography.caption,
+    color: colors.error,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: colors.surface.inverse,
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     maxHeight: '80%',
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.neutral[900],
+    ...typography.h2,
+    color: colors.text.primary,
     marginBottom: 16,
     textAlign: 'center',
   },
   dayOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
@@ -713,66 +717,71 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginRight: 12,
   },
   dayOptionName: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyMedium,
     color: colors.neutral[900],
   },
   dayOptionDate: {
     fontSize: 13,
-    color: '#87CEEB',
+    color: colors.neutral[500],
   },
   recipeOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
-    padding: 16,
+    backgroundColor: colors.surface.secondary,
+    padding: 12,
     borderRadius: 12,
     marginBottom: 8,
   },
-  recipeOptionEmoji: {
-    fontSize: 32,
+  recipeOptionThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
     marginRight: 12,
+  },
+  recipeOptionThumbPlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    marginRight: 12,
+    backgroundColor: colors.surface.raised,
   },
   recipeOptionInfo: {
     flex: 1,
   },
   recipeOptionName: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyMedium,
     color: colors.neutral[900],
   },
   recipeOptionMeta: {
     fontSize: 13,
-    color: '#87CEEB',
+    color: colors.neutral[500],
   },
   cancelButton: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.neutral[100],
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 8,
   },
   cancelText: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyMedium,
     color: colors.neutral[700],
   },
   footer: {
     padding: 20,
     borderTopWidth: 1,
     borderTopColor: colors.neutral[200],
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
   },
   shoppingButton: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.accent.primary,
     padding: 16,
     borderRadius: 16,
     alignItems: 'center',
   },
   shoppingButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: isMichelin ? colors.background?.secondary : '#FFF',
+    ...typography.bodyMedium,
+    color: colors.text.inverse,
   },
   // Servings picker styles
   servingsSubtitle: {
@@ -793,29 +802,27 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.neutral[900],
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   servingsButtonText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: isMichelin ? colors.background?.secondary : '#FFF',
+    ...typography.h2,
+    color: colors.text.inverse,
   },
   servingsValue: {
-    fontSize: 48,
-    fontWeight: '700',
+    ...typography.display,
     color: colors.neutral[900],
     minWidth: 60,
     textAlign: 'center',
   },
   confirmButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
     paddingVertical: 16,
     paddingHorizontal: layout.screenGutter,
     borderRadius: 16,
@@ -826,6 +833,6 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   confirmButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: isMichelin ? colors.background?.secondary : '#FFF',
+    color: colors.text.inverse,
   },
 });

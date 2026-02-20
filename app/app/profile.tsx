@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { getAvatar, saveAvatar, clearAvatar } from '@/utils/avatar';
 import { useAuth } from '@/providers/AuthProvider';
 import { useTheme } from '@/providers/ThemeProvider';
+import { typography } from '@/theme';
 import { supabase } from '@/lib/supabase';
 import { loadSettings, saveSettings, UnitSystem } from '@/utils/settings';
 
@@ -22,7 +23,8 @@ const MEASUREMENT_OPTIONS = [
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
-  const { colors, isMichelin, themeMode, setThemeMode } = useTheme();
+  const { colors, themeMode, setThemeMode } = useTheme();
+  const isMichelin = false;
   const dynamicStyles = createStyles(colors, isMichelin);
 
   const [settings, setSettings] = useState({
@@ -64,11 +66,11 @@ export default function ProfileScreen() {
         'Your preferences are saved locally. Sign in to sync across all your devices.',
         [
           { text: 'Got it', style: 'cancel' },
-          { text: 'Sign In', onPress: () => router.push('/auth') }
-        ]
+          { text: 'Sign In', onPress: () => router.push('/auth') },
+      ]
       );
     }
-    
+
     setSettings(prev => ({ ...prev, defaultServings: newServings }));
     await saveSettings({ 
       unitSystem: settings.unitSystem,
@@ -84,11 +86,11 @@ export default function ProfileScreen() {
         'Your preferences are saved locally. Sign in to sync across all your devices.',
         [
           { text: 'Got it', style: 'cancel' },
-          { text: 'Sign In', onPress: () => router.push('/auth') }
-        ]
+          { text: 'Sign In', onPress: () => router.push('/auth') },
+      ]
       );
     }
-    
+
     setSettings(prev => ({ ...prev, unitSystem }));
     await saveSettings({ unitSystem });
   }
@@ -124,7 +126,7 @@ export default function ProfileScreen() {
       Alert.alert('Error', 'Failed to save nickname');
       return;
     }
-    
+
     setDisplayName(tempName.trim());
     setIsEditingName(false);
   }
@@ -170,7 +172,7 @@ export default function ProfileScreen() {
       <StatusBar style={isMichelin ? 'light' : 'dark'} />
       <ScrollView style={dynamicStyles.scrollView}>
         {/* Header */}
-        <View style={dynamicStyles.header}>
+      <View style={dynamicStyles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Text style={dynamicStyles.backText}>← Back</Text>
           </TouchableOpacity>
@@ -178,14 +180,15 @@ export default function ProfileScreen() {
         </View>
 
         {/* Avatar & Auth Section */}
-        <View style={dynamicStyles.avatarSection}>
+      <View style={dynamicStyles.avatarSection}>
           <TouchableOpacity style={dynamicStyles.avatarLarge} onPress={pickImage}>
             {avatarUri ? (
               <Image source={{ uri: avatarUri }} style={dynamicStyles.avatarImage} />
             ) : (
               <Text style={dynamicStyles.avatarEmoji}>👤</Text>
             )}
-          </TouchableOpacity>
+
+        </TouchableOpacity>
           <Text style={dynamicStyles.avatarHint}>Tap to change photo</Text>
 
           {avatarUri && (
@@ -218,12 +221,13 @@ export default function ProfileScreen() {
               ) : (
                 <TouchableOpacity style={dynamicStyles.nicknameDisplay} onPress={startEditingName}>
                   <Text style={dynamicStyles.nicknameText}>
-                    {displayName || 'Tap to set chef name'}
-                  </Text>
+                    {displayName || 'Tap to set chef name'},
+                </Text>
                   <Text style={dynamicStyles.nicknameEditIcon}>✎</Text>
                 </TouchableOpacity>
               )}
-            </View>
+
+          </View>
           )}
 
           {user ? (
@@ -241,17 +245,17 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
           )}
-        </View>
+      </View>
 
         {/* Default Measurements */}
-        <View style={dynamicStyles.section}>
+      <View style={dynamicStyles.section}>
           <Text style={dynamicStyles.sectionTitle}>⚖️ Default Measurements</Text>
           <Text style={dynamicStyles.sectionSub}>Applies to all recipes</Text>
 
           {MEASUREMENT_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
-              style={[
+            style={[
                 dynamicStyles.optionRow,
                 settings.unitSystem === option.id && dynamicStyles.optionRowActive
               ]}
@@ -263,18 +267,20 @@ export default function ProfileScreen() {
                   settings.unitSystem === option.id && dynamicStyles.optionLabelActive
                 ]}>
                   {option.label}
-                </Text>
+              </Text>
                 <Text style={dynamicStyles.optionSuffix}>{option.suffix}</Text>
               </View>
               {settings.unitSystem === option.id && (
                 <Text style={dynamicStyles.checkmark}>✓</Text>
               )}
-            </TouchableOpacity>
+
+          </TouchableOpacity>
           ))}
-        </View>
+
+      </View>
 
         {/* Default Servings */}
-        <View style={dynamicStyles.section}>
+      <View style={dynamicStyles.section}>
           <Text style={dynamicStyles.sectionTitle}>👥 Default Servings</Text>
           <Text style={dynamicStyles.sectionSub}>Starting amount for all recipes</Text>
           
@@ -298,7 +304,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Dietary Preferences */}
-        <View style={dynamicStyles.section}>
+      <View style={dynamicStyles.section}>
           <Text style={dynamicStyles.sectionTitle}>🥗 Dietary Preferences</Text>
           <Text style={dynamicStyles.sectionSub}>Filter recipes automatically</Text>
 
@@ -306,70 +312,78 @@ export default function ProfileScreen() {
             <View key={key} style={dynamicStyles.toggleRow}>
               <Text style={dynamicStyles.toggleLabel}>
                 {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-              </Text>
+
+            </Text>
               <Switch
                 value={value}
                 onValueChange={(v) => setSettings(s => ({
                   ...s,
-                  dietary: { ...s.dietary, [key]: v }
+                  dietary: { ...s.dietary, [key]: v },
                 }))}
                 trackColor={{ false: colors.neutral[300], true: colors.primary[500] }}
                 thumbColor="#FFF"
               />
             </View>
           ))}
-        </View>
+
+      </View>
 
         {/* Notifications */}
-        <View style={dynamicStyles.section}>
+      <View style={dynamicStyles.section}>
           <Text style={dynamicStyles.sectionTitle}>🔔 Notifications</Text>
 
           {Object.entries(settings.notifications).map(([key, value]) => (
             <View key={key} style={dynamicStyles.toggleRow}>
               <Text style={dynamicStyles.toggleLabel}>
                 {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-              </Text>
+
+            </Text>
               <Switch
                 value={value}
-                onValueChange={(v) => setSettings(s => ({
+              onValueChange={(v) => setSettings(s => ({
                   ...s,
-                  notifications: { ...s.notifications, [key]: v }
-                }))}
-                trackColor={{ false: colors.neutral[300], true: colors.primary[500] }}
-                thumbColor="#FFF"
+                  notifications: { ...s.notifications, [key]: v },
+              }))}
+
+              trackColor={{ false: colors.neutral[300], true: colors.primary[500] }}
+              thumbColor="#FFF"
               />
             </View>
           ))}
-        </View>
+
+      </View>
 
         {/* Theme Selection */}
-        <View style={dynamicStyles.section}>
+      <View style={dynamicStyles.section}>
           <Text style={dynamicStyles.sectionTitle}>✨ App Theme</Text>
           <Text style={dynamicStyles.sectionSub}>Choose your preferred visual style</Text>
           {THEME_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
-              style={[
+            style={[
                 dynamicStyles.optionRow,
                 themeMode === option.id && dynamicStyles.optionRowActive
               ]}
-              onPress={() => setThemeMode(option.id)}
-            >
+            onPress={() => setThemeMode(option.id)}
+
+          >
               <View>
                 <Text style={[
                   dynamicStyles.optionLabel,
                   themeMode === option.id && dynamicStyles.optionLabelActive
                 ]}>
                   {option.label}
-                </Text>
+              </Text>
                 <Text style={dynamicStyles.optionSuffix}>{option.description}</Text>
               </View>
               {themeMode === option.id && (
                 <Text style={dynamicStyles.checkmark}>✓</Text>
               )}
-            </TouchableOpacity>
+
+          </TouchableOpacity>
           ))}
-        </View>
+
+      </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -380,7 +394,7 @@ export default function ProfileScreen() {
 const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
   },
   scrollView: {
     flex: 1,
@@ -392,19 +406,18 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     paddingTop: 8,
   },
   backText: {
-    fontSize: 18,
+    ...typography.bodyMedium,
     color: colors.primary[500],
   },
   title: {
-    fontSize: 22,
-    fontWeight: '600',
+    ...typography.h2,
     color: isMichelin ? colors.white : colors.neutral[900],
     marginLeft: 12,
   },
   avatarSection: {
     alignItems: 'center',
     padding: 24,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.primary,
     marginHorizontal: 16,
     borderRadius: 16,
     marginBottom: 24,
@@ -456,12 +469,11 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    backgroundColor: colors.surface.raised,
     borderRadius: 12,
   },
   nicknameText: {
-    fontSize: 20,
-    fontWeight: '600',
+    ...typography.h3,
     color: isMichelin ? colors.white : colors.neutral[900],
   },
   nicknameEditIcon: {
@@ -479,7 +491,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     flex: 1,
     fontSize: 18,
     padding: 12,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.primary,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: colors.primary[500],
@@ -521,8 +533,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 8,
   },
   guestText: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.h3,
     color: isMichelin ? colors.white : colors.neutral[900],
     marginBottom: 8,
   },
@@ -547,20 +558,19 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     fontSize: 16,
   },
   section: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.primary,
     marginHorizontal: 16,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.h3,
     color: isMichelin ? colors.white : colors.neutral[900],
     marginBottom: 4,
   },
   sectionSub: {
-    fontSize: 14,
+    ...typography.caption,
     color: colors.neutral[700],
     marginBottom: 16,
   },
@@ -569,24 +579,22 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
     borderRadius: 12,
     marginBottom: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
   },
   optionRowActive: {
     borderColor: colors.primary[500],
-    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    backgroundColor: colors.surface.raised,
   },
   optionLabel: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.bodyMedium,
     color: colors.neutral[900],
   },
   optionLabelActive: {
     color: isMichelin ? colors.gold?.[400] : colors.primary[600],
-    fontWeight: '600',
   },
   optionSuffix: {
     fontSize: 12,
@@ -594,9 +602,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginTop: 2,
   },
   checkmark: {
-    fontSize: 18,
+    ...typography.bodyMedium,
     color: colors.primary[500],
-    fontWeight: '600',
   },
   servingsRow: {
     flexDirection: 'row',
@@ -606,15 +613,15 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 12,
-    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
   },
   servingOptionActive: {
     borderColor: colors.primary[500],
-    backgroundColor: isMichelin ? colors.background?.tertiary : colors.cream[100],
+    backgroundColor: colors.surface.raised,
   },
   servingText: {
     fontSize: 20,
@@ -640,18 +647,16 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     justifyContent: 'center',
   },
   servingsButtonText: {
-    fontSize: 24,
-    fontWeight: '600',
+    ...typography.h3,
     color: '#FFF',
   },
-  servingsValue: {
-    fontSize: 32,
-    fontWeight: '700',
+servingsValue: {
+    ...typography.display,
     color: colors.neutral[900],
     minWidth: 48,
     textAlign: 'center',
   },
-  toggleRow: {
+toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -660,7 +665,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     borderBottomColor: isMichelin ? colors.neutral[700] : colors.cream[100],
   },
   toggleLabel: {
-    fontSize: 16,
+    ...typography.body,
     color: colors.neutral[900],
-  },
+  }
 });

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
@@ -6,7 +6,9 @@ import { router } from 'expo-router';
 import { getActiveCooking, ActiveCooking, clearActiveCooking } from '../utils/activeCooking';
 import { getWeeklyPlan } from '../utils/weeklyPlan';
 import { getFavorites, initFavorites } from '../utils/favorites';
+import { ALL_RECIPES } from '../data/recipes';
 import { useTheme } from '@/providers/ThemeProvider';
+import { typography } from '@/theme';
 
 // Recipe validation map (ids that exist in the app)
 const VALID_RECIPE_IDS = [
@@ -25,9 +27,9 @@ const VALID_RECIPE_IDS = [
 ];
 
 // Smart empty state component for when not actively cooking
-function NoActiveCookingCard({ colors, isMichelin }: { colors: any; isMichelin: boolean }) {
+function NoActiveCookingCard({ colors }: { colors: any }) {
   const [plannedMeal, setPlannedMeal] = useState<{recipeId: string; recipeName: string; emoji: string; serveTime?: string} | null>(null);
-  const dynamicStyles = createNoCookingStyles(colors, isMichelin);
+  const dynamicStyles = createNoCookingStyles(colors);
   
   // Re-check plan whenever screen comes into focus
   useFocusEffect(
@@ -66,15 +68,19 @@ function NoActiveCookingCard({ colors, isMichelin }: { colors: any; isMichelin: 
   };
 
   if (plannedMeal) {
+    const plannedRecipe = ALL_RECIPES.find(r => r.id === plannedMeal.recipeId);
     return (
       <TouchableOpacity style={dynamicStyles.readyCard} onPress={startCooking}>
         <View style={dynamicStyles.readyHeader}>
-          <Text style={dynamicStyles.readyEmoji}>🍳</Text>
           <Text style={dynamicStyles.readyLabel}>READY TO COOK</Text>
         </View>
         <Text style={dynamicStyles.readyTitle}>Ready to start cooking?</Text>
         <View style={dynamicStyles.recipePreview}>
-          <Text style={dynamicStyles.readyRecipeEmoji}>{plannedMeal.emoji}</Text>
+          {plannedRecipe?.imageUrl ? (
+            <Image source={{ uri: plannedRecipe.imageUrl }} style={dynamicStyles.readyThumb} />
+          ) : (
+            <View style={dynamicStyles.readyThumb} />
+          )}
           <Text style={dynamicStyles.readyRecipeName}>{plannedMeal.recipeName}</Text>
         </View>
         {plannedMeal.serveTime && (
@@ -89,7 +95,6 @@ function NoActiveCookingCard({ colors, isMichelin }: { colors: any; isMichelin: 
 
   return (
     <View style={dynamicStyles.startCard}>
-      <Text style={dynamicStyles.startEmoji}>👨‍🍳</Text>
       <Text style={dynamicStyles.startTitle}>Not cooking today?</Text>
       <Text style={dynamicStyles.startSub}>Pick a recipe or plan your week</Text>
       <View style={dynamicStyles.emptyActions}>
@@ -111,7 +116,7 @@ function NoActiveCookingCard({ colors, isMichelin }: { colors: any; isMichelin: 
 }
 
 export default function CookLauncherScreen() {
-  const { colors, isMichelin } = useTheme();
+  const { colors } = useTheme();
   const [activeCooking, setActiveCooking] = useState<ActiveCooking | null>(null);
   const [favorites, setFavorites] = useState<any[]>([]);
 
@@ -148,11 +153,11 @@ export default function CookLauncherScreen() {
     setActiveCooking(null);
   };
 
-  const dynamicStyles = createStyles(colors, isMichelin);
+  const dynamicStyles = createStyles(colors);
 
   return (
     <SafeAreaView style={dynamicStyles.container}>
-      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       <ScrollView style={dynamicStyles.scrollView}>
         <Text style={dynamicStyles.title}>My Kitchen</Text>
         
@@ -161,7 +166,6 @@ export default function CookLauncherScreen() {
           <View style={dynamicStyles.activeCard}>
             <TouchableOpacity onPress={resume} style={dynamicStyles.activeCardContent}>
               <View style={dynamicStyles.activeHeader}>
-                <Text style={dynamicStyles.fireEmoji}>🔥</Text>
                 <Text style={dynamicStyles.cookingNow}>COOKING NOW</Text>
               </View>
               <Text style={dynamicStyles.recipeName}>{activeCooking.recipeName}</Text>
@@ -177,24 +181,31 @@ export default function CookLauncherScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          <NoActiveCookingCard colors={colors} isMichelin={isMichelin} />
+          <NoActiveCookingCard colors={colors} />
         )}
 
         {/* My Favorites */}
         <View style={dynamicStyles.section}>
-          <Text style={dynamicStyles.sectionTitle}>❤️ My Favorites</Text>
+          <Text style={dynamicStyles.sectionTitle}>My Favorites</Text>
           {favorites.length > 0 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {favorites.map((fav) => (
-                <TouchableOpacity 
-                  key={fav.id}
-                  style={dynamicStyles.favCard}
-                  onPress={() => router.push(`/recipe/${fav.id}`)}
-                >
-                  <Text style={dynamicStyles.favEmoji}>{fav.emoji}</Text>
-                  <Text style={dynamicStyles.favName} numberOfLines={2}>{fav.title}</Text>
-                </TouchableOpacity>
-              ))}
+              {favorites.map((fav) => {
+                const favRecipe = ALL_RECIPES.find(r => r.id === fav.id);
+                return (
+                  <TouchableOpacity
+                    key={fav.id}
+                    style={dynamicStyles.favCard}
+                    onPress={() => router.push(`/recipe/${fav.id}`)}
+                  >
+                    {favRecipe?.imageUrl ? (
+                      <Image source={{ uri: favRecipe.imageUrl }} style={dynamicStyles.favImage} />
+                    ) : (
+                      <View style={dynamicStyles.favImage} />
+                    )}
+                    <Text style={dynamicStyles.favName} numberOfLines={2}>{fav.title}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           ) : (
             <TouchableOpacity 
@@ -209,35 +220,35 @@ export default function CookLauncherScreen() {
 
         {/* Quick Access */}
         <View style={dynamicStyles.section}>
-          <Text style={dynamicStyles.sectionTitle}>⚡ Quick Access</Text>
-          <View style={dynamicStyles.quickGrid2x2}>
-            <TouchableOpacity 
+          <Text style={dynamicStyles.sectionTitle}>Quick Access</Text>
+          <View style={dynamicStyles.quickList}>
+            <TouchableOpacity
               style={dynamicStyles.quickBtn}
               onPress={() => router.push('/my-library')}
             >
-              <Text style={dynamicStyles.quickEmoji}>📚</Text>
-              <Text style={dynamicStyles.quickLabel} numberOfLines={2} ellipsizeMode="tail">My Library</Text>
+              <Text style={dynamicStyles.quickLabel}>My Library</Text>
+              <Text style={dynamicStyles.quickArrow}>→</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={dynamicStyles.quickBtn}
               onPress={() => router.push('/(tabs)/plan')}
             >
-              <Text style={dynamicStyles.quickEmoji}>📅</Text>
-              <Text style={dynamicStyles.quickLabel} numberOfLines={2} ellipsizeMode="tail">This Week</Text>
+              <Text style={dynamicStyles.quickLabel}>This Week</Text>
+              <Text style={dynamicStyles.quickArrow}>→</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={dynamicStyles.quickBtn}
               onPress={() => router.push('/create-recipe')}
             >
-              <Text style={dynamicStyles.quickEmoji}>✍️</Text>
-              <Text style={dynamicStyles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Create Recipe</Text>
+              <Text style={dynamicStyles.quickLabel}>Create Recipe</Text>
+              <Text style={dynamicStyles.quickArrow}>→</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={dynamicStyles.quickBtn}
               onPress={() => router.push('/import-recipe')}
             >
-              <Text style={dynamicStyles.quickEmoji}>📥</Text>
-              <Text style={dynamicStyles.quickLabel} numberOfLines={2} ellipsizeMode="tail">Import Recipe</Text>
+              <Text style={dynamicStyles.quickLabel}>Import Recipe</Text>
+              <Text style={dynamicStyles.quickArrow}>→</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -248,29 +259,28 @@ export default function CookLauncherScreen() {
   );
 }
 
-const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
   },
   scrollView: {
     flex: 1,
     padding: 24,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.neutral[900],
+    ...typography.h1,
+    color: colors.text.primary,
     marginBottom: 24,
   },
   
   // Active Cooking
   activeCard: {
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
     borderRadius: 20,
     padding: 24,
     marginBottom: 32,
-    shadowColor: colors.primary[500],
+    shadowColor: colors.accent.primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -289,35 +299,31 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginRight: 8,
   },
   cookingNow: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FFF',
-    letterSpacing: 1,
+    ...typography.label,
+    color: colors.text.inverse,
     opacity: 0.9,
   },
   recipeName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#FFF',
+    ...typography.h3,
+    color: colors.text.inverse,
     marginBottom: 4,
   },
   stepText: {
-    fontSize: 14,
-    color: '#FFF',
+    ...typography.caption,
+    color: colors.text.inverse,
     opacity: 0.9,
     marginBottom: 16,
   },
   resumeBtn: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface.secondary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
     alignSelf: 'flex-start',
   },
   resumeText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.primary[500],
+    ...typography.bodyMedium,
+    color: colors.accent.primary,
   },
   clearBtn: {
     marginTop: 12,
@@ -326,8 +332,8 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     paddingHorizontal: 12,
   },
   clearText: {
-    fontSize: 12,
-    color: '#FFF',
+    ...typography.caption,
+    color: colors.text.inverse,
     opacity: 0.8,
   },
   
@@ -336,94 +342,85 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.neutral[900],
+    ...typography.h3,
+    color: colors.text.primary,
     marginBottom: 16,
   },
   
   // Favorites
   favCard: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: colors.surface.secondary,
+    borderRadius: 12,
     marginRight: 12,
-    width: 120,
-    alignItems: 'center',
-    shadowColor: '#000',
+    width: 140,
+    overflow: 'hidden',
+    shadowColor: colors.border.subtle,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 2,
   },
-  favEmoji: {
-    fontSize: 40,
-    marginBottom: 8,
+  favImage: {
+    width: '100%',
+    aspectRatio: 4/3,
+    backgroundColor: colors.surface.raised,
   },
   favName: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.neutral[900],
-    textAlign: 'center',
+    ...typography.caption,
+    color: colors.text.primary,
+    padding: 10,
   },
   emptyFavs: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.neutral[900],
+    ...typography.bodyMedium,
+    color: colors.text.primary,
     marginBottom: 4,
   },
   emptySub: {
-    fontSize: 14,
-    color: colors.neutral[500],
+    ...typography.caption,
+    color: colors.text.muted,
   },
   
   // Quick Access
-  quickGrid2x2: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+  quickList: {
+    gap: 8,
   },
   quickBtn: {
-    width: '47%',
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 100,
+    justifyContent: 'space-between',
     borderWidth: 2,
-    borderColor: isMichelin ? colors.neutral[300] : '#E8E8E8',
-    marginBottom: 12,
-  },
-  quickEmoji: {
-    fontSize: 32,
-    marginBottom: 8,
+    borderColor: colors.border.default,
   },
   quickLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.neutral[900],
-    textAlign: 'center',
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+  },
+  quickArrow: {
+    fontSize: 16,
+    color: colors.text.muted,
   },
 });
 
-const createNoCookingStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
+const createNoCookingStyles = (colors: any) => StyleSheet.create({
   // Start Card (no active cooking, no plan)
   startCard: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 20,
     padding: 32,
     alignItems: 'center',
     marginBottom: 32,
     borderWidth: 2,
-    borderColor: isMichelin ? colors.neutral[300] : '#E8E8E8',
+    borderColor: colors.border.subtle,
     borderStyle: 'dashed',
   },
   startEmoji: {
@@ -433,15 +430,15 @@ const createNoCookingStyles = (colors: any, isMichelin: boolean) => StyleSheet.c
   startTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: colors.neutral[900],
+    color: colors.text.primary,
     marginBottom: 8,
   },
   startSub: {
     fontSize: 14,
-    color: colors.neutral[500],
+    color: colors.text.muted,
   },
   smallBtn: {
-    backgroundColor: isMichelin ? colors.background?.tertiary : '#F5F5F5',
+    backgroundColor: colors.surface.raised,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -450,7 +447,7 @@ const createNoCookingStyles = (colors: any, isMichelin: boolean) => StyleSheet.c
   smallBtnText: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.neutral[900],
+    color: colors.text.primary,
   },
   emptyActions: {
     flexDirection: 'row',
@@ -481,14 +478,14 @@ const createNoCookingStyles = (colors: any, isMichelin: boolean) => StyleSheet.c
   readyLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFF',
+    color: colors.surface.secondary,
     letterSpacing: 1,
     opacity: 0.9,
   },
   readyTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.surface.secondary,
     marginBottom: 16,
   },
   recipePreview: {
@@ -498,26 +495,29 @@ const createNoCookingStyles = (colors: any, isMichelin: boolean) => StyleSheet.c
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
+    gap: 12,
   },
-  readyRecipeEmoji: {
-    fontSize: 28,
-    marginRight: 12,
+  readyThumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   readyRecipeName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFF',
+    color: colors.surface.secondary,
     flex: 1,
   },
   readyTime: {
     fontSize: 13,
-    color: '#FFF',
+    color: colors.surface.secondary,
     opacity: 0.8,
     marginBottom: 16,
     marginLeft: 4,
   },
   startCookingBtn: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface.secondary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,

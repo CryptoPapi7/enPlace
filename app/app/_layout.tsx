@@ -41,27 +41,18 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
-  // Temporarily disable custom fonts to test
-  // const [fontsLoaded, fontError] = useFonts({
-  //   'Inter_18pt-Regular': require('../assets/fonts/Inter_18pt-Regular.ttf'),
-  //   'Inter_18pt-Medium': require('../assets/fonts/Inter_18pt-Medium.ttf'),
-  //   'Inter_18pt-SemiBold': require('../assets/fonts/Inter_18pt-SemiBold.ttf'),
-  //   'PlayfairDisplay-Regular': require('../assets/fonts/PlayfairDisplay-Regular.ttf'),
-  //   'PlayfairDisplay-Bold': require('../assets/fonts/PlayfairDisplay-Bold.ttf'),
-  //   'JetBrainsMono-Regular': require('../assets/fonts/JetBrainsMono-Regular.ttf'),
-  // });
+  const [fontsLoaded, fontError] = useFonts({
+    'Inter_18pt-Regular': require('../assets/fonts/Inter_18pt-Regular.ttf'),
+    'Inter_18pt-Medium': require('../assets/fonts/Inter_18pt-Medium.ttf'),
+    'Inter_18pt-SemiBold': require('../assets/fonts/Inter_18pt-SemiBold.ttf'),
+    'PlayfairDisplay-Regular': require('../assets/fonts/PlayfairDisplay-Regular.ttf'),
+    'PlayfairDisplay-Bold': require('../assets/fonts/PlayfairDisplay-Bold.ttf'),
+    'JetBrainsMono-Regular': require('../assets/fonts/JetBrainsMono-Regular.ttf'),
+  });
 
-  // if (fontError) {
-  //   console.error('Font loading error:', fontError);
-  //   // Fallback to system fonts
-  //   return (
-  //     <ThemeProvider>
-  //       <ThemedNavigation />
-  //     </ThemeProvider>
-  //   );
-  // }
-
-  // if (!fontsLoaded) return null;
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
 
   SplashScreen.hideAsync();
 

@@ -1,13 +1,12 @@
 import { View, StyleSheet, SafeAreaView, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
 import { Audio } from 'expo-av';
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Speech from 'expo-speech';
-import LottieView from 'lottie-react-native';
 import { Step } from "../data/recipe";
 import { StatusBar } from 'expo-status-bar';
 import { setActiveCooking, updateCurrentStep, clearActiveCooking } from '../utils/activeCooking';
-import { spacing, layout, typography, shadows } from '../theme';
+import { spacing, layout, typography, shadows, fonts } from '../theme';
 import { useTheme } from '@/providers/ThemeProvider';
 
 // Configure audio session for iOS speech
@@ -59,9 +58,6 @@ const RECIPE_MAP: Record<string, any> = {
   'tonkotsu-ramen': tonkotsuRamenRecipe,
   'birria-tacos': birriaTacosRecipe,
 };
-
-// Steps that benefit from stirring animation
-const STIRRING_STEPS = ['curry-2', 'curry-4', 'curry-5'];
 
 // ✅ Scale ingredient amount based on servings ratio
 function scaleIngredientAmount(amount: string | number, ratio: number): string {
@@ -144,8 +140,8 @@ function buildSteps(recipe: any, effectiveServings: number): Step[] {
 }
 
 export default function CookScreen() {
-  const { colors, isMichelin } = useTheme();
-  const dynamicStyles = createStyles(colors, isMichelin);
+  const { colors } = useTheme();
+  const dynamicStyles = createStyles(colors);
   const { recipeId, servings, resumeStep } = useLocalSearchParams<{ recipeId?: string; servings?: string; resumeStep?: string }>();
   const recipe = recipeId ? RECIPE_MAP[recipeId] : null;
 
@@ -157,15 +153,15 @@ export default function CookScreen() {
       <SafeAreaView style={dynamicStyles.container}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <Text style={{ fontSize: 48, marginBottom: 16 }}>🍳</Text>
-          <Text style={{ fontSize: 20, fontWeight: '700', color: '#5D4E37', marginBottom: 8 }}>Recipe not found</Text>
-          <Text style={{ fontSize: 14, color: '#8B7355', textAlign: 'center', marginBottom: 24 }}>
+          <Text style={[typography.h2, { color: colors.neutral[700], marginBottom: 8 }]}>Recipe not found</Text>
+          <Text style={{ fontSize: 14, color: colors.neutral[500], textAlign: 'center', marginBottom: 24 }}>
             Please go back and select a recipe.
           </Text>
-          <TouchableOpacity 
-            style={{ backgroundColor: '#FF8C42', paddingHorizontal: layout.screenGutter, paddingVertical: 12, borderRadius: 12 }}
+          <TouchableOpacity
+            style={{ backgroundColor: colors.primary[500], paddingHorizontal: layout.screenGutter, paddingVertical: 12, borderRadius: 12 }}
             onPress={() => router.back()}
           >
-            <Text style={{ color: '#FFF', fontWeight: '700' }}>Go Back →</Text>
+            <Text style={[typography.bodyMedium, { color: colors.white }]}>Go Back →</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -176,17 +172,13 @@ export default function CookScreen() {
   const allSteps = useMemo(() => buildSteps(recipe, effectiveServings), [recipeId, effectiveServings]);
 
   const [stepIndex, setStepIndex] = useState(resumeStep ? Number(resumeStep) : 0);
-  const [isStirring, setIsStirring] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const animationRef = useRef<LottieView>(null);
   const step = allSteps[stepIndex];
 
   // Setup audio on mount
   useEffect(() => {
     setupAudio();
   }, []);
-
-  const shouldShowStirring = STIRRING_STEPS.includes(step.id);
 
   // Configure audio session for speech (iOS needs this)
   useEffect(() => {
@@ -329,7 +321,7 @@ export default function CookScreen() {
 
   return (
     <SafeAreaView style={dynamicStyles.container}>
-      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
 
       {/* Header with Exit and Voice */}
       <View style={dynamicStyles.header}>
@@ -352,12 +344,12 @@ export default function CookScreen() {
         </View>
         
         <View style={[dynamicStyles.voiceGlow, isSpeaking && dynamicStyles.voiceGlowActive]}>
-          <TouchableOpacity 
-            style={[dynamicStyles.voiceButton, isSpeaking && dynamicStyles.voiceButtonActive]} 
+          <TouchableOpacity
+            style={[dynamicStyles.voiceButton, isSpeaking && dynamicStyles.voiceButtonActive]}
             onPress={speakStep}
           >
             <Text style={dynamicStyles.voiceButtonText}>
-              {isSpeaking ? '⏹' : '🔊'}
+              {isSpeaking ? '⏹' : '🗣️'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -365,17 +357,53 @@ export default function CookScreen() {
 
       {/* Main Content */}
       <ScrollView style={dynamicStyles.scrollView} contentContainerStyle={dynamicStyles.scrollContent}>
-        <Text style={dynamicStyles.stepTitle}>{step.title}</Text>
+        <Text style={[dynamicStyles.stepTitle, { fontSize: 22 }]}>{step.title}</Text>
         
-        {step.instructions.map((instruction, idx) => (
-          <View key={idx} style={dynamicStyles.prepRow}>
-            <Text style={dynamicStyles.prepText}>{instruction}</Text>
-          </View>
-        ))}
+        {step.instructions.map((instruction, idx) => {
+          // Align ingredient amounts + items (prep-style lines)
+          const line = instruction.startsWith('• ') ? instruction.slice(2) : instruction;
+          // Parse amount with optional unit (match RecipeScreen behavior)
+          const UNIT_WORDS = ['kg','g','lb','lbs','oz','ml','l','tsp','tbsp','cup','cups'];
+          const parts = line.split(/\s+/);
+          let amount = '';
+          let item = line;
+
+          if (/^\d+[\d./]*$/.test(parts[0])) {
+            if (parts[1] && UNIT_WORDS.includes(parts[1].toLowerCase())) {
+              amount = `${parts[0]} ${parts[1]}`;
+              item = parts.slice(2).join(' ');
+            } else {
+              amount = parts[0];
+              item = parts.slice(1).join(' ');
+            }
+          }
+
+          // Align numeric amounts OR known non-numeric amount phrases
+          const NON_NUMERIC_AMOUNTS = ['to taste', 'optional', 'as needed'];
+          const lowerLine = line.toLowerCase();
+          const nonNumericMatch = NON_NUMERIC_AMOUNTS.find(p => lowerLine.startsWith(p));
+
+          if (amount || nonNumericMatch) {
+            const finalAmount = amount || nonNumericMatch;
+            const finalItem = amount ? item : line.slice(nonNumericMatch.length).trim();
+            return (
+              <View key={idx} style={dynamicStyles.prepRow}>
+                <Text style={dynamicStyles.prepAmount}>{finalAmount}</Text>
+                <Text style={dynamicStyles.prepItem}>{finalItem}</Text>
+              </View>
+            );
+          }
+
+          return (
+            <View key={idx} style={dynamicStyles.prepRow}>
+              <Text style={dynamicStyles.prepText}>{instruction}</Text>
+            </View>
+          );
+        })}
 
         {step.durationMinutes > 0 && (
           <View style={dynamicStyles.durationBadge}>
-            <Text style={dynamicStyles.durationText}>⏱️ {step.durationMinutes} min</Text>
+            <Text style={dynamicStyles.durationText}>{step.durationMinutes} min</Text>
           </View>
         )}
       </ScrollView>
@@ -415,24 +443,23 @@ export default function CookScreen() {
   );
 }
 
-const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   stepTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    lineHeight: 34,
-    color: isMichelin ? colors.white : colors.neutral[900],
+    ...typography.h2,
+    fontSize: typography.h2.fontSize - 4,
+    color: colors.text.primary,
     marginBottom: spacing.md,
   },
   stepInstruction: {
-    fontSize: 18,
-    lineHeight: 26,
-    color: isMichelin ? '#E5E5E5' : colors.neutral[900],
+    ...typography.body,
+    lineHeight: 28,
+    color: colors.text.primary,
     marginBottom: spacing.lg,
   },
 
-  container: { 
-    flex: 1, 
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50]
+  container: {
+    flex: 1,
+    backgroundColor: colors.surface.primary,
   },
   
   // Header
@@ -441,26 +468,21 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: layout.screenGutter,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   exitButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.background?.secondary ?? colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...shadows.sm,
   },
   exitButtonText: {
-    fontSize: 20,
-    color: '#5D4E37',
-    fontWeight: '600',
+    ...typography.bodyMedium,
+    color: colors.neutral[700],
   },
   
   // Progress
@@ -471,21 +493,20 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   progressBar: {
     width: '100%',
-    height: 4,
-    backgroundColor: colors.neutral[200],
+    height: 3,
+    backgroundColor: colors.border.subtle,
     borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#FF8C42',
-    borderRadius: 3,
+    backgroundColor: colors.text.muted,
+    borderRadius: 2,
   },
   progressText: {
-    fontSize: 12,
-    color: '#8B7355',
+    ...typography.caption,
+    color: colors.text.muted,
     marginTop: 6,
-    fontWeight: '500',
   },
   
   // Voice Button
@@ -493,22 +514,23 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface.secondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   voiceButtonActive: {
-    backgroundColor: colors.primary[500],
-    shadowColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
+    shadowColor: colors.accent.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.9,
     shadowRadius: 24,
     elevation: 16,
   },
   voiceButtonText: {
-    fontSize: 20,
+    ...typography.label,
+    color: colors.text.secondary,
   },
-  
+
   // Content
   scrollView: {
     flex: 1,
@@ -524,41 +546,59 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   bullet: {
     fontSize: 18,
-    color: '#FF8C42',
+    color: colors.primary[500],
     marginRight: 12,
     marginTop: 2,
   },
 
   // ✅ Medium-dense prep checklist (no bullets)
   prepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 6,
   },
+  prepAmount: {
+    ...typography.body,
+    fontSize: 18,
+    lineHeight: 30,
+    color: colors.text.secondary,
+    minWidth: 96,
+    marginRight: 12,
+  },
+  prepItem: {
+    ...typography.body,
+    fontSize: 18,
+    lineHeight: 30,
+    color: colors.text.primary,
+    flex: 1,
+  },
   prepText: {
-    fontSize: 17,
-    lineHeight: 22,
-    color: isMichelin ? '#E5E5E5' : colors.neutral[900],
+    ...typography.body,
+    fontSize: 18,
+    lineHeight: 30,
+    color: colors.text.primary,
   },
 
   instruction: {
-    fontSize: 22,
-    color: '#5D4E37',
+    ...typography.body,
+    color: colors.text.secondary,
     lineHeight: 32,
     flex: 1,
   },
   durationBadge: {
-    backgroundColor: colors.primary[500] + '20',
+    backgroundColor: colors.surface.raised,
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 20,
     alignSelf: 'flex-start',
     marginTop: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.primary[400] + '40',
+    borderColor: colors.border.subtle,
   },
   durationText: {
-    fontSize: 15,
-    color: colors.primary[600],
-    fontWeight: '700',
+    fontFamily: fonts.mono,
+    fontSize: 16,
+    color: colors.accent.primary,
   },
   
   // Navigation Bar
@@ -568,28 +608,31 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: layout.screenGutter,
     paddingVertical: 12,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.white,
+    backgroundColor: colors.surface.primary,
     borderTopWidth: 1,
-    borderTopColor: isMichelin ? colors.neutral[700] : colors.neutral[200],
+    borderTopColor: colors.border.subtle,
   },
   navButton: {
-    paddingHorizontal: layout.screenGutter,
-    paddingVertical: 12,
-    backgroundColor: colors.primary[500],
+    flex: 1,
+    marginHorizontal: 6,
+    paddingVertical: 10,
+    backgroundColor: colors.surface.secondary,
     borderRadius: 12,
-    minWidth: 90,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
   },
   navButtonDisabled: {
-    backgroundColor: '#E0E0E0',
+    backgroundColor: colors.surface.secondary,
+    borderColor: colors.border.subtle,
+    opacity: 0.5,
   },
   navButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyMedium,
+    color: colors.text.primary,
     textAlign: 'center',
   },
   navButtonTextDisabled: {
-    color: '#999',
+    color: colors.text.muted,
   },
   
   // Voice Button
@@ -597,30 +640,22 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     padding: 4,
   },
   voiceGlowActive: {
-    backgroundColor: colors.primary[500] + '30',
+    backgroundColor: colors.primaryAlpha?.glow ?? colors.primary[500] + '30',
     borderRadius: 26,
     padding: 4,
   },
   voiceButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.white,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surface.secondary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.neutral[900],
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   voiceButtonActive: {
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.surface.secondary,
   },
-  voiceButtonText: {
-    fontSize: 20,
-  },
-  
+
   // Step Dots
   stepDots: {
     flexDirection: 'row',
@@ -635,16 +670,16 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.neutral[200],
+    backgroundColor: colors.border.subtle,
   },
   dotActive: {
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
     width: 8,
     height: 8,
     borderRadius: 4,
   },
   dotCompleted: {
-    backgroundColor: colors.primary[400],
+    backgroundColor: colors.accent.primary,
     width: 6,
     height: 6,
     borderRadius: 3,

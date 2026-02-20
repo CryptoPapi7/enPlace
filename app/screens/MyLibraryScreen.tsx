@@ -7,10 +7,11 @@ import { getMyLibraryRecipes, LibraryRecipe } from '../utils/library';
 import { toggleFavorite, isFavorite, getFavorites, FavoriteRecipe } from '../utils/favorites';
 import { useTheme } from '@/providers/ThemeProvider';
 import { layout } from '../theme/spacing';
+import { typography } from '@/theme';
 
 export default function MyLibraryScreen() {
-  const { colors, isMichelin } = useTheme();
-  const dynamicStyles = createStyles(colors, isMichelin);
+  const { colors } = useTheme();
+  const dynamicStyles = createStyles(colors);
   const [recipes, setRecipes] = useState<(LibraryRecipe & { isFav?: boolean })[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<FavoriteRecipe[]>([]);
@@ -70,7 +71,7 @@ export default function MyLibraryScreen() {
 
   return (
     <SafeAreaView style={dynamicStyles.container}>
-      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       <ScrollView style={dynamicStyles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={dynamicStyles.header}>
@@ -166,7 +167,7 @@ export default function MyLibraryScreen() {
       {/* My Creations Section (Future) */}
       <View style={dynamicStyles.section}>
         <View style={dynamicStyles.sectionHeader}>
-          <Text style={dynamicStyles.sectionTitle}>✍️ My Creations</Text>
+          <Text style={dynamicStyles.sectionTitle}>My Creations</Text>
           <Text style={dynamicStyles.sectionCount}>0</Text>
         </View>
         <View style={dynamicStyles.emptyCreations}>
@@ -198,10 +199,10 @@ export default function MyLibraryScreen() {
   );
 }
 
-const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
   },
   scrollView: {
     flex: 1,
@@ -218,10 +219,10 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.border.subtle,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -229,12 +230,11 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
-    color: colors.neutral[900],
+    color: colors.text.primary,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.neutral[900],
+    ...typography.h2,
+    color: colors.text.primary,
   },
   placeholder: {
     width: 44,
@@ -243,17 +243,17 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 16,
   },
   searchInput: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
-    color: colors.neutral[900],
+    color: colors.text.primary,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
+    borderColor: colors.border.default,
   },
   countText: {
     fontSize: 14,
-    color: colors.neutral[700],
+    color: colors.text.secondary,
     marginBottom: 16,
   },
   grid: {
@@ -271,15 +271,13 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.neutral[900],
+    ...typography.h3,
+    color: colors.text.primary,
   },
   sectionCount: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.neutral[700],
-    backgroundColor: '#E8E8E8',
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
+    backgroundColor: colors.surface.raised,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -289,7 +287,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   horizontalCard: {
     width: 120,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 12,
     marginRight: 12,
@@ -300,30 +298,30 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     elevation: 2,
   },
   totalCount: {
-    fontSize: 14,
-    color: colors.neutral[700],
+    ...typography.caption,
+    color: colors.text.muted,
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 24,
   },
   emptyCreations: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
   },
   emptyCreationsText: {
     fontSize: 14,
-    color: isMichelin ? colors.neutral[500] : colors.neutral[500],
+    color: colors.text.muted,
     fontStyle: 'italic',
   },
   recipeCard: {
     width: '47%',
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: colors.border.subtle,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
@@ -345,45 +343,42 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     fontSize: 20,
   },
   recipeName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.neutral[900],
+    ...typography.bodyMedium,
+    color: colors.text.primary,
     marginBottom: 4,
   },
   recipeMeta: {
-    fontSize: 12,
-    color: colors.neutral[700],
+    ...typography.caption,
+    color: colors.text.muted,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
+    backgroundColor: colors.surface.primary,
   },
   emptyEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
+    display: 'none',
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.neutral[900],
+    ...typography.h3,
+    color: colors.text.primary,
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontSize: 14,
-    color: colors.neutral[700],
+    ...typography.caption,
+    color: colors.text.muted,
     textAlign: 'center',
     marginBottom: 24,
     paddingHorizontal: 32,
   },
   browseButton: {
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 24,
   },
   browseButtonText: {
-    color: isMichelin ? colors.background?.secondary : '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyMedium,
+    color: colors.surface.secondary,
   },
 });

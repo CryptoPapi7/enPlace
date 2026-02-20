@@ -115,7 +115,7 @@ export default function PhotoRecipeScreen({ route, navigation }: any) {
       <SafeAreaView style={dynamicStyles.container}>
         <StatusBar style={isMichelin ? 'light' : 'dark'} />
         <View style={dynamicStyles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF8C42" />
+          <ActivityIndicator size="large" color={colors.primary[500]} />
           <Text style={dynamicStyles.loadingText}>Reading your recipe...</Text>
           <Text style={dynamicStyles.loadingSub}>This may take a few seconds</Text>
         </View>

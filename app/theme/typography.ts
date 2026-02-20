@@ -10,63 +10,70 @@ export const fonts = {
   sans: 'Inter_18pt-Regular',
   sansMedium: 'Inter_18pt-Medium',
   sansSemiBold: 'Inter_18pt-SemiBold',
+  mono: 'JetBrainsMono-Regular',
 } as const;
 
 export const typography = {
   display: {
-    fontWeight: '700',
+    fontFamily: fonts.serifBold,
     fontSize: 38,
     lineHeight: 42,
     letterSpacing: -0.5,
   },
   h1: {
-    fontWeight: '700',
+    fontFamily: fonts.serifBold,
     fontSize: 28,
     lineHeight: 34,
     letterSpacing: -0.3,
   },
   h2: {
-    fontWeight: '600',
+    fontFamily: fonts.sansSemiBold,
     fontSize: 22,
     lineHeight: 28,
     letterSpacing: -0.1,
   },
   h3: {
-    fontWeight: '500',
+    fontFamily: fonts.sansMedium,
     fontSize: 18,
     lineHeight: 24,
     letterSpacing: 0,
   },
   body: {
-    fontWeight: '400',
+    fontFamily: fonts.sans,
     fontSize: 16,
     lineHeight: 25,
     letterSpacing: 0,
   },
   bodyMedium: {
-    fontWeight: '500',
+    fontFamily: fonts.sansMedium,
     fontSize: 16,
     lineHeight: 25,
     letterSpacing: 0,
   },
   caption: {
-    fontWeight: '400',
+    fontFamily: fonts.sans,
     fontSize: 13,
     lineHeight: 18,
     letterSpacing: 0.1,
   },
   label: {
-    fontWeight: '500',
+    fontFamily: fonts.sansMedium,
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 1.5,
     textTransform: 'uppercase' as const,
   },
   micro: {
-    fontWeight: '400',
+    fontFamily: fonts.sans,
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.2,
+  },
+  mono: {
+    fontFamily: fonts.mono,
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: 0,
   },
 } as const;
 

@@ -1,5 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useTheme } from '@/providers/ThemeProvider';
+import { typography } from '../theme';
 
 interface ShoppingItem {
   id: string;
@@ -19,6 +21,7 @@ interface ShoppingListProps {
 }
 
 export function ShoppingList({ items, onToggleChecked, onToggleHasAtHome, onClearCompleted }: ShoppingListProps) {
+  const { colors } = useTheme();
   const [showAll, setShowAll] = useState(true);
   
   const needToBuy = items.filter(i => !i.hasAtHome);
@@ -57,7 +60,7 @@ export function ShoppingList({ items, onToggleChecked, onToggleHasAtHome, onClea
       <ScrollView style={styles.list}>
         {Object.entries(grouped).map(([recipeName, recipeItems]) => (
           <View key={recipeName} style={styles.recipeGroup}>
-            <Text style={styles.recipeHeader}>🍽️ {recipeName}</Text>
+            <Text style={styles.recipeHeader}>{recipeName}</Text>
             {recipeItems.map(item => (
               <View key={item.id} style={styles.itemRow}>
                 {/* Checkbox for shopping */}
@@ -113,8 +116,8 @@ export function ShoppingList({ items, onToggleChecked, onToggleHasAtHome, onClea
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
-  },
+    backgroundColor: colors.background?.primary ?? colors.cream[50],
+  }
   filters: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -125,19 +128,18 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.white,
     alignItems: 'center',
   },
   filterTabActive: {
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
   },
   filterText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    ...typography.bodyMedium,
+    color: colors.neutral[700],
   },
   filterTextActive: {
-    color: '#FFF',
+    color: colors.white,
   },
   list: {
     flex: 1,
@@ -147,16 +149,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   recipeHeader: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#5D4E37',
+    ...typography.bodyMedium,
+    color: colors.neutral[700],
     marginBottom: 8,
     paddingVertical: 8,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -166,53 +167,50 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#87CEEB',
+    borderColor: colors.neutral[300],
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   checkboxChecked: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: colors.success,
+    borderColor: colors.success,
   },
   checkmark: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    ...typography.bodyMedium,
+    color: colors.white,
   },
   itemContent: {
     flex: 1,
   },
   itemName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#5D4E37',
+    ...typography.bodyMedium,
+    color: colors.neutral[700],
   },
   itemNameChecked: {
     textDecorationLine: 'line-through',
-    color: '#999',
+    color: colors.neutral[500],
   },
   itemAmount: {
     fontSize: 13,
-    color: '#87CEEB',
+    color: colors.neutral[500],
     marginTop: 2,
   },
   homeButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: colors.cream[100],
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: colors.neutral[200],
   },
   homeButtonActive: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#4CAF50',
+    backgroundColor: colors.success + '20',
+    borderColor: colors.success,
   },
   homeButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
+    ...typography.caption,
+    color: colors.neutral[700],
   },
   emptyState: {
     alignItems: 'center',
@@ -223,13 +221,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#5D4E37',
+    ...typography.h3,
+    color: colors.neutral[700],
   },
   emptySub: {
     fontSize: 14,
-    color: '#87CEEB',
+    color: colors.neutral[500],
     marginTop: 4,
   },
   clearButton: {
@@ -237,14 +234,13 @@ const styles = StyleSheet.create({
     bottom: 24,
     left: 24,
     right: 24,
-    backgroundColor: '#FF8C42',
+    backgroundColor: colors.primary[500],
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
   },
   clearButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyMedium,
+    color: colors.white,
   },
 });

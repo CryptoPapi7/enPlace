@@ -18,8 +18,9 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { layout } from '../theme/spacing';
 
 export default function ImportRecipeScreen() {
-  const { colors, isMichelin } = useTheme();
-  const dynamicStyles = createStyles(colors, isMichelin);
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [method, setMethod] = useState<'url' | 'photo'>('url');
@@ -32,13 +33,10 @@ export default function ImportRecipeScreen() {
 
     setLoading(true);
     try {
-      // Fetch and parse the webpage
       const response = await fetch(url);
       const html = await response.text();
-      
-      // Extract recipe data (basic parsing - can be improved)
       const rawRecipeData = parseRecipeFromHtml(html, url);
-      
+
       if (!rawRecipeData) {
         Alert.alert(
           'Could not parse recipe',
@@ -47,10 +45,9 @@ export default function ImportRecipeScreen() {
         );
         return;
       }
-      
-      // Validate with Zod before passing to preview
+
       const validation = parseImportedRecipe(rawRecipeData);
-      
+
       if (!validation.success) {
         Alert.alert(
           'Recipe validation failed',
@@ -59,11 +56,10 @@ export default function ImportRecipeScreen() {
         );
         return;
       }
-      
-      navigation.navigate('RecipePreview', { 
-        recipe: validation.data,
-        source: 'import',
-        isNew: true 
+
+      router.push({
+        pathname: '/recipe-preview',
+        params: { recipe: JSON.stringify(validation.data), source: 'import', isNew: 'true' },
       });
     } catch (error) {
       Alert.alert(
@@ -84,9 +80,7 @@ export default function ImportRecipeScreen() {
     });
 
     if (!result.canceled) {
-      navigation.navigate('PhotoRecipe', { 
-        imageUri: result.assets[0].uri 
-      });
+      router.push({ pathname: '/photo-recipe', params: { imageUri: result.assets[0].uri } });
     }
   };
 
@@ -97,167 +91,137 @@ export default function ImportRecipeScreen() {
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 1,
-    });
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 1 });
 
     if (!result.canceled) {
-      navigation.navigate('PhotoRecipe', { 
-        imageUri: result.assets[0].uri 
-      });
+      router.push({ pathname: '/photo-recipe', params: { imageUri: result.assets[0].uri } });
     }
   };
 
   return (
-    <SafeAreaView style={dynamicStyles.container}>
-      <StatusBar style={isMichelin ? 'light' : 'dark'} />
-      <ScrollView style={dynamicStyles.scrollView}>
-        {/* Header */}
-        <View style={dynamicStyles.header}>
-          <TouchableOpacity 
-            style={dynamicStyles.backButton}
-            onPress={() => router.back()}
-          >
-            <Text style={dynamicStyles.backButtonText}>←</Text>
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="dark" />
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={dynamicStyles.title}>Import Recipe</Text>
-          <View style={dynamicStyles.placeholder} />
+          <Text style={styles.title}>Import Recipe</Text>
+          <View style={styles.placeholder} />
         </View>
 
-        {/* Method Toggle */}
-        <View style={dynamicStyles.methodToggle}>
-          <TouchableOpacity 
-            style={[dynamicStyles.methodBtn, method === 'url' && dynamicStyles.methodBtnActive]}
+        <View style={styles.methodToggle}>
+          <TouchableOpacity
+            style={[styles.methodBtn, method === 'url' && styles.methodBtnActive]}
             onPress={() => setMethod('url')}
           >
-            <Text style={[dynamicStyles.methodText, method === 'url' && dynamicStyles.methodTextActive]}>
-              🔗 From Website
+            <Text style={[styles.methodText, method === 'url' && styles.methodTextActive]}>
+              From Website
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[dynamicStyles.methodBtn, method === 'photo' && dynamicStyles.methodBtnActive]}
+          <TouchableOpacity
+            style={[styles.methodBtn, method === 'photo' && styles.methodBtnActive]}
             onPress={() => setMethod('photo')}
           >
-            <Text style={[dynamicStyles.methodText, method === 'photo' && dynamicStyles.methodTextActive]}>
-              📷 From Photo
+            <Text style={[styles.methodText, method === 'photo' && styles.methodTextActive]}>
+              From Photo
             </Text>
           </TouchableOpacity>
         </View>
 
         {method === 'url' ? (
           <>
-            {/* URL Input */}
-            <View style={dynamicStyles.inputSection}>
-              <Text style={dynamicStyles.label}>Recipe URL</Text>
+            <View style={styles.inputSection}>
+              <Text style={styles.label}>Recipe URL</Text>
               <TextInput
-                style={dynamicStyles.input}
+                style={styles.input}
                 placeholder="Paste recipe link here..."
                 value={url}
                 onChangeText={setUrl}
                 autoCapitalize="none"
                 keyboardType="url"
               />
-              <Text style={dynamicStyles.hint}>
-                Works with most recipe websites (AllRecipes, Food Network, etc.)
-              </Text>
+              <Text style={styles.hint}>Works with most recipe websites</Text>
             </View>
 
-            {/* Import Button */}
-            <TouchableOpacity 
-              style={[dynamicStyles.importBtn, loading && dynamicStyles.importBtnDisabled]}
+            <TouchableOpacity
+              style={[styles.importBtn, loading && styles.importBtnDisabled]}
               onPress={handleImportFromUrl}
               disabled={loading}
             >
-              {loading ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={dynamicStyles.importBtnText}>📥 Import Recipe</Text>
-              )}
+              {loading ? <ActivityIndicator color={colors.text.inverse} /> : <Text style={styles.importBtnText}>Import Recipe</Text>}
             </TouchableOpacity>
           </>
         ) : (
-          <>
-            {/* Photo Options */}
-            <View style={dynamicStyles.photoSection}>
-              <Text style={dynamicStyles.label}>Choose a method</Text>
-              
-              <TouchableOpacity 
-                style={dynamicStyles.photoOption}
-                onPress={handleTakePhoto}
-              >
-                <Text style={dynamicStyles.photoEmoji}>📸</Text>
-                <View>
-                  <Text style={dynamicStyles.photoTitle}>Take Photo</Text>
-                  <Text style={dynamicStyles.photoSub}>Snap a photo of a recipe</Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={dynamicStyles.photoOption}
-                onPress={handlePickImage}
-              >
-                <Text style={dynamicStyles.photoEmoji}>🖼️</Text>
-                <View>
-                  <Text style={dynamicStyles.photoTitle}>Choose from Library</Text>
-                  <Text style={dynamicStyles.photoSub}>Select a saved recipe photo</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </>
+          <View style={styles.photoSection}>
+            <Text style={styles.label}>Choose a method</Text>
+            <TouchableOpacity style={styles.photoOption} onPress={handleTakePhoto}>
+              <View>
+                <Text style={styles.photoTitle}>Take Photo</Text>
+                <Text style={styles.photoSub}>Snap a photo of a recipe</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.photoOption} onPress={handlePickImage}>
+              <View>
+                <Text style={styles.photoTitle}>Choose from Library</Text>
+                <Text style={styles.photoSub}>Select a saved recipe photo</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         )}
 
-        {/* Tips */}
-        <View style={dynamicStyles.tipsSection}>
-          <Text style={dynamicStyles.tipsTitle}>💡 Tips</Text>
-          <Text style={dynamicStyles.tip}>• Make sure photos are well-lit and clear</Text>
-          <Text style={dynamicStyles.tip}>• Website import works best with popular recipe sites</Text>
-          <Text style={dynamicStyles.tip}>• You can edit the imported recipe before saving</Text>
+        <View style={styles.tipsSection}>
+          <Text style={styles.tipsTitle}>Tips</Text>
+          <Text style={styles.tip}>• Make sure photos are well-lit and clear</Text>
+          <Text style={styles.tip}>• Website import works best with popular recipe sites</Text>
+          <Text style={styles.tip}>• You can edit the imported recipe before saving</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-// Basic HTML parser for recipes
 function parseRecipeFromHtml(html: string, url: string): any {
-  // Try to find JSON-LD recipe data (most common)
   const jsonLdMatch = html.match(/<script type="application\/ld\+json">([^<]+)<\/script>/g);
-  
+
   if (jsonLdMatch) {
     for (const script of jsonLdMatch) {
       try {
-        const jsonStr = script.replace(/<script type="application\/ld\+json">/, '').replace(/<\/script>/, '');
+        const jsonStr = script
+          .replace(/<script type="application\/ld\+json">/, '')
+          .replace(/<\/script>/, '');
         const data = JSON.parse(jsonStr);
-        
-        // Check if it's a recipe
-        if (data['@type'] === 'Recipe' || (Array.isArray(data['@graph']) && data['@graph'].some((g: any) => g['@type'] === 'Recipe'))) {
+
+        if (
+          data['@type'] === 'Recipe' ||
+          (Array.isArray(data['@graph']) && data['@graph'].some((g: any) => g['@type'] === 'Recipe'))
+        ) {
           const recipe = data['@type'] === 'Recipe' ? data : data['@graph'].find((g: any) => g['@type'] === 'Recipe');
-          
+
           return {
             title: recipe.name || 'Untitled Recipe',
             description: recipe.description || '',
-            ingredients: Array.isArray(recipe.recipeIngredient) ? recipe.recipeIngredient : [recipe.recipeIngredient],
-            instructions: Array.isArray(recipe.recipeInstructions) 
+            ingredients: Array.isArray(recipe.recipeIngredient)
+              ? recipe.recipeIngredient
+              : [recipe.recipeIngredient],
+            instructions: Array.isArray(recipe.recipeInstructions)
               ? recipe.recipeInstructions.map((s: any) => s.text || s)
               : [recipe.recipeInstructions],
             totalTime: recipe.totalTime || '30 minutes',
             servings: recipe.recipeYield || '4 servings',
-            image: recipe.image?.url || recipe.image,
             source: url,
           };
         }
-      } catch (e) {
-        // Continue to next script
+      } catch {
+        // ignore
       }
     }
   }
-  
-  // Fallback: try regex parsing for basic sites
+
   const title = html.match(/<h1[^>]*>([^<]+)<\/h1>/)?.[1]?.trim();
   const ingredients = html.match(/ingredient[^>]*>([^<]+)</gi)?.map(m => m.replace(/<[^>]+>/g, ''));
-  
-  if (title && ingredients?.length > 0) {
+
+  if (title && ingredients?.length) {
     return {
       title,
       description: '',
@@ -268,166 +232,145 @@ function parseRecipeFromHtml(html: string, url: string): any {
       source: url,
     };
   }
-  
+
   return null;
 }
 
-const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
-  },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: layout.screenGutter,
-    paddingVertical: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  backButtonText: {
-    fontSize: 20,
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-  },
-  placeholder: {
-    width: 44,
-  },
-  methodToggle: {
-    flexDirection: 'row',
-    backgroundColor: '#E8E8E8',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 24,
-  },
-  methodBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  methodBtnActive: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  methodText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
-  },
-  methodTextActive: {
-    color: colors.primary[500],
-  },
-  inputSection: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-    borderWidth: 1,
-    borderColor: '#E8E8E8',
-  },
-  hint: {
-    fontSize: 13,
-    color: isMichelin ? colors.neutral[500] : colors.neutral[500],
-    marginTop: 8,
-  },
-  quickGrid2x2: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  importBtn: {
-    backgroundColor: colors.primary[500],
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  importBtnDisabled: {
-    opacity: 0.6,
-  },
-  importBtnText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: isMichelin ? colors.background?.secondary : '#FFF',
-  },
-  photoSection: {
-    marginBottom: 24,
-  },
-  photoOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  photoEmoji: {
-    fontSize: 40,
-    marginRight: 16,
-  },
-  photoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-  },
-  photoSub: {
-    fontSize: 14,
-    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
-  },
-  tipsSection: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
-    borderRadius: 16,
-    padding: 20,
-  },
-  tipsTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-    marginBottom: 12,
-  },
-  tip: {
-    fontSize: 14,
-    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
-    marginBottom: 8,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.primary,
+    },
+    scrollView: {
+      flex: 1,
+      paddingHorizontal: layout.screenGutter,
+      paddingVertical: 20,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 24,
+    },
+    backButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: colors.surface.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 2,
+    },
+    backButtonText: {
+      fontSize: 20,
+      color: colors.text.secondary,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: '700',
+      color: colors.text.primary,
+    },
+    placeholder: {
+      width: 44,
+    },
+    methodToggle: {
+      flexDirection: 'row',
+      backgroundColor: colors.surface.secondary,
+      borderRadius: 12,
+      padding: 4,
+      marginBottom: 24,
+    },
+    methodBtn: {
+      flex: 1,
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    methodBtnActive: {
+      backgroundColor: colors.surface.raised,
+    },
+    methodText: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.text.secondary,
+    },
+    methodTextActive: {
+      color: colors.accent.primary,
+    },
+    inputSection: {
+      marginBottom: 24,
+    },
+    label: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text.secondary,
+      marginBottom: 8,
+    },
+    input: {
+      backgroundColor: colors.surface.secondary,
+      borderRadius: 12,
+      padding: 16,
+      fontSize: 16,
+      color: colors.text.primary,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+    },
+    hint: {
+      fontSize: 13,
+      color: colors.text.muted,
+      marginTop: 8,
+    },
+    importBtn: {
+      backgroundColor: colors.accent.primary,
+      borderRadius: 12,
+      padding: 16,
+      alignItems: 'center',
+      marginBottom: 24,
+    },
+    importBtnDisabled: {
+      opacity: 0.6,
+    },
+    importBtnText: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: colors.text.inverse,
+    },
+    photoSection: {
+      marginBottom: 24,
+    },
+    photoOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface.secondary,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 12,
+      elevation: 2,
+    },
+    photoTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text.primary,
+    },
+    photoSub: {
+      fontSize: 14,
+      color: colors.text.muted,
+    },
+    tipsSection: {
+      backgroundColor: colors.surface.secondary,
+      borderRadius: 16,
+      padding: 20,
+    },
+    tipsTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: colors.text.primary,
+      marginBottom: 12,
+    },
+    tip: {
+      fontSize: 14,
+      color: colors.text.muted,
+      marginBottom: 8,
+    },
+  });

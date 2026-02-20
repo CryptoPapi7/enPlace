@@ -13,7 +13,7 @@ export function Card({ children, style, variant = 'default' }: CardProps) {
 
   const styles = StyleSheet.create({
     card: {
-      backgroundColor: colors.white,
+      backgroundColor: colors.surface.secondary,
       borderRadius: 16,
       padding: spacing.md,
     },
@@ -25,7 +25,7 @@ export function Card({ children, style, variant = 'default' }: CardProps) {
     },
     outlined: {
       borderWidth: 1,
-      borderColor: colors.neutral[200],
+      borderColor: colors.border.subtle,
       shadowOpacity: 0,
       elevation: 0,
     },

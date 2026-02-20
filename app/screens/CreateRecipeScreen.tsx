@@ -24,8 +24,8 @@ const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || 'your-api-key-h
 interface AIRecipe extends Recipe {}
 
 export default function CreateRecipeScreen() {
-  const { colors, isMichelin } = useTheme();
-  const dynamicStyles = createStyles(colors, isMichelin);
+  const { colors } = useTheme();
+  const dynamicStyles = createStyles(colors);
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -155,17 +155,17 @@ export default function CreateRecipeScreen() {
   };
 
   const suggestions = [
-    '🍝 Creamy pasta with garlic',
-    '🍛 Spicy chicken curry',
-    '🥗 Healthy quinoa salad',
-    '🥘 Mediterranean one-pot dinner',
-    '🍲 Comforting soup',
-    '🌮 Easy tacos',
+    'Creamy pasta with garlic',
+    'Spicy chicken curry',
+    'Healthy quinoa salad',
+    'Mediterranean one-pot dinner',
+    'Comforting soup',
+    'Easy tacos',
   ];
 
   return (
     <SafeAreaView style={dynamicStyles.container}>
-      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={dynamicStyles.keyboardView}
@@ -185,7 +185,7 @@ export default function CreateRecipeScreen() {
 
           {/* AI Badge */}
           <View style={dynamicStyles.aiBadge}>
-            <Text style={dynamicStyles.aiBadgeText}>✨ Powered by AI</Text>
+            <Text style={dynamicStyles.aiBadgeText}>Powered by AI</Text>
           </View>
 
           {/* Prompt Input */}
@@ -213,13 +213,13 @@ export default function CreateRecipeScreen() {
 
           {/* Suggestions */}
           <View style={dynamicStyles.suggestionsSection}>
-            <Text style={dynamicStyles.suggestionsTitle}>💡 Try asking for:</Text>
+            <Text style={dynamicStyles.suggestionsTitle}>Try asking for:</Text>
             <View style={dynamicStyles.suggestionsGrid}>
               {suggestions.map((suggestion, i) => (
                 <TouchableOpacity
                   key={i}
                   style={dynamicStyles.suggestionChip}
-                  onPress={() => setPrompt(suggestion.replace(/^[^\s]+\s/, ''))}
+                  onPress={() => setPrompt(suggestion)}
                 >
                   <Text style={dynamicStyles.suggestionText}>{suggestion}</Text>
                 </TouchableOpacity>
@@ -229,7 +229,7 @@ export default function CreateRecipeScreen() {
 
           {/* Tips */}
           <View style={dynamicStyles.tipsSection}>
-            <Text style={dynamicStyles.tipsTitle}>📝 Tips for better results:</Text>
+            <Text style={dynamicStyles.tipsTitle}>Tips for better results:</Text>
             <Text style={dynamicStyles.tip}>• Mention dietary preferences (vegetarian, gluten-free, etc.)</Text>
             <Text style={dynamicStyles.tip}>• Include cuisine type (Italian, Asian, Mexican...)</Text>
             <Text style={dynamicStyles.tip}>• Specify cooking time (quick, 30 min, slow-cook...)</Text>
@@ -248,7 +248,7 @@ export default function CreateRecipeScreen() {
                 <Text style={dynamicStyles.generateBtnText}>Creating your recipe...</Text>
               </>
             ) : (
-              <Text style={dynamicStyles.generateBtnText}>✨ Generate Recipe</Text>
+              <Text style={dynamicStyles.generateBtnText}>Generate Recipe</Text>
             )}
           </TouchableOpacity>
 
@@ -259,10 +259,10 @@ export default function CreateRecipeScreen() {
   );
 }
 
-const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
   },
   keyboardView: {
     flex: 1,
@@ -282,7 +282,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -293,26 +293,26 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: colors.text.secondary,
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: colors.text.secondary,
   },
   placeholder: {
     width: 44,
   },
   aiBadge: {
     alignSelf: 'center',
-    backgroundColor: '#87CEEB',
+    backgroundColor: colors.primary[500],
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
     marginBottom: 24,
   },
   aiBadgeText: {
-    color: isMichelin ? colors.background?.secondary : '#FFF',
+    color: colors.surface.secondary,
     fontWeight: '700',
     fontSize: 13,
   },
@@ -322,28 +322,28 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   label: {
     fontSize: 18,
     fontWeight: '600',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: colors.text.secondary,
     marginBottom: 12,
   },
   input: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 16,
     fontSize: 16,
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: colors.text.secondary,
     borderWidth: 2,
-    borderColor: '#E8E8E8',
+    borderColor: colors.neutral[200],
     minHeight: 120,
   },
   charCount: {
     fontSize: 12,
-    color: '#999',
+    color: colors.neutral[500],
     textAlign: 'right',
     marginTop: 8,
   },
   errorText: {
     fontSize: 14,
-    color: '#FF6B6B',
+    color: colors.error,
     marginTop: 8,
   },
   suggestionsSection: {
@@ -352,7 +352,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   suggestionsTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
+    color: colors.text.muted,
     marginBottom: 12,
   },
   suggestionsGrid: {
@@ -361,19 +361,19 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     gap: 8,
   },
   suggestionChip: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
+    borderColor: colors.neutral[200],
   },
   suggestionText: {
     fontSize: 13,
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: colors.text.secondary,
   },
   tipsSection: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
@@ -381,12 +381,12 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   tipsTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: colors.text.secondary,
     marginBottom: 12,
   },
   tip: {
     fontSize: 14,
-    color: isMichelin ? colors.neutral[400] : colors.neutral[600],
+    color: colors.text.muted,
     marginBottom: 8,
   },
   generateBtn: {
@@ -403,7 +403,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   generateBtnText: {
     fontSize: 18,
     fontWeight: '700',
-    color: isMichelin ? colors.background?.secondary : '#FFF',
+    color: colors.surface.secondary,
   },
   loader: {
     marginRight: 10,

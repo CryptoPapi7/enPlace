@@ -3,9 +3,11 @@ import { View, Text, TextInput, Pressable, StyleSheet, SafeAreaView } from 'reac
 import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
-import { colors } from '@/theme';
+import { typography } from '@/theme';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function AuthScreen() {
+  const { colors } = useTheme();
   const { signInWithEmail, signUpWithEmail } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -73,6 +75,8 @@ export default function AuthScreen() {
     router.back();
   }
 
+  const styles = createStyles(colors);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
@@ -88,7 +92,7 @@ export default function AuthScreen() {
 
         <TextInput
           placeholder="Email"
-          placeholderTextColor={colors.neutral[500]}
+          placeholderTextColor={colors.text.muted}
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
@@ -98,7 +102,7 @@ export default function AuthScreen() {
 
         <TextInput
           placeholder="Password"
-          placeholderTextColor={colors.neutral[500]}
+          placeholderTextColor={colors.text.muted}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -131,10 +135,10 @@ export default function AuthScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.cream[50],
+    backgroundColor: colors.surface.primary,
   },
   closeBtn: {
     position: 'absolute',
@@ -148,7 +152,7 @@ const styles = StyleSheet.create({
   },
   closeText: {
     fontSize: 24,
-    color: colors.neutral[700],
+    color: colors.text.secondary,
   },
   content: {
     flex: 1,
@@ -156,46 +160,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.neutral[900],
+    ...typography.display,
+    color: colors.text.primary,
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
-    color: colors.neutral[500],
+    ...typography.body,
+    color: colors.text.muted,
     marginBottom: 32,
   },
   input: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
+    borderColor: colors.border.subtle,
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
     fontSize: 16,
-    color: colors.neutral[900],
+    color: colors.text.primary,
   },
   button: {
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 12,
   },
   secondary: {
-    backgroundColor: colors.neutral[700],
+    backgroundColor: colors.surface.raised,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    color: '#FFF',
-    fontWeight: '600',
-    fontSize: 16,
+    ...typography.bodyMedium,
+    color: colors.text.inverse,
   },
   error: {
-    color: colors.error,
+    color: colors.accent.error,
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -204,7 +206,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   skipText: {
-    color: colors.primary[500],
-    fontWeight: '500',
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
   },
 });

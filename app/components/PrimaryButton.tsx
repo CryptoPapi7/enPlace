@@ -1,5 +1,5 @@
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors, spacing, typography, fonts } from '../theme';
+import { spacing, typography, fonts } from '../theme';
 import { useTheme } from '@/providers/ThemeProvider';
 
 interface PrimaryButtonProps {
@@ -26,32 +26,31 @@ export function PrimaryButton({
       justifyContent: 'center',
     },
     primary: {
-      backgroundColor: colors.primary[500],
+      backgroundColor: colors.accent.primary,
     },
     secondary: {
-      backgroundColor: colors.cream[100],
+      backgroundColor: colors.surface.secondary,
     },
     ghost: {
-      backgroundColor: 'transparent',
+      backgroundColor: 'transparent', // intentional: ghost buttons have no surface
     },
     disabled: {
-      backgroundColor: colors.neutral[200],
+      backgroundColor: colors.border.subtle,
     },
     text: {
-      fontSize: typography.body.fontSize,
-      fontWeight: '600',
+      ...typography.bodyMedium,
     },
     primaryText: {
-      color: colors.white,
+      color: colors.text.inverse,
     },
     secondaryText: {
-      color: colors.neutral[700],
+      color: colors.text.secondary,
     },
     ghostText: {
-      color: colors.primary[500],
+      color: colors.accent.primary,
     },
     disabledText: {
-      color: colors.neutral[300],
+      color: colors.text.muted,
     },
   });
 

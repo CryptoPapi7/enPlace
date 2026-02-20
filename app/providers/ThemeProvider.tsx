@@ -108,7 +108,35 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [userId]);
 
   // Memoize colors so they don't recalculate on every render
-  const colors = useMemo(() => getThemeColors(themeMode), [themeMode]);
+  const colors = useMemo(() => {
+    const base = getThemeColors(themeMode) as any;
+    // Ensure semantic color tokens exist
+    const semantic = {
+      text: {
+        primary: base.text?.primary ?? base.neutral?.[900] ?? base.white,
+        secondary: base.text?.secondary ?? base.neutral?.[700] ?? base.neutral?.[500],
+        muted: base.text?.muted ?? base.neutral?.[500],
+        inverse: base.text?.inverse ?? base.white,
+      },
+      surface: {
+        primary: base.surface?.primary ?? base.background?.primary ?? base.cream?.[50] ?? base.white,
+        secondary: base.surface?.secondary ?? base.background?.secondary ?? base.white,
+        raised: base.surface?.raised ?? base.background?.secondary ?? base.white,
+        inverse: base.surface?.inverse ?? base.background?.primary ?? base.neutral?.[900],
+      },
+      border: {
+        subtle: base.border?.subtle ?? base.neutral?.[300],
+        default: base.border?.default ?? base.neutral?.[400],
+        strong: base.border?.strong ?? base.neutral?.[600],
+      },
+      accent: {
+        primary: base.accent?.primary ?? base.primary?.[500],
+        success: base.accent?.success ?? base.success,
+        error: base.accent?.error ?? base.error,
+      },
+    };
+    return { ...base, ...semantic };
+  }, [themeMode]);
   const isMichelin = themeMode === 'michelin';
 
   return (

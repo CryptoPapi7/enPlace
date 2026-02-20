@@ -15,8 +15,8 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { layout } from '../theme/spacing';
 
 export default function RecipePreviewScreen({ route, navigation }: any) {
-  const { colors, isMichelin } = useTheme();
-  const dynamicStyles = createStyles(colors, isMichelin);
+  const { colors } = useTheme();
+  const dynamicStyles = createStyles(colors);
   const { recipe, source, isNew } = route.params;
   const [editRecipe, setEditRecipe] = useState({
     ...recipe,
@@ -72,7 +72,7 @@ export default function RecipePreviewScreen({ route, navigation }: any) {
 
   return (
     <SafeAreaView style={dynamicStyles.container}>
-      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       <ScrollView style={dynamicStyles.scrollView}>
         {/* Header */}
         <View style={dynamicStyles.header}>
@@ -225,10 +225,10 @@ export default function RecipePreviewScreen({ route, navigation }: any) {
   );
 }
 
-const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: isMichelin ? colors.background?.primary : colors.surface.primary,
   },
   scrollView: {
     flex: 1,
@@ -245,7 +245,7 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : colors.surface.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -256,26 +256,24 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   backButtonText: {
     fontSize: 20,
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-  },
+    ...typography.h2,
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
+  }
   editButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: '#87CEEB',
+    backgroundColor: colors.accent.primary,
     borderRadius: 8,
   },
   editButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
-  },
+    ...typography.bodyMedium,
+    color: isMichelin ? colors.background?.secondary : colors.white,
+  }
   sourceBadge: {
-    backgroundColor: '#E8E8E8',
+    backgroundColor: colors.neutral[200],
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -283,16 +281,15 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 16,
   },
   sourceText: {
-    fontSize: 13,
+    ...typography.caption,
     color: isMichelin ? colors.neutral[400] : colors.neutral[600],
-    fontWeight: '500',
-  },
+  }
   previewSection: {
-    backgroundColor: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : colors.white,
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -309,18 +306,14 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   recipeTitle: {
     flex: 1,
-    fontSize: 26,
-    fontWeight: '700',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-  },
+    ...typography.h1,
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
+  }
   recipeCuisine: {
-    fontSize: 14,
-    color: '#87CEEB',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    ...typography.label,
+    color: colors.accent.primary,
     marginBottom: 12,
-  },
+  }
   description: {
     fontSize: 15,
     color: isMichelin ? colors.neutral[400] : colors.neutral[600],
@@ -341,20 +334,18 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginRight: 6,
   },
   metaLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-  },
+    ...typography.bodyMedium,
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
+  }
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    ...typography.h3,
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
     marginTop: 20,
     marginBottom: 12,
-  },
+  }
   listItem: {
     fontSize: 15,
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
     marginBottom: 6,
     lineHeight: 22,
   },
@@ -366,39 +357,37 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.primary[500],
-    color: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
-    fontSize: 14,
-    fontWeight: '700',
+    backgroundColor: colors.accent.primary,
+    color: colors.white,
+    ...typography.bodyMedium,
     textAlign: 'center',
     lineHeight: 28,
     marginRight: 12,
-  },
+  }
   step: {
     flex: 1,
     fontSize: 15,
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
     lineHeight: 22,
   },
   editSection: {
-    backgroundColor: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: isMichelin ? colors.background?.secondary : colors.white,
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    ...typography.bodyMedium,
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
     marginBottom: 8,
     marginTop: 16,
-  },
+  }
   input: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.neutral[100],
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
   },
   textArea: {
     minHeight: 80,
@@ -413,12 +402,12 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.neutral[100],
     justifyContent: 'center',
     alignItems: 'center',
   },
   emojiBtnActive: {
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
   },
   emojiText: {
     fontSize: 28,
@@ -432,47 +421,45 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.neutral[100],
   },
   chipActive: {
-    backgroundColor: '#87CEEB',
+    backgroundColor: colors.accent.primary,
   },
   chipText: {
     fontSize: 14,
     color: isMichelin ? colors.neutral[400] : colors.neutral[600],
   },
   chipTextActive: {
-    color: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
-    fontWeight: '600',
-  },
+    ...typography.bodyMedium,
+    color: colors.white,
+  }
   actions: {
     flexDirection: 'row',
     marginBottom: 40,
   },
   cancelBtn: {
     flex: 1,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: colors.neutral[200],
     padding: 16,
     borderRadius: 12,
     marginRight: 8,
     alignItems: 'center',
   },
   cancelBtnText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: isMichelin ? colors.neutral[300] : colors.neutral[700],
-  },
+    ...typography.bodyMedium,
+    color: isMichelin ? colors.neutral[300] : colors.text.secondary,
+  }
   saveBtn: {
     flex: 1,
-    backgroundColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
     padding: 16,
     borderRadius: 12,
     marginLeft: 8,
     alignItems: 'center',
   },
   saveBtnText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: isMichelin ? colors.background?.secondary : isMichelin ? colors.background?.secondary : '#FFF',
-  },
+    ...typography.bodyMedium,
+    color: colors.white,
+  }
 });

@@ -20,7 +20,7 @@ const FILTERS = [
 ];
 
 export default function RecipeLibraryScreen() {
-  const { colors, isMichelin } = useTheme();
+  const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -125,19 +125,15 @@ export default function RecipeLibraryScreen() {
     );
   };
 
-  const dynamicStyles = createStyles(colors, isMichelin);
+  const dynamicStyles = createStyles(colors);
 
   return (
     <SafeAreaView style={dynamicStyles.container}>
-      <StatusBar style={isMichelin ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       
       {/* Header */}
       <View style={dynamicStyles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={dynamicStyles.backButton}>←</Text>
-        </TouchableOpacity>
         <Text style={dynamicStyles.title}>Recipe Library</Text>
-        <View style={{ width: 40 }} />
       </View>
 
       {/* Search */}
@@ -147,7 +143,7 @@ export default function RecipeLibraryScreen() {
           placeholder="Search recipes, cuisines..."
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholderTextColor={colors.neutral[500]}
+          placeholderTextColor={colors.text.muted}
         />
         {searchQuery && (
           <TouchableOpacity onPress={() => setSearchQuery('')}>
@@ -182,10 +178,13 @@ export default function RecipeLibraryScreen() {
         ))}
       </ScrollView>
 
-      <ScrollView 
-        style={dynamicStyles.scrollView} 
+      <ScrollView
+        style={dynamicStyles.scrollView}
         contentContainerStyle={dynamicStyles.grid}
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={loadMyRecipes} />}
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
+        contentInset={{ top: 0 }}
+        alwaysBounceVertical={false}
       >
         {/* Migration Status */}
         {migrationStatus ? (
@@ -195,9 +194,6 @@ export default function RecipeLibraryScreen() {
         ) : null}
 
         {/* Built-in Recipes */}
-        <View style={dynamicStyles.sectionHeaderFullWidth}>
-          <Text style={dynamicStyles.sectionTitle}>Recipe Library</Text>
-        </View>
         {filtered.map(recipe => (
           <View
             key={recipe.id}
@@ -242,7 +238,7 @@ export default function RecipeLibraryScreen() {
                   style={dynamicStyles.addToPlanButton}
                   onPress={() => router.push(`/plan?addRecipe=${recipe.id}`)}
                 >
-                  <Text style={dynamicStyles.addToPlanText}>➕ Add to Plan</Text>
+                  <Text style={dynamicStyles.addToPlanText} numberOfLines={1}>Add to plan</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -268,38 +264,37 @@ export default function RecipeLibraryScreen() {
   );
 }
 
-const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
+    backgroundColor: colors.surface.primary,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
   backButton: {
     fontSize: 24,
-    color: colors.neutral[700],
+    color: colors.text.secondary,
     padding: 8,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.neutral[900],
+    ...typography.h2,
+    color: colors.text.primary,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface?.secondary ?? colors.background?.secondary ?? colors.white,
     marginHorizontal: 20,
     marginBottom: 16,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    shadowColor: '#000',
+    shadowColor: colors.border.subtle,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -308,11 +303,11 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: colors.neutral[900],
+    color: colors.text.primary,
   },
   clearButton: {
     fontSize: 16,
-    color: colors.neutral[500],
+    color: colors.text.muted,
     padding: 4,
   },
   filterScroll: {
@@ -325,21 +320,22 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   filterPill: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface?.secondary ?? colors.background?.secondary ?? colors.white,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: colors.neutral[300],
+    borderColor: colors.border.default,
+    justifyContent: 'center',
   },
   filterPillActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
+    backgroundColor: colors.accent.primary,
+    borderColor: colors.accent.primary,
   },
   filterText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.neutral[700],
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlignVertical: 'center',
   },
   filterTextActive: {
     color: '#FFF',
@@ -361,27 +357,25 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginTop: 8,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.neutral[900],
+    ...typography.h3,
+    color: colors.text.primary,
   },
   sectionCount: {
     fontSize: 14,
-    color: colors.primary[500],
+    color: colors.accent.primary,
     marginLeft: 8,
     fontWeight: '600',
   },
   migrationBanner: {
     width: '100%',
-    backgroundColor: colors.success,
+    backgroundColor: colors.accent.success,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
   },
   migrationText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '600',
+    ...typography.bodyMedium,
+    color: colors.text.inverse,
     textAlign: 'center',
   },
   deleteButton: {
@@ -396,10 +390,10 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
   },
   recipeCard: {
     width: '47%',
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
+    backgroundColor: colors.surface?.secondary ?? colors.background?.secondary ?? colors.white,
+    borderRadius: 18,
+    padding: 18,
+    shadowColor: colors.border.subtle,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -430,15 +424,14 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     marginBottom: 8,
   },
   recipeTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.neutral[900],
+    ...typography.bodyMedium,
+    color: colors.text.primary,
     marginBottom: 4,
     textAlign: 'center',
   },
   recipeCuisine: {
-    fontSize: 12,
-    color: colors.primary[500],
+    ...typography.caption,
+    color: colors.accent.primary,
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -448,42 +441,41 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     alignItems: 'center',
   },
   recipeTime: {
-    fontSize: 11,
-    color: colors.neutral[500],
+    ...typography.caption,
+    color: colors.text.muted,
   },
   recipeDifficulty: {
-    fontSize: 11,
-    color: colors.primary[500],
-    fontWeight: '500',
+    ...typography.caption,
+    color: colors.accent.primary,
   },
   comingSoonBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: colors.neutral[500],
+    backgroundColor: colors.text.muted,
     borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   comingSoonText: {
-    fontSize: 10,
+    ...typography.label,
     color: '#FFF',
-    fontWeight: 'bold',
   },
   cardActions: {
     marginTop: 8,
   },
   addToPlanButton: {
-    backgroundColor: colors.success,
+    backgroundColor: colors.surface.secondary,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.accent.primary,
   },
   addToPlanText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '600',
+    ...typography.caption,
+    color: colors.accent.primary,
   },
   emptyState: {
     width: '100%',
@@ -491,12 +483,11 @@ const createStyles = (colors: any, isMichelin: boolean) => StyleSheet.create({
     paddingVertical: 60,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.neutral[900],
+    ...typography.h3,
+    color: colors.text.primary,
   },
   emptySub: {
     fontSize: 14,
-    color: colors.primary[500],
+    color: colors.accent.primary,
   },
 });

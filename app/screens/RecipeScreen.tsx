@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, TextInput, Image } from "react-native";
-import { spacing, layout, shadows, typography } from '../theme';
+import { spacing, shadows, typography } from '../theme';
 import { useState, useCallback, useEffect } from "react";
 import { useFocusEffect, router, useLocalSearchParams } from 'expo-router';
 import { chickenCurryRecipe, beefRendangRecipe, freshPastaRecipe, sourdoughRecipe, pepperpotRecipe, doublesRecipe, fishCurryRecipe, dhalPuriRecipe, pastaPomodoroRecipe, rotiCurryChannaRecipe, phoBoRecipe, jerkChickenRecipe, valentineDinnerRecipe, cacioEPepeRecipe, tonkotsuRamenRecipe, birriaTacosRecipe } from "../data/recipes";
@@ -98,7 +98,7 @@ export default function RecipeScreen() {
   const [myNotes, setMyNotes] = useState<Record<string, string>>({});
   const [isFav, setIsFav] = useState(false);
   const [inLibrary, setInLibrary] = useState(false);
-  const [buttonsCollapsed, setButtonsCollapsed] = useState(false);
+  const [buttonsCollapsed, setButtonsCollapsed] = useState(true);
 
   // Load settings once on mount
   useEffect(() => {
@@ -161,7 +161,16 @@ export default function RecipeScreen() {
   return (
     <SafeAreaView style={dynamicStyles.container}>
       <StatusBar style={isMichelin ? 'light' : 'dark'} />
-      <ScrollView style={dynamicStyles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={dynamicStyles.scrollView}
+        showsVerticalScrollIndicator={false}
+        onScroll={({ nativeEvent }) => {
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          const isNearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 120;
+          if (isNearBottom) setButtonsCollapsed(false);
+        }}
+        scrollEventThrottle={16}
+      >
         {/* Header with Favorite and Library */}
         <View style={dynamicStyles.header}>
           <TouchableOpacity 
@@ -230,7 +239,7 @@ export default function RecipeScreen() {
         <View style={dynamicStyles.controlsSection}>
           {/* Servings */}
           <View style={dynamicStyles.servingControl}>
-            <Text style={dynamicStyles.controlLabel}>👥 Servings</Text>
+            <Text style={dynamicStyles.controlLabel}>Servings</Text>
             <View style={dynamicStyles.servingStepper}>
               <TouchableOpacity
                 style={dynamicStyles.stepperButton}
@@ -251,7 +260,7 @@ export default function RecipeScreen() {
 
           {/* Unit Presets */}
           <View style={dynamicStyles.unitControl}>
-            <Text style={dynamicStyles.controlLabel}>⚖️ Units</Text>
+            <Text style={dynamicStyles.controlLabel}>Units</Text>
             <View style={dynamicStyles.unitButtons}>
               {(['metric', 'imperial', 'baker'] as const).map(preset => (
                 <TouchableOpacity
@@ -278,7 +287,7 @@ export default function RecipeScreen() {
             style={dynamicStyles.sectionHeader}
             onPress={() => setShowIngredients(!showIngredients)}
           >
-            <Text style={dynamicStyles.sectionTitle}>📝 Ingredients</Text>
+            <Text style={dynamicStyles.sectionTitle}>Ingredients</Text>
             <Text style={dynamicStyles.sectionToggle}>{showIngredients ? '▲' : '▼'}</Text>
           </TouchableOpacity>
           
@@ -290,7 +299,7 @@ export default function RecipeScreen() {
                 
                 return (
                   <View key={sectionKey} style={dynamicStyles.ingredientGroup}>
-                    <Text style={dynamicStyles.ingredientGroupTitle}>{info.emoji} For the {info.title}</Text>
+                    <Text style={dynamicStyles.ingredientGroupTitle}>For the {info.title}</Text>
                     {info.ingredients.map((ing: any, idx: number) => {
                       const scaled = scaleAmount(ing.amount, ratio);
                       const converted = convertIngredient(scaled, ing.item, unitPrefs);
@@ -326,8 +335,7 @@ export default function RecipeScreen() {
                 onPress={() => setShowSteps(isExpanded ? null : sectionKey)}
               >
                 <View style={dynamicStyles.phaseHeader}>
-                  <Text style={dynamicStyles.phaseEmoji}>{info.emoji}</Text>
-                  <View style={dynamicStyles.phaseInfo}>
+                                    <View style={dynamicStyles.phaseInfo}>
                     <Text style={dynamicStyles.phaseTitle}>{info.title}</Text>
                     <Text style={dynamicStyles.phaseMeta}>{info.steps.length} steps • {info.ingredients.length} ingredients</Text>
                   </View>
@@ -384,7 +392,7 @@ export default function RecipeScreen() {
 
         {/* My Notes */}
         <View style={dynamicStyles.section}>
-          <Text style={dynamicStyles.sectionTitle}>📝 My Notes</Text>
+          <Text style={dynamicStyles.sectionTitle}>My Notes</Text>
           <View style={dynamicStyles.myNotesCard}>
             <TextInput
               style={dynamicStyles.myNotesInput}
@@ -494,16 +502,13 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     fontSize: 22,
   },
   hero: {
-    alignItems: 'center',
-    paddingTop: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
   },
   heroImageContainer: {
     width: '100%',
     aspectRatio: 4/3,
-    borderRadius: 16,
     overflow: 'hidden',
-    ...shadows.md,
+    marginBottom: spacing.lg,
   },
   heroImage: {
     width: '100%',
@@ -520,10 +525,9 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
   },
   heroTitle: {
     ...typography.display,
-    color: colors.neutral[900],
+    color: colors.text.primary,
     textAlign: 'center',
-    marginTop: spacing.lg,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   heroSubtitle: {
     fontSize: 15,
@@ -539,49 +543,47 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     color: colors.neutral[600],
     textAlign: 'center',
     lineHeight: 24,
-    paddingHorizontal: layout.screenGutter,
+    paddingHorizontal: spacing.lg,
   },
   stats: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: layout.screenGutter,
-    paddingVertical: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
   },
   statItem: {
     alignItems: 'center',
     minWidth: 60,
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.neutral[900],
+    ...typography.h3,
+    color: colors.text.primary,
   },
   statLabel: {
-    fontSize: 12,
-    color: colors.primary[500],
-    marginTop: 2,
+    ...typography.caption,
+    color: colors.text.muted,
+    marginTop: 4,
   },
   statDivider: {
     width: 1,
-    height: 30,
-    backgroundColor: colors.neutral[300],
-    marginHorizontal: 20,
+    height: 24,
+    backgroundColor: colors.border.subtle,
+    marginHorizontal: 16,
   },
   controlsSection: {
     paddingHorizontal: 24,
-    marginBottom: 24,
-    gap: 16,
+    marginBottom: 32,
+    gap: 20,
   },
   servingControl: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 16,
   },
   controlLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.neutral[900],
+    ...typography.caption,
+    color: colors.text.muted,
     marginBottom: 12,
   },
   servingButtons: {
@@ -619,12 +621,12 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
   },
   stepperButtonText: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: 'bold',
     color: '#FFF',
   },
   servingValue: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: 'bold',
     color: colors.neutral[900],
     minWidth: 50,
     textAlign: 'center',
@@ -652,7 +654,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     alignItems: 'center',
   },
   unitButtonActive: {
-    backgroundColor: '#87CEEB',
+    backgroundColor: colors.accent.primary,
   },
   unitButtonText: {
     fontSize: 14,
@@ -663,58 +665,54 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     color: '#FFF',
   },
   section: {
-    paddingHorizontal: layout.screenGutter,
-    marginBottom: 24,
+    paddingHorizontal: 24,
+    marginBottom: 32,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.neutral[900],
+    ...typography.h3,
+    color: colors.text.primary,
+    marginBottom: 12,
   },
   sectionToggle: {
     fontSize: 16,
     color: colors.primary[500],
   },
   ingredientsList: {
-    backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
+    backgroundColor: colors.surface.secondary,
     borderRadius: 16,
     padding: 16,
   },
   ingredientGroup: {
-    marginBottom: 12,
+    marginBottom: 20,
   },
   ingredientGroupTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.neutral[900],
-    marginBottom: 6,
-    paddingBottom: 4,
+    ...typography.caption,
+    color: colors.text.muted,
+    marginBottom: 8,
+    paddingBottom: 6,
     borderBottomWidth: 1,
-    borderBottomColor: colors.neutral[200],
+    borderBottomColor: colors.border.subtle,
   },
   ingredientRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
+    alignItems: 'flex-start',
+    paddingVertical: 6,
   },
   ingredientAmount: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary[500],
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
     width: 120,
-    lineHeight: 18,
   },
   ingredientItem: {
-    fontSize: 14,
-    color: colors.neutral[900],
+    ...typography.bodyMedium,
+    color: colors.text.primary,
     flex: 1,
-    lineHeight: 18,
   },
   phaseCard: {
     backgroundColor: isMichelin ? colors.background?.secondary : '#FFF',
@@ -766,15 +764,14 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#87CEEB',
+    backgroundColor: colors.surface.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   stepPreviewNumberText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '700',
+    ...typography.caption,
+    color: colors.text.primary,
   },
   stepPreviewContent: {
     flex: 1,
@@ -844,7 +841,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     left: 0,
     right: 0,
     backgroundColor: isMichelin ? colors.background?.primary : colors.cream[50],
-    paddingHorizontal: layout.screenGutter,
+    paddingHorizontal: 24,
     paddingVertical: 16,
     borderTopWidth: 1,
     borderTopColor: isMichelin ? colors.neutral[700] : colors.neutral[300],
@@ -872,7 +869,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
   },
   startButtonText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: 'bold',
     color: '#FFF',
   },
   startButtonSub: {
@@ -885,7 +882,7 @@ const getStyles = (colors: any, spacing: any, shadows: any, isMichelin: boolean)
     backgroundColor: isMichelin ? colors.background?.secondary : colors.white,
     borderRadius: 16,
     paddingVertical: 16,
-    paddingHorizontal: layout.screenGutter,
+    paddingHorizontal: 24,
     alignItems: 'center',
     marginTop: 12,
     borderWidth: 2,

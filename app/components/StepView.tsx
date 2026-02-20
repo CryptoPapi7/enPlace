@@ -11,7 +11,7 @@ export default function StepView({ text }: { text: string }) {
     },
     text: {
       ...typography.body,
-      color: colors.neutral[900],
+      color: colors.text.primary,
     },
   });
 
