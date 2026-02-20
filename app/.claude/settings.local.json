@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m \"feat: design elevation across core screens and flows\")"
+    ]
+  }
+}
